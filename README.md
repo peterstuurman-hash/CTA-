@@ -1,0 +1,37 @@
+# Oscar — CTA Demo
+
+Een zelfstandige, interactieve demo van het Oscar CTA-systeem voor de horeca: Oscar kijkt mee met de werkvloer en pusht op het juiste moment een **call-to-action** (CTA) naar de handy van de juiste kelner.
+
+👉 **Demo openen:** dubbelklik op `index.html` (werkt in elke browser, geen installatie nodig).
+
+## Wat je kunt doen
+
+**Werkvloer (links)** — per tafel:
+- **Seat** een tafel → na een paar seconden pusht Oscar **CTA 1 · Eerste drankje**.
+- **Drankje / Hoofdgerecht** = een POS-order. Dit sluit CTA 1/2 automatisch. Een hoofdgerecht leidt na de fire-delay tot **CTA 6 · Auto kan door**.
+- Laat een tafel na het bestellen stilliggen → **CTA 2 · Sleeping table**.
+- **Afrekenen** → alle CTA's van die tafel verdwijnen direct.
+
+**Situaties forceren (knoppen):**
+- **Drukte hoog/laag** — schakelt de "actuele drukte" (order-rate). Beïnvloedt CTA 4 (blokkade-kaart) en CTA 5 (vervalt bij drukte).
+- **CTA 3** · brutaal geopende tafel (blokkerende keuzevraag)
+- **CTA 4** · reservering met aanbieding
+- **CTA 5** · gulle tafel / loyalty (paarse kaart)
+- **CTA 7** · kelner-actief-check
+
+**Handy (rechts)** — toont max. 3 CTA-kaarten tegelijk, gesorteerd op prio (CTA-nummer). Elke knop voert de actie uit en je ziet het resultaat in de **log** onderaan.
+
+## Let op
+
+Dit is een **vereenvoudigde simulatie** ter illustratie van de spec. De timers zijn sterk **versneld** (seconden i.p.v. minuten) zodat je het gedrag live ziet. Routing is teruggebracht tot één kelner/één handy. De volledige logica, parameters en beslissingen staan in de specificatie.
+
+## Online zetten (GitHub Pages)
+
+1. Push deze map naar een GitHub-repo.
+2. Repo → **Settings → Pages** → Source: `main` branch, map `/ (root)` (of de map waarin `index.html` staat).
+3. Na een minuut staat de demo live op `https://<gebruiker>.github.io/<repo>/`.
+
+## Bestanden
+
+- `index.html` — de volledige demo (HTML + CSS + JS in één bestand, geen dependencies).
+- `README.md` — dit bestand.

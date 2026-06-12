@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Oscar — CTA Demo</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #1a212b;
+    --panel-2: #232c38;
+    --line: #2e3a48;
+    --text: #e6edf3;
+    --muted: #8b9aac;
+    --accent: #4c8dff;
+    --green: #2ecc71;
+    --amber: #f5a623;
+    --red: #e7515a;
+    --purple: #9b59ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+  }
+  header {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  header h1 { font-size: 20px; margin: 0; }
+  header .sub { color: var(--muted); font-size: 13px; }
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .panel h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
+  /* Floor */
+  .tables { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .table {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .table .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .table .nr { font-weight: 700; font-size: 15px; }
+  .table .naam { color: var(--muted); font-size: 12px; }
+  .badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 600;
+    background: #33404f; color: var(--muted);
+  }
+  .badge.geseat { background: rgba(76,141,255,.18); color: #8fb8ff; }
+  .badge.actief { background: rgba(46,204,113,.18); color: #6fe2a3; }
+  .table .acts { display: flex; flex-wrap: wrap; gap: 6px; }
+  button {
+    font: inherit; cursor: pointer; border: 1px solid var(--line);
+    background: #2b3644; color: var(--text); padding: 6px 10px;
+    border-radius: 7px; font-size: 12px; font-weight: 600;
+    transition: background .12s, transform .05s;
+  }
+  button:hover { background: #34424f; }
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: .35; cursor: default; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { background: #5d99ff; }
+  button.small { padding: 4px 8px; font-size: 11px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .toggle.on { background: var(--red); border-color: var(--red); color: #fff; }
+  .clock { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
+  /* Handy */
+  .handy-wrap { position: sticky; top: 24px; }
+  .handy {
+    background: #000; border-radius: 30px; padding: 14px;
+    border: 1px solid #2e3a48; box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  }
+  .handy-screen {
+    background: #0c1117; border-radius: 18px; min-height: 520px; padding: 14px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .handy-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 8px; border-bottom: 1px solid var(--line);
+  }
+  .handy-head .wijk { font-size: 12px; color: var(--muted); }
+  .handy-head .wijk b { color: var(--text); }
+  .empty-state { color: var(--muted); font-size: 13px; text-align: center; margin: auto; padding: 20px; }
+  .cta {
+    border-radius: 12px; padding: 12px 12px 10px; border: 1px solid var(--line);
+    background: var(--panel-2); animation: pop .18s ease-out;
+  }
+  @keyframes pop { from { opacity: 0; transform: scale(.96) translateY(6px); } to { opacity: 1; transform: none; } }
+  .cta .prio { font-size: 10px; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+  .cta .title { font-size: 14px; font-weight: 600; margin: 3px 0 10px; }
+  .cta .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cta.purple { background: linear-gradient(160deg, #2a1f47, #1d1733); border-color: #4c357f; }
+  .cta.purple .prio { color: #c4abff; }
+  .cta.info { background: #14222e; border-color: #2b4a5e; }
+  .cta.info .title { color: #9fd6ff; font-weight: 500; }
+  .cta.block { background: #2c1c1f; border-color: #6e3138; }
+  .queue-note { font-size: 11px; color: var(--muted); text-align: center; padding-top: 4px; }
+  /* Log */
+  .log {
+    grid-column: 1 / -1; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px; max-height: 180px; overflow-y: auto;
+  }
+  .log .line { padding: 2px 0; border-bottom: 1px solid #1d2530; color: var(--muted); }
+  .log .line .t { color: #55657a; }
+  .log .line.ev { color: var(--text); }
+  .log .line.cta { color: #8fb8ff; }
+  .log .line.res { color: #6fe2a3; }
+  .legend { font-size: 11px; color: var(--muted); margin-top: 10px; }
+  .legend code { background: #232c38; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🍽️ Oscar — CTA Demo</h1>
+  <span class="sub">Simulatie van de "slimme laag" boven de werkvloer. Tijden zijn versneld (seconden i.p.v. minuten).</span>
+  <span class="clock" id="clock">⏱ 00:00</span>
+</header>
+
+<div class="layout">
+  <!-- FLOOR -->
+  <div class="panel">
+    <h2>Werkvloer — Wijk RES Noord</h2>
+    <div class="tables" id="tables"></div>
+
+    <h2 style="margin-top:18px;">Situaties forceren</h2>
+    <div class="controls">
+      <button class="toggle" id="busyBtn" onclick="toggleBusy()">Drukte: laag</button>
+      <button class="small" onclick="scenarioCTA3()">CTA 3 · brutaal geopende tafel</button>
+      <button class="small" onclick="scenarioCTA4()">CTA 4 · reservering met aanbieding</button>
+      <button class="small" onclick="scenarioCTA5()">CTA 5 · gulle tafel (loyalty)</button>
+      <button class="small" onclick="scenarioCTA7()">CTA 7 · kelner inactief</button>
+    </div>
+    <div class="legend">
+      <strong>Hoe werkt het:</strong> seat een tafel en wacht — Oscar pusht <b>CTA 1</b> (eerste drankje).
+      Bestel niets en hij komt terug; bestel wel en hij sluit. <b>CTA 2</b> (sleeping table) is <b>terugkerend</b>: de timer reset na elke
+      kelner-actie (een POS-order óf "Wil nog wachten"), en zonder actie komt hij telkens terug.
+      Bestel een hoofdgerecht → na de fire-delay <b>CTA 6</b>. Max 3 kaarten per handy, prio = CTA-nummer.
+    </div>
+  </div>
+
+  <!-- HANDY -->
+  <div class="handy-wrap">
+    <div class="handy">
+      <div class="handy-screen">
+        <div class="handy-head">
+          <span class="wijk">Handy · kelner <b>Peter</b><br>Wijk <b>RES Noord</b> (1–19)</span>
+          <span class="badge" id="ctaCount">0 CTA's</span>
+        </div>
+        <div id="ctaList" style="display:flex; flex-direction:column; gap:10px; flex:1;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div class="panel log" id="log"></div>
+</div>
+
+<script>
+/* ----------------------------------------------------------------------
+   Oscar CTA demo — vereenvoudigde, versnelde simulatie van de spec.
+   Eén bestand, geen dependencies. Tijden in seconden (gecomprimeerd).
+---------------------------------------------------------------------- */
+
+// Versnelde timers (seconden)
+const T = {
+  CTA1_DELAY: 4,      // na seaten -> check
+  CTA1_POSTPONE: 5,   // WACHT
+  CTA1_LIFE: 14,      // absolute levensduur vanaf seaten
+  CTA2_THRESHOLD: 9,  // geen kelner-actie sinds laatste actie
+  CTA6_DELAY: 5,      // hoofdgerecht -> fire
+  CTA6_VISIBLE: 7,    // informatieve kaart auto-verdwijnt
+};
+
+let clock = 0;
+let busy = false;
+let ctaSeq = 1;
+let ctas = [];   // actieve CTA-instanties op de handy
+
+const tables = [
+  { nr: 3,  naam: "Janssen",   state: "leeg" },
+  { nr: 5,  naam: "",          state: "leeg" },
+  { nr: 8,  naam: "de Vries",  state: "leeg" },
+  { nr: 12, naam: "",          state: "leeg" },
+].map(t => ({ ...t, seatedAt: null, lastOrderAt: null, lastActionAt: null, ordered: false,
+              hasMain: false, mainOrderedAt: null, fired: false,
+              cta1PostponeUntil: 0, cta1Expired: false }));
+
+/* ---------- logging ---------- */
+function fmt(s){ const m=Math.floor(s/60), ss=s%60; return String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0"); }
+function log(msg, cls="ev"){
+  const el = document.getElementById("log");
+  const d = document.createElement("div");
+  d.className = "line " + cls;
+  d.innerHTML = `<span class="t">${fmt(clock)}</span> &nbsp; ${msg}`;
+  el.prepend(d);
+}
+
+/* ---------- CTA helpers ---------- */
+function hasCTA(type, nr){ return ctas.some(c => c.type===type && c.tableNr===nr); }
+function getCTA(id){ return ctas.find(c => c.id===id); }
+function addCTA(type, nr, opts={}){
+  if (hasCTA(type, nr) && type!==6) return;
+  const c = { id: ctaSeq++, type, tableNr: nr, createdAt: clock, ...opts };
+  ctas.push(c);
+  log(`Oscar pusht <b>CTA ${type}</b>${nr?` · tafel ${nr}`:""} → handy`, "cta");
+  render();
+  return c;
+}
+function removeCTA(id, reason){
+  const c = getCTA(id);
+  if (!c) return;
+  ctas = ctas.filter(x => x.id!==id);
+  if (reason) log(`CTA ${c.type}${c.tableNr?` · tafel ${c.tableNr}`:""} — ${reason}`, "res");
+  render();
+}
+function closeTableCTAs(nr, reason){
+  ctas.filter(c => c.tableNr===nr).forEach(c => removeCTA(c.id, reason));
+}
+
+/* ---------- vloer-acties ---------- */
+function tbl(nr){ return tables.find(t => t.nr===nr); }
+
+function seat(nr){
+  const t = tbl(nr);
+  t.state="geseat"; t.seatedAt=clock; t.lastOrderAt=null; t.lastActionAt=clock; t.ordered=false;
+  t.hasMain=false; t.fired=false; t.cta1PostponeUntil=0; t.cta1Expired=false;
+  log(`Tafel ${nr} geseat${t.naam?` (${t.naam})`:""}`, "ev");
+  renderTables();
+}
+function order(nr, main=false){
+  const t = tbl(nr);
+  if (t.state==="leeg"){ log(`Tafel ${nr} is niet open`, "ev"); return; }
+  t.state="actief"; t.ordered=true; t.lastOrderAt=clock; t.lastActionAt=clock;
+  log(`Tafel ${nr} — POS-order${main?" (hoofdgerecht)":" (drankje)"} aangeslagen`, "ev");
+  // POS-order sluit CTA 1 en 2 (doel = eerste order / lull weg)
+  ctas.filter(c => c.tableNr===nr && (c.type===1||c.type===2)).forEach(c => removeCTA(c.id, "POS-order binnen → auto-afgesloten"));
+  if (main){ t.hasMain=true; t.mainOrderedAt=clock; t.fired=false; }
+  renderTables();
+}
+function wacht(nr){
+  const t = tbl(nr);
+  if (t.state==="leeg"){ log(`Tafel ${nr} is niet open`, "ev"); return; }
+  t.lastActionAt = clock;                 // kelner-actie → sleep-timer reset
+  t.cta1PostponeUntil = clock + T.CTA1_POSTPONE;
+  log(`Tafel ${nr} — "wil nog wachten" geregistreerd (kelner-actie)`, "ev");
+  // sluit een lopende CTA 1/2 (de kelner heeft net gehandeld)
+  ctas.filter(c => c.tableNr===nr && (c.type===1||c.type===2)).forEach(c => removeCTA(c.id, "wil nog wachten → timer reset"));
+  renderTables();
+}
+function afrekenen(nr){
+  const t = tbl(nr);
+  t.state="leeg"; t.seatedAt=null; t.lastOrderAt=null; t.ordered=false; t.hasMain=false; t.fired=false;
+  log(`Tafel ${nr} afgerekend → alle CTA's direct weg`, "ev");
+  closeTableCTAs(nr, "ticket gesloten");
+  renderTables();
+}
+function toggleBusy(){
+  busy = !busy;
+  const b = document.getElementById("busyBtn");
+  b.textContent = "Drukte: " + (busy ? "hoog" : "laag");
+  b.classList.toggle("on", busy);
+  log(`Actuele drukte (order-rate) nu <b>${busy?"HOOG":"LAAG"}</b>`, "ev");
+  // CTA 5 vervalt bij drukte
+  if (busy) ctas.filter(c=>c.type===5).forEach(c=>removeCTA(c.id,"vervallen — werd druk"));
+}
+
+/* ---------- scenario-knoppen ---------- */
+function scenarioCTA3(){
+  const free = tables.find(t=>t.state==="leeg") || tables[0];
+  addCTA(3, free.nr, { blocking:true });
+}
+function scenarioCTA4(){
+  const t = tables.find(x=>x.state!=="leeg") || tables[0];
+  addCTA(4, t.nr, { blocked: busy }); // bij drukte -> blokkade-kaart
+}
+function scenarioCTA5(){
+  if (busy){ log("CTA 5 niet getoond — het is druk (loyalty alleen bij rust)", "ev"); return; }
+  const t = tables.find(x=>x.state==="actief") || tables[0];
+  addCTA(5, t.nr);
+}
+function scenarioCTA7(){
+  addCTA(7, null);
+}
+
+/* ---------- engine tick ---------- */
+function tick(){
+  clock++;
+  document.getElementById("clock").textContent = "⏱ " + fmt(clock);
+
+  for (const t of tables){
+    if (t.state==="leeg") continue;
+
+    // CTA 1 — eerste drankje (alleen zolang niets besteld)
+    if (!t.ordered){
+      const inWindow = clock >= t.seatedAt + T.CTA1_DELAY && clock < t.seatedAt + T.CTA1_LIFE;
+      if (inWindow && clock >= t.cta1PostponeUntil && !hasCTA(1, t.nr)){
+        addCTA(1, t.nr);
+      }
+      if (clock >= t.seatedAt + T.CTA1_LIFE && hasCTA(1, t.nr)){
+        ctas.filter(c=>c.type===1&&c.tableNr===t.nr).forEach(c=>removeCTA(c.id,"vervallen (max. levensduur)"));
+        t.cta1Expired = true;
+      }
+    }
+
+    // CTA 2 — sleeping table (terugkerend); meet vanaf laatste kelner-actie, gegate op géén actieve CTA 1
+    if (!hasCTA(1, t.nr) &&
+        t.lastActionAt != null &&
+        clock >= t.lastActionAt + T.CTA2_THRESHOLD &&
+        !hasCTA(2, t.nr)){
+      addCTA(2, t.nr);
+    }
+
+    // CTA 6 — auto fire na hoofdgerecht
+    if (t.hasMain && !t.fired && clock >= t.mainOrderedAt + T.CTA6_DELAY){
+      t.fired = true;
+      addCTA(6, t.nr, { expiresAt: clock + T.CTA6_VISIBLE });
+      log(`Tafel ${t.nr} — hoofdgerecht automatisch <b>doorgeslagen</b> naar keuken`, "res");
+    }
+  }
+
+  // auto-verdwijnende kaarten (CTA 6)
+  ctas.filter(c=>c.expiresAt && clock>=c.expiresAt).forEach(c=>removeCTA(c.id,"informatieve kaart weg"));
+}
+
+/* ---------- CTA-knop afhandeling ---------- */
+function ctaAction(id, action){
+  const c = getCTA(id); if (!c) return;
+  const nr = c.tableNr;
+  switch(c.type+"/"+action){
+    case "1/ORDER":     order(nr,false); break;
+    case "1/WACHT":     tbl(nr).cta1PostponeUntil = clock + T.CTA1_POSTPONE; tbl(nr).lastActionAt = clock; removeCTA(id,"WACHT (wil nog wachten) — komt terug"); break;
+    case "1/VERPLAATS": removeCTA(id,"VERPLAATS gekozen"); break;
+    case "1/SLUIT":     afrekenen(nr); break;
+
+    case "2/ORDER":     order(nr,false); break;
+    case "2/WACHT":     wacht(nr); break;
+    case "2/VERPLAATS": tbl(nr).lastActionAt = clock; removeCTA(id,"VERPLAATS gekozen"); break;
+    case "2/MELDLG":    tbl(nr).lastActionAt = clock; removeCTA(id,"MELD LG (informatief) — tafel blijft open"); break;
+
+    case "3/OPEN":      { const t=tbl(nr); if(t.state==="leeg"){t.state="geseat";t.seatedAt=clock;} removeCTA(id,"tafel geopend"); renderTables(); } break;
+    case "3/VERPLAATS": removeCTA(id,"VERPLAATS — bon overgenomen"); break;
+
+    case "4/ORDER":     removeCTA(id,"aanbieding toegepast via WaiterPro"); break;
+    case "4/ROEPLG":    removeCTA(id,"LG geroepen om aan te bieden"); break;
+    case "4/TERUG":     removeCTA(id,"TERUG — aanbieding blijft op reservering"); break;
+
+    case "5/ORDER":     removeCTA(id,"gift geregistreerd"); break;
+    case "5/WACHT":     removeCTA(id,"WACHT (vervalt bij drukte)"); break;
+
+    case "7/JA":        removeCTA(id,"kelner bevestigt actief"); break;
+    case "7/NEE":       removeCTA(id,"kelner NEE → uit kelneroverzicht"); break;
+    case "7/PAUZE":     removeCTA(id,"kelner PAUZE → uit kelneroverzicht (tijdelijk)"); break;
+  }
+}
+
+/* ---------- rendering ---------- */
+const CARD = {
+  1: c => ({ cls:"", prio:"CTA 1 · Eerste drankje",
+        title:`Tafel ${c.tableNr} — Drankje opnemen${tbl(c.tableNr).naam?` bij ${tbl(c.tableNr).naam}`:""}`,
+        btns:[["ORDER","primary"],["WACHT"],["VERPLAATS"],["SLUIT TAFEL","","SLUIT"]] }),
+  2: c => ({ cls:"", prio:"CTA 2 · Sleeping table",
+        title:`Tafel ${c.tableNr} — Checken`,
+        btns:[["ORDER","primary"],["WACHT"],["VERPLAATS"],["MELD LG","","MELDLG"]] }),
+  3: c => ({ cls:"", prio:"CTA 3 · Tafel bij drukte (blokkeert openen)",
+        title:`Tafel ${c.tableNr} niet geseat — waar komen deze gasten vandaan?`,
+        btns:[["OPEN","primary"],["VERPLAATS"]] }),
+  4: c => c.blocked
+        ? ({ cls:"block", prio:"CTA 4 · Aanbieden (geblokkeerd)",
+             title:`Het is druk — alleen aanbieden door LG`,
+             btns:[["ROEP LG","primary","ROEPLG"],["TERUG"]] })
+        : ({ cls:"", prio:"CTA 4 · Aanbieden",
+             title:`Tafel ${c.tableNr} — Aanbieden: VIP-reservering`,
+             btns:[["ORDER","primary"],["TERUG"]] }),
+  5: c => ({ cls:"purple", prio:"CTA 5 · Loyalty",
+        title:`Tafel ${c.tableNr} — Bied een drankje aan`,
+        btns:[["ORDER","primary"],["WACHT"]] }),
+  6: c => ({ cls:"info", prio:"CTA 6 · Auto kan door (informatief)",
+        title:`Tafel ${c.tableNr} — is automatisch doorgeslagen, maak tafel klaar`,
+        btns:[] }),
+  7: c => ({ cls:"", prio:"CTA 7 · Actief-check",
+        title:`Hoi Peter, ben jij nu nog steeds actief in wijk RES Noord?`,
+        btns:[["JA","primary"],["NEE"],["PAUZE"]] }),
+};
+
+function render(){
+  const list = document.getElementById("ctaList");
+  const sorted = [...ctas].sort((a,b)=> a.type-b.type || a.createdAt-b.createdAt);
+  const visible = sorted.slice(0,3);
+  const hidden = sorted.length - visible.length;
+
+  document.getElementById("ctaCount").textContent = ctas.length + " CTA" + (ctas.length===1?"":"'s");
+
+  if (sorted.length===0){
+    list.innerHTML = `<div class="empty-state">Geen CTA's.<br>Seat een tafel of forceer een situatie →</div>`;
+    return;
+  }
+  list.innerHTML = visible.map(c => {
+    const def = CARD[c.type](c);
+    const btns = def.btns.map(([label,cls,act]) =>
+      `<button class="small ${cls||""}" onclick="ctaAction(${c.id},'${act||label}')">${label}</button>`).join("");
+    return `<div class="cta ${def.cls}">
+      <div class="prio">${def.prio}</div>
+      <div class="title">${def.title}</div>
+      ${btns?`<div class="btns">${btns}</div>`:""}
+    </div>`;
+  }).join("")
+  + (hidden>0 ? `<div class="queue-note">+ ${hidden} in wachtrij (lagere prio — max 3 zichtbaar)</div>` : "");
+}
+
+function renderTables(){
+  const el = document.getElementById("tables");
+  el.innerHTML = tables.map(t => {
+    const open = t.state!=="leeg";
+    return `<div class="table">
+      <div class="top">
+        <div><span class="nr">Tafel ${t.nr}</span> ${t.naam?`<span class="naam">· ${t.naam}</span>`:""}</div>
+        <span class="badge ${t.state}">${t.state}</span>
+      </div>
+      <div class="acts">
+        <button class="small" onclick="seat(${t.nr})" ${open?"disabled":""}>Seat</button>
+        <button class="small" onclick="order(${t.nr},false)" ${open?"":"disabled"}>Drankje</button>
+        <button class="small" onclick="order(${t.nr},true)" ${open?"":"disabled"}>Hoofdgerecht</button>
+        <button class="small" onclick="wacht(${t.nr})" ${open?"":"disabled"}>Wil nog wachten</button>
+        <button class="small" onclick="afrekenen(${t.nr})" ${open?"":"disabled"}>Afrekenen</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* ---------- start ---------- */
+renderTables();
+render();
+log("Demo gestart. Seat een tafel om te beginnen.", "ev");
+setInterval(tick, 1000);
+</script>
+</body>
+</html>
