@@ -4,3 +4,7 @@ Thumbs.db
 desktop.ini
 *~
 .vscode/
+
+# tijdelijke editor-bestanden
+*.tmp
+*.tmp.*
