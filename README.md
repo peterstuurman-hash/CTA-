@@ -33,7 +33,15 @@ Dit is een **vereenvoudigde simulatie** ter illustratie van de spec. De timers z
 2. Repo → **Settings → Pages** → Source: `main` branch, map `/ (root)` (of de map waarin `index.html` staat).
 3. Na een minuut staat de demo live op `https://<gebruiker>.github.io/<repo>/`.
 
+## Uitleg / documentatie
+
+Een uitleg van de werking van alle CTA's én de kelnerselectie (routing) staat in `docs/`:
+
+- **[`docs/oscar_CTA_uitleg.pdf`](docs/oscar_CTA_uitleg.pdf)** — leesbare PDF (4 pagina's).
+- `docs/oscar_CTA_uitleg.html` — het bron-bestand (om de PDF opnieuw te genereren).
+
 ## Bestanden
 
 - `index.html` — de volledige demo (HTML + CSS + JS in één bestand, geen dependencies).
+- `docs/` — uitleg in PDF + HTML.
 - `README.md` — dit bestand.

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<title>Oscar — Werking van de CTA's & kelnerselectie</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #1c2530; font-size: 11.5px; line-height: 1.5; margin: 0;
+  }
+  h1 { font-size: 26px; margin: 0 0 4px; color: #14315e; }
+  h2 {
+    font-size: 16px; color: #14315e; margin: 26px 0 8px;
+    border-bottom: 2px solid #d8e1ee; padding-bottom: 4px;
+  }
+  h3 { font-size: 13px; margin: 16px 0 4px; color: #1c2530; }
+  p { margin: 6px 0; }
+  .lead { color: #4a5867; font-size: 12.5px; }
+  .meta { color: #8190a0; font-size: 10.5px; margin-bottom: 2px; }
+  ul { margin: 6px 0; padding-left: 18px; }
+  li { margin: 3px 0; }
+  code {
+    background: #eef2f8; padding: 1px 5px; border-radius: 4px;
+    font-family: ui-monospace, Consolas, monospace; font-size: 10.5px; color: #2a3a55;
+  }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 10.8px; }
+  th, td { border: 1px solid #d8e1ee; padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: #f1f5fb; color: #14315e; }
+  .callout {
+    background: #f1f5fb; border-left: 4px solid #4c8dff; padding: 8px 12px;
+    margin: 10px 0; border-radius: 0 6px 6px 0;
+  }
+  .callout.warn { background: #fdf2f2; border-left-color: #e7515a; }
+  .cta {
+    border: 1px solid #d8e1ee; border-radius: 8px; padding: 10px 12px; margin: 10px 0;
+    page-break-inside: avoid; background: #fbfcfe;
+  }
+  .cta h3 { margin-top: 0; }
+  .cta .tag {
+    display: inline-block; font-size: 9.5px; font-weight: 700; color: #fff;
+    background: #4c8dff; border-radius: 12px; padding: 1px 9px; margin-right: 6px;
+    vertical-align: middle;
+  }
+  .cta.purple .tag { background: #8a5cff; }
+  .cta.info .tag { background: #2b9fd6; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
+  .small { font-size: 10px; color: #6a7888; }
+  .pagebreak { page-break-before: always; }
+  .btnrow { margin-top: 4px; }
+  .btn {
+    display: inline-block; font-size: 9.5px; font-weight: 600; border: 1px solid #c4d0e0;
+    border-radius: 5px; padding: 2px 8px; margin: 2px 4px 2px 0; background: #fff; color: #2a3a55;
+  }
+  .btn.primary { background: #4c8dff; color: #fff; border-color: #4c8dff; }
+  footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #d8e1ee; color: #8190a0; font-size: 10px; }
+</style>
+</head>
+<body>
+
+<div class="meta">Interne documentatie · juni 2026</div>
+<h1>Oscar — Werking van de CTA's &amp; kelnerselectie</h1>
+<p class="lead">Oscar is de slimme laag boven de werkvloer. Hij kijkt mee met wat er gebeurt — seaten, bestellen, drukte — en stuurt op het juiste moment één concreet zetje (een <strong>CTA</strong>, call-to-action) naar de handy van de juiste kelner. Dit document legt uit hoe de CTA's werken en hoe Oscar bepaalt naar wélke kelner een melding gaat.</p>
+
+<h2>1. Hoe een CTA werkt</h2>
+<p>De handy van de kelner is een <strong>"dom" scherm</strong>: hij toont alleen wat Oscar erop pusht. Alle logica zit in de backend, per locatie aan/uit te zetten. Een CTA is een kaartje met een titel en knoppen; de kelner handelt het af, Oscar registreert de respons.</p>
+<ul>
+  <li><strong>Eén melding, één handy.</strong> Elke CTA gaat naar precies één kelner (zie §2). Liever geen melding dan de verkeerde.</li>
+  <li><strong>Max. 3 kaarten per handy.</strong> Zijn er meer, dan bepaalt de prioriteit (= het CTA-nummer, 1 is hoogst) welke 3 zichtbaar zijn; de rest staat in de wachtrij.</li>
+  <li><strong>Afhandelen is verplicht.</strong> Pas na afhandeling of verval schuift de volgende CTA door. Informatieve kaarten (CTA 6) vormen een uitzondering en tellen niet mee.</li>
+  <li><strong>Ticket afgerekend = alle CTA's voor die tafel direct weg.</strong></li>
+  <li><strong>Een tafel sluiten is altijd een kelner-beslissing</strong> — geen enkele CTA of melding doet dat automatisch.</li>
+</ul>
+
+<h2>2. Kelnerselectie (routing)</h2>
+<p>De kern: <strong>elke CTA gaat naar precies één handy</strong> — die van de kelner die volgens Oscar de tafel bedient. Hoe weet Oscar dat? Via <strong>wijken</strong> en <strong>POS-activiteit</strong>, volledig automatisch.</p>
+
+<h3>Wijken</h3>
+<ul>
+  <li>Een <strong>wijk</strong> is een vast bereik tafelnummers, vooraf ingesteld per locatie. Voorbeeld: wijk "RES Noord" = tafels 1–19.</li>
+  <li>Eigenaarschap geldt op <strong>wijk-niveau</strong>: de eigenaar van een wijk krijgt de CTA's van álle tafels in dat bereik.</li>
+</ul>
+
+<h3>Wie is de eigenaar?</h3>
+<ul>
+  <li>De <strong>eerste kelner die in een wijk aanslaat</strong> (POS) wordt vanaf dat moment eigenaar van de hele wijk.</li>
+  <li>Het eigenaarschap <strong>verschuift</strong> automatisch zodra een andere kelner de meerderheid (±70%) van de recente tickets in die wijk heeft aangeslagen, binnen een tijdvenster. Eén losse aanslag (een collega die bijspringt) kapt de wijk dus niet over.</li>
+  <li>Is er <strong>nog geen eigenaar</strong> (niemand heeft in de wijk aangeslagen), dan vervalt een CTA voor die wijk. Bewust geaccepteerd: de nullijn is nul meldingen, dus een gemiste melding is geen verslechtering — een verkeerd geroute melding wél.</li>
+</ul>
+
+<div class="callout">
+  <strong>Schoon houden — CTA 7.</strong> Om te voorkomen dat CTA's blijven gaan naar een kelner die weg of op pauze is, vraagt Oscar bij langere inactiviteit: <em>"Ben jij nog actief in deze wijk?"</em> Antwoordt de kelner NEE of PAUZE, dan gaat hij uit het kelneroverzicht en routeert Oscar niet meer naar hem.
+</div>
+
+<div class="callout">
+  <strong>Randgeval — eerste tafel van de wijk.</strong> CTA 1 (eerste drankje) kan vuren vóór er ook maar iets is aangeslagen in een verse wijk. Dan is er nog geen eigenaar en vervalt die ene CTA. Bewust geaccepteerd; geen seeding.
+</div>
+
+<h2>3. Druk: verwacht versus actueel</h2>
+<p>"Druk" betekent in Oscar twee verschillende dingen — niet door elkaar halen:</p>
+<table>
+  <tr><th>Soort</th><th>Definitie</th><th>Gebruikt door</th></tr>
+  <tr><td><strong>Verwachte drukte</strong></td><td>Piekuren ∧ forecast ∧ seater actief — een voorspelling.</td><td>CTA 3 (signaleren van brutaal geopende tafels)</td></tr>
+  <tr><td><strong>Actuele drukte</strong></td><td>De order-rate (POS-orders per tijdseenheid) ligt boven een drempel — de werkelijke werkdruk <em>nu</em>.</td><td>CTA 4 &amp; 5</td></tr>
+</table>
+<p class="small">De actuele druktemeter loopt vanzelf terug als de zaak leegloopt — een nalopende tafel op een uitgelopen avond houdt "druk" dus niet kunstmatig hoog. Deze meter staat ook als live metric op het LG-dashboard.</p>
+
+<div class="pagebreak"></div>
+<h2>4. De CTA's</h2>
+
+<div class="cta">
+  <h3><span class="tag">CTA 1</span>Eerste drankje</h3>
+  <p><strong>Doel:</strong> de eerste bestelling binnenhalen. <strong>Trigger:</strong> een ingestelde tijd na seaten zonder POS-order.</p>
+  <p>Sluit automatisch zodra er een POS-order komt (via welke weg dan ook). Zolang er niets besteld is, komt hij meerdere keren terug, tot de eerste order binnen is of de levensduur verloopt. Daarna neemt CTA 2 het over.</p>
+  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">WACHT</span><span class="btn">VERPLAATS</span><span class="btn">SLUIT TAFEL</span></div>
+</div>
+
+<div class="cta">
+  <h3><span class="tag">CTA 2</span>Sleeping table</h3>
+  <p><strong>Doel:</strong> een tafel die stilligt oppikken. <strong>Trigger:</strong> geen kelner-actie gedurende de ingestelde tijd. <strong>Terugkerend.</strong></p>
+  <p>De timer reset na élke kelner-actie op de tafel: een POS-aanslag óf een "wil nog wachten"-registratie. Meet vanaf de laatste actie, niet vanaf seaten — typisch ná het eten (tijd voor dessert, koffie, rekening).</p>
+  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">WACHT</span><span class="btn">VERPLAATS</span><span class="btn">MELD LG</span></div>
+  <p class="small">MELD LG is puur informatief; de tafel blijft open.</p>
+</div>
+
+<div class="cta">
+  <h3><span class="tag">CTA 3</span>Tafel bij drukte</h3>
+  <p><strong>Doel:</strong> tafels vangen die buiten de seater om geopend worden. <strong>Trigger:</strong> een kelner opent een niet-geseate tafel terwijl de seater actief is (een seat-actie binnen de laatste X minuten).</p>
+  <p>Blokkerende keuzevraag: de tafel gaat pas open ná de keuze.</p>
+  <div class="btnrow"><span class="btn primary">NEW</span><span class="btn">PULL</span></div>
+  <p class="small">NEW = nieuwe gasten. PULL = gasten komen van een andere tafel → "Pull table: [oude tafel] → deze tafel", Oscar haalt bon + seat over, de oude tafel komt vrij.</p>
+</div>
+
+<div class="cta">
+  <h3><span class="tag">CTA 4</span>Aanbieden</h3>
+  <p><strong>Doel:</strong> een vooraf afgesproken aanbieding toepassen. <strong>Trigger:</strong> de seater heeft een reservering met een aanbieding (INVITE) ingelegd. (Geen escalatie/klacht.)</p>
+  <p>Geeft de kelner toestemming om — alleen voor dit ticket — gerechten en drank te offreren. Bij actuele drukte mogen alleen opener, sluiter, LG of EV offreren; anders verschijnt de blokkade-kaart "Het is druk, alleen aanbieden door LG".</p>
+  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">TERUG</span><span class="btn">ROEP LG</span></div>
+  <p class="small">ORDER opent WaiterPro met de aanbieding gekoppeld. TERUG sluit de kaart; de aanbieding blijft op de reservering. ROEP LG (op de blokkade-kaart) haalt de LG erbij.</p>
+</div>
+
+<div class="cta purple">
+  <h3><span class="tag">CTA 5</span>Loyalty — bied drankje aan</h3>
+  <p><strong>Doel:</strong> gulle of herkende gasten belonen. <strong>Trigger:</strong> niet druk én (gast geïdentificeerd óf hoge besteding per minuut per persoon). Evaluatie 70 min na openen ticket, vergeleken met het gemiddelde voor dat tijdvak (top 30%).</p>
+  <p>Niet-druk is altijd vereist (actuele drukte). Valt het eval-moment in een gat tussen tijdvakken, dan geldt het dichtstbijzijnde tijdvak. Cooldown geldt per geïdentificeerde gast.</p>
+  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">WACHT</span></div>
+</div>
+
+<div class="cta info">
+  <h3><span class="tag">CTA 6</span>Auto kan door (fire main)</h3>
+  <p><strong>Doel:</strong> het hoofdgerecht automatisch op tijd naar de keuken sturen. <strong>Trigger:</strong> hoofdgerecht besteld → na de fire-delay automatisch "kan door". User = system.</p>
+  <p>Informatieve kaart: <em>"Tafel [nr] — is automatisch doorgeslagen, maak tafel klaar."</em> Geen verplichte afhandeling, geen stop, eenmalig per ticket.</p>
+</div>
+
+<div class="cta">
+  <h3><span class="tag">CTA 7</span>Actief-check kelner</h3>
+  <p><strong>Doel:</strong> het kelneroverzicht en daarmee de routing schoon houden. <strong>Trigger:</strong> een kelner is langere tijd inactief in zijn wijk.</p>
+  <p>Kaart: <em>"Hoi [kelner], ben jij nu nog steeds actief in wijk [wijk]?"</em></p>
+  <div class="btnrow"><span class="btn primary">JA</span><span class="btn">NEE</span><span class="btn">PAUZE</span></div>
+  <p class="small">JA = blijft eigenaar. NEE en PAUZE = uit het kelneroverzicht (geen routing meer naar hem). Geen antwoord → behandelen als NEE.</p>
+</div>
+
+<div class="cta">
+  <h3><span class="tag">CTA 8</span>Tafel schoon voor volgende gang</h3>
+  <p><strong>Doel:</strong> afruimen en de volgende gang doorzetten. <strong>Trigger:</strong> een ingestelde tijd (default 20 min) ná het firen van het voorgerecht én ná het firen van het hoofdgerecht.</p>
+  <div class="btnrow"><span class="btn primary">MAIN</span><span class="btn">DESSERT</span><span class="btn">READY</span></div>
+  <p class="small">MAIN → push "kan door" voor het hoofdgerecht. DESSERT → push "kan door" voor het dessert. READY → tafel schoon en gereed (geen fire). Stem af met CTA 6 om dubbele fire van het hoofdgerecht te voorkomen.</p>
+</div>
+
+<h2>5. Logging &amp; database</h2>
+<p>Elke afgeronde CTA — een kelner-respons (knop) óf een verval — wordt vastgelegd in twee lagen:</p>
+<ul>
+  <li><strong>Live log (backend):</strong> rollend overzicht van de laatste ~500 regels, voor snelle monitoring.</li>
+  <li><strong>Database (persistent):</strong> élke regel wordt apart ge-insert. Volledige historie, als basis voor het LG-dashboard en analyses (response-tijden, CTA-volume per kelner/locatie/tijdvak, hoe vaak CTA's vervallen).</li>
+</ul>
+<p>Record-formaat: <code>cta_nr;kelner;datum;tijd;actie;response_sec</code> — bijvoorbeeld <code>1;Peter;2026-06-12;19:42:13;ORDER;12</code>, waarbij <code>response_sec</code> de tijd is tussen het tonen van de CTA en de actie.</p>
+
+<footer>
+  Oscar CTA-systeem · interne uitleg · juni 2026. Volledige specificatie met parameters en beslislog: <code>oscar_cta_specs.md</code>. Interactieve demo: github.com/peterstuurman-hash/CTA-
+</footer>
+
+</body>
+</html>
