@@ -368,7 +368,7 @@ function ctaAction(id, action){
     case "2/MELDLG":    tbl(nr).lastActionAt = clock; removeCTA(id,"MELD LG (informatief) — tafel blijft open"); break;
 
     case "3/OPEN":      { const t=tbl(nr); if(t.state==="leeg"){t.state="geseat";t.seatedAt=clock;} removeCTA(id,"tafel geopend"); renderTables(); } break;
-    case "3/VERPLAATS": removeCTA(id,"VERPLAATS — bon overgenomen"); break;
+    case "3/VERPLAATS": removeCTA(id,`VERPLAATS — oude tafel naar tafel ${nr} gehaald, oude tafel vrij`); break;
 
     case "4/ORDER":     removeCTA(id,"aanbieding toegepast via WaiterPro"); break;
     case "4/ROEPLG":    removeCTA(id,"LG geroepen om aan te bieden"); break;
