@@ -367,8 +367,8 @@ function ctaAction(id, action){
     case "2/VERPLAATS": tbl(nr).lastActionAt = clock; removeCTA(id,"VERPLAATS gekozen"); break;
     case "2/MELDLG":    tbl(nr).lastActionAt = clock; removeCTA(id,"MELD LG (informatief) — tafel blijft open"); break;
 
-    case "3/OPEN":      { const t=tbl(nr); if(t.state==="leeg"){t.state="geseat";t.seatedAt=clock;} removeCTA(id,"tafel geopend"); renderTables(); } break;
-    case "3/VERPLAATS": removeCTA(id,`VERPLAATS — oude tafel naar tafel ${nr} gehaald, oude tafel vrij`); break;
+    case "3/NEW":       { const t=tbl(nr); if(t.state==="leeg"){t.state="geseat";t.seatedAt=clock;t.lastActionAt=clock;} removeCTA(id,"NEW — geopend als nieuwe gasten"); renderTables(); } break;
+    case "3/PULL":      { const oud = prompt(`Pull table → welke oude tafel naar tafel ${nr} halen?`); if(oud){ removeCTA(id,`PULL — tafel ${oud} naar tafel ${nr} gehaald, tafel ${oud} vrij`); } } break;
 
     case "4/ORDER":     removeCTA(id,"aanbieding toegepast via WaiterPro"); break;
     case "4/ROEPLG":    removeCTA(id,"LG geroepen om aan te bieden"); break;
@@ -392,8 +392,8 @@ const CARD = {
         title:`Tafel ${c.tableNr} — Checken`,
         btns:[["ORDER","primary"],["WACHT"],["VERPLAATS"],["MELD LG","","MELDLG"]] }),
   3: c => ({ cls:"", prio:"CTA 3 · Tafel bij drukte (blokkeert openen)",
-        title:`Tafel ${c.tableNr} niet geseat — waar komen deze gasten vandaan?`,
-        btns:[["OPEN","primary"],["VERPLAATS"]] }),
+        title:`Tafel ${c.tableNr} — waar komen deze gasten vandaan?`,
+        btns:[["NEW","primary"],["PULL"]] }),
   4: c => c.blocked
         ? ({ cls:"block", prio:"CTA 4 · Aanbieden (geblokkeerd)",
              title:`Het is druk — alleen aanbieden door LG`,
