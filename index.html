@@ -219,7 +219,7 @@ const tables = [
   { nr: 8,  naam: "de Vries",  state: "leeg" },
   { nr: 12, naam: "",          state: "leeg" },
 ].map(t => ({ ...t, seatedAt: null, lastOrderAt: null, lastActionAt: null, ordered: false,
-              hasMain: false, mainOrderedAt: null, fired: false, starterAt: null,
+              hasMain: false, mainOrderedAt: null, fired: false, mainFiredAt: null, starterAt: null,
               cta8Starter: false, cta8Main: false,
               cta1PostponeUntil: 0, cta1Expired: false }));
 
@@ -284,7 +284,7 @@ function tbl(nr){ return tables.find(t => t.nr===nr); }
 function seat(nr){
   const t = tbl(nr);
   t.state="geseat"; t.seatedAt=clock; t.lastOrderAt=null; t.lastActionAt=clock; t.ordered=false;
-  t.hasMain=false; t.fired=false; t.starterAt=null; t.cta8Starter=false; t.cta8Main=false;
+  t.hasMain=false; t.fired=false; t.mainFiredAt=null; t.starterAt=null; t.cta8Starter=false; t.cta8Main=false;
   t.cta1PostponeUntil=0; t.cta1Expired=false;
   log(`Tafel ${nr} geseat${t.naam?` (${t.naam})`:""}`, "ev");
   renderTables();
@@ -321,7 +321,7 @@ function wacht(nr){
 function afrekenen(nr){
   const t = tbl(nr);
   t.state="leeg"; t.seatedAt=null; t.lastOrderAt=null; t.ordered=false; t.hasMain=false; t.fired=false;
-  t.starterAt=null; t.cta8Starter=false; t.cta8Main=false;
+  t.mainFiredAt=null; t.starterAt=null; t.cta8Starter=false; t.cta8Main=false;
   log(`Tafel ${nr} afgerekend → alle CTA's direct weg`, "ev");
   closeTableCTAs(nr, "ticket gesloten", "ticket_gesloten");
   renderTables();
@@ -384,7 +384,7 @@ function tick(){
 
     // CTA 6 — auto fire na hoofdgerecht
     if (t.hasMain && !t.fired && clock >= t.mainOrderedAt + T.CTA6_DELAY){
-      t.fired = true;
+      t.fired = true; t.mainFiredAt = clock;
       addCTA(6, t.nr, { expiresAt: clock + T.CTA6_VISIBLE });
       log(`Tafel ${t.nr} — hoofdgerecht automatisch <b>doorgeslagen</b> naar keuken`, "res");
     }
@@ -393,7 +393,7 @@ function tick(){
     if (t.starterAt != null && !t.cta8Starter && clock >= t.starterAt + T.CTA8_DELAY){
       t.cta8Starter = true; addCTA(8, t.nr, { course: "voor" });
     }
-    if (t.mainOrderedAt != null && !t.cta8Main && clock >= t.mainOrderedAt + T.CTA8_DELAY){
+    if (t.mainFiredAt != null && !t.cta8Main && clock >= t.mainFiredAt + T.CTA8_DELAY){
       t.cta8Main = true; addCTA(8, t.nr, { course: "hoofd" });
     }
   }
@@ -431,8 +431,8 @@ function ctaAction(id, action){
     case "7/NEE":       removeCTA(id,"kelner NEE → uit kelneroverzicht","NEE"); break;
     case "7/PAUZE":     removeCTA(id,"kelner PAUZE → uit kelneroverzicht (tijdelijk)","PAUZE"); break;
 
-    case "8/MAIN":      removeCTA(id,"tafel schoon → klaar voor hoofdgerecht","MAIN"); break;
-    case "8/DESSERT":   removeCTA(id,"tafel schoon → klaar voor dessert","DESSERT"); break;
+    case "8/MAIN":      log(`Tafel ${nr} — push <b>kan door MAIN</b> naar keuken`, "res"); removeCTA(id,"tafel schoon → kan door hoofdgerecht","kandoor_main"); break;
+    case "8/DESSERT":   log(`Tafel ${nr} — push <b>kan door DESSERT</b> naar keuken`, "res"); removeCTA(id,"tafel schoon → kan door dessert","kandoor_dessert"); break;
     case "8/READY":     removeCTA(id,"tafel schoon en gereed","READY"); break;
   }
 }
