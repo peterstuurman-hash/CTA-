@@ -135,6 +135,8 @@
   .log .line.ev { color: var(--text); }
   .log .line.cta { color: #8fb8ff; }
   .log .line.res { color: #6fe2a3; }
+  .log .line.db { color: #c9b3ff; }
+  .log .line code { background: #1b2330; padding: 0 4px; border-radius: 4px; }
   .legend { font-size: 11px; color: var(--muted); margin-top: 10px; }
   .legend code { background: #232c38; padding: 1px 5px; border-radius: 4px; }
 </style>
@@ -159,6 +161,8 @@
       <button class="small" onclick="scenarioCTA4()">CTA 4 · reservering met aanbieding</button>
       <button class="small" onclick="scenarioCTA5()">CTA 5 · gulle tafel (loyalty)</button>
       <button class="small" onclick="scenarioCTA7()">CTA 7 · kelner inactief</button>
+      <button class="small" onclick="downloadCSV()">⬇ DB-log (CSV)</button>
+      <span class="badge" id="dbCount">0 in DB</span>
     </div>
     <div class="legend">
       <strong>Hoe werkt het:</strong> seat een tafel en wacht — Oscar pusht <b>CTA 1</b> (eerste drankje).
@@ -204,7 +208,8 @@ const T = {
 let clock = 0;
 let busy = false;
 let ctaSeq = 1;
-let ctas = [];   // actieve CTA-instanties op de handy
+let ctas = [];        // actieve CTA-instanties op de handy
+let dbRecords = [];   // persistente log-regels (zouden in de database ge-insert worden)
 
 const tables = [
   { nr: 3,  naam: "Janssen",   state: "leeg" },
@@ -236,15 +241,38 @@ function addCTA(type, nr, opts={}){
   render();
   return c;
 }
-function removeCTA(id, reason){
+function removeCTA(id, reason, actie){
   const c = getCTA(id);
   if (!c) return;
   ctas = ctas.filter(x => x.id!==id);
+  if (actie) pushRecord(c, actie);   // log + DB-insert van de afgeronde CTA
   if (reason) log(`CTA ${c.type}${c.tableNr?` · tafel ${c.tableNr}`:""} — ${reason}`, "res");
   render();
 }
-function closeTableCTAs(nr, reason){
-  ctas.filter(c => c.tableNr===nr).forEach(c => removeCTA(c.id, reason));
+function closeTableCTAs(nr, reason, actie){
+  ctas.filter(c => c.tableNr===nr).forEach(c => removeCTA(c.id, reason, actie));
+}
+
+/* ---------- logging naar "database" ---------- */
+function pad2(n){ return String(n).padStart(2,"0"); }
+function pushRecord(c, actie){
+  const d = new Date();
+  const datum = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+  const tijd = `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+  const resp = clock - c.createdAt;   // response-tijd in seconden (sim-klok = realtime)
+  dbRecords.push({ cta_nr: c.type, kelner: "Peter", datum, tijd, actie, response_sec: resp });
+  log(`DB ◀ <code>${c.type};Peter;${datum};${tijd};${actie};${resp}</code>`, "db");
+  const badge = document.getElementById("dbCount");
+  if (badge) badge.textContent = dbRecords.length + " in DB";
+}
+function downloadCSV(){
+  if (!dbRecords.length){ log("Nog geen DB-regels om te exporteren.", "ev"); return; }
+  const head = "cta_nr;kelner;datum;tijd;actie;response_sec";
+  const rows = dbRecords.map(r => `${r.cta_nr};${r.kelner};${r.datum};${r.tijd};${r.actie};${r.response_sec}`);
+  const blob = new Blob([head + "\n" + rows.join("\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "oscar_cta_log.csv"; a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 /* ---------- vloer-acties ---------- */
@@ -263,7 +291,7 @@ function order(nr, main=false){
   t.state="actief"; t.ordered=true; t.lastOrderAt=clock; t.lastActionAt=clock;
   log(`Tafel ${nr} — POS-order${main?" (hoofdgerecht)":" (drankje)"} aangeslagen`, "ev");
   // POS-order sluit CTA 1 en 2 (doel = eerste order / lull weg)
-  ctas.filter(c => c.tableNr===nr && (c.type===1||c.type===2)).forEach(c => removeCTA(c.id, "POS-order binnen → auto-afgesloten"));
+  ctas.filter(c => c.tableNr===nr && (c.type===1||c.type===2)).forEach(c => removeCTA(c.id, "POS-order binnen → auto-afgesloten", "POS-order"));
   if (main){ t.hasMain=true; t.mainOrderedAt=clock; t.fired=false; }
   renderTables();
 }
@@ -274,14 +302,14 @@ function wacht(nr){
   t.cta1PostponeUntil = clock + T.CTA1_POSTPONE;
   log(`Tafel ${nr} — "wil nog wachten" geregistreerd (kelner-actie)`, "ev");
   // sluit een lopende CTA 1/2 (de kelner heeft net gehandeld)
-  ctas.filter(c => c.tableNr===nr && (c.type===1||c.type===2)).forEach(c => removeCTA(c.id, "wil nog wachten → timer reset"));
+  ctas.filter(c => c.tableNr===nr && (c.type===1||c.type===2)).forEach(c => removeCTA(c.id, "wil nog wachten → timer reset", "wil_nog_wachten"));
   renderTables();
 }
 function afrekenen(nr){
   const t = tbl(nr);
   t.state="leeg"; t.seatedAt=null; t.lastOrderAt=null; t.ordered=false; t.hasMain=false; t.fired=false;
   log(`Tafel ${nr} afgerekend → alle CTA's direct weg`, "ev");
-  closeTableCTAs(nr, "ticket gesloten");
+  closeTableCTAs(nr, "ticket gesloten", "ticket_gesloten");
   renderTables();
 }
 function toggleBusy(){
@@ -291,7 +319,7 @@ function toggleBusy(){
   b.classList.toggle("on", busy);
   log(`Actuele drukte (order-rate) nu <b>${busy?"HOOG":"LAAG"}</b>`, "ev");
   // CTA 5 vervalt bij drukte
-  if (busy) ctas.filter(c=>c.type===5).forEach(c=>removeCTA(c.id,"vervallen — werd druk"));
+  if (busy) ctas.filter(c=>c.type===5).forEach(c=>removeCTA(c.id,"vervallen — werd druk","vervallen"));
 }
 
 /* ---------- scenario-knoppen ---------- */
@@ -327,7 +355,7 @@ function tick(){
         addCTA(1, t.nr);
       }
       if (clock >= t.seatedAt + T.CTA1_LIFE && hasCTA(1, t.nr)){
-        ctas.filter(c=>c.type===1&&c.tableNr===t.nr).forEach(c=>removeCTA(c.id,"vervallen (max. levensduur)"));
+        ctas.filter(c=>c.type===1&&c.tableNr===t.nr).forEach(c=>removeCTA(c.id,"vervallen (max. levensduur)","vervallen"));
         t.cta1Expired = true;
       }
     }
@@ -349,7 +377,7 @@ function tick(){
   }
 
   // auto-verdwijnende kaarten (CTA 6)
-  ctas.filter(c=>c.expiresAt && clock>=c.expiresAt).forEach(c=>removeCTA(c.id,"informatieve kaart weg"));
+  ctas.filter(c=>c.expiresAt && clock>=c.expiresAt).forEach(c=>removeCTA(c.id,"informatieve kaart weg","vervallen"));
 }
 
 /* ---------- CTA-knop afhandeling ---------- */
@@ -358,28 +386,28 @@ function ctaAction(id, action){
   const nr = c.tableNr;
   switch(c.type+"/"+action){
     case "1/ORDER":     order(nr,false); break;
-    case "1/WACHT":     tbl(nr).cta1PostponeUntil = clock + T.CTA1_POSTPONE; tbl(nr).lastActionAt = clock; removeCTA(id,"WACHT (wil nog wachten) — komt terug"); break;
-    case "1/VERPLAATS": removeCTA(id,"VERPLAATS gekozen"); break;
+    case "1/WACHT":     tbl(nr).cta1PostponeUntil = clock + T.CTA1_POSTPONE; tbl(nr).lastActionAt = clock; removeCTA(id,"WACHT (wil nog wachten) — komt terug","WACHT"); break;
+    case "1/VERPLAATS": removeCTA(id,"VERPLAATS gekozen","VERPLAATS"); break;
     case "1/SLUIT":     afrekenen(nr); break;
 
     case "2/ORDER":     order(nr,false); break;
     case "2/WACHT":     wacht(nr); break;
-    case "2/VERPLAATS": tbl(nr).lastActionAt = clock; removeCTA(id,"VERPLAATS gekozen"); break;
-    case "2/MELDLG":    tbl(nr).lastActionAt = clock; removeCTA(id,"MELD LG (informatief) — tafel blijft open"); break;
+    case "2/VERPLAATS": tbl(nr).lastActionAt = clock; removeCTA(id,"VERPLAATS gekozen","VERPLAATS"); break;
+    case "2/MELDLG":    tbl(nr).lastActionAt = clock; removeCTA(id,"MELD LG (informatief) — tafel blijft open","MELDLG"); break;
 
-    case "3/NEW":       { const t=tbl(nr); if(t.state==="leeg"){t.state="geseat";t.seatedAt=clock;t.lastActionAt=clock;} removeCTA(id,"NEW — geopend als nieuwe gasten"); renderTables(); } break;
-    case "3/PULL":      { const oud = prompt(`Pull table → welke oude tafel naar tafel ${nr} halen?`); if(oud){ removeCTA(id,`PULL — tafel ${oud} naar tafel ${nr} gehaald, tafel ${oud} vrij`); } } break;
+    case "3/NEW":       { const t=tbl(nr); if(t.state==="leeg"){t.state="geseat";t.seatedAt=clock;t.lastActionAt=clock;} removeCTA(id,"NEW — geopend als nieuwe gasten","NEW"); renderTables(); } break;
+    case "3/PULL":      { const oud = prompt(`Pull table → welke oude tafel naar tafel ${nr} halen?`); if(oud){ removeCTA(id,`PULL — tafel ${oud} naar tafel ${nr} gehaald, tafel ${oud} vrij`,"PULL"); } } break;
 
-    case "4/ORDER":     removeCTA(id,"aanbieding toegepast via WaiterPro"); break;
-    case "4/ROEPLG":    removeCTA(id,"LG geroepen om aan te bieden"); break;
-    case "4/TERUG":     removeCTA(id,"TERUG — aanbieding blijft op reservering"); break;
+    case "4/ORDER":     removeCTA(id,"aanbieding toegepast via WaiterPro","ORDER"); break;
+    case "4/ROEPLG":    removeCTA(id,"LG geroepen om aan te bieden","ROEPLG"); break;
+    case "4/TERUG":     removeCTA(id,"TERUG — aanbieding blijft op reservering","TERUG"); break;
 
-    case "5/ORDER":     removeCTA(id,"gift geregistreerd"); break;
-    case "5/WACHT":     removeCTA(id,"WACHT (vervalt bij drukte)"); break;
+    case "5/ORDER":     removeCTA(id,"gift geregistreerd","ORDER"); break;
+    case "5/WACHT":     removeCTA(id,"WACHT (vervalt bij drukte)","WACHT"); break;
 
-    case "7/JA":        removeCTA(id,"kelner bevestigt actief"); break;
-    case "7/NEE":       removeCTA(id,"kelner NEE → uit kelneroverzicht"); break;
-    case "7/PAUZE":     removeCTA(id,"kelner PAUZE → uit kelneroverzicht (tijdelijk)"); break;
+    case "7/JA":        removeCTA(id,"kelner bevestigt actief","JA"); break;
+    case "7/NEE":       removeCTA(id,"kelner NEE → uit kelneroverzicht","NEE"); break;
+    case "7/PAUZE":     removeCTA(id,"kelner PAUZE → uit kelneroverzicht (tijdelijk)","PAUZE"); break;
   }
 }
 
