@@ -281,8 +281,8 @@ function hasCTA(type, nr){ return ctas.some(c => c.type===type && c.tableNr===nr
 function getCTA(id){ return ctas.find(c => c.id===id); }
 function addCTA(type, nr, opts={}){
   if (hasCTA(type, nr)) return;
-  // Kelner-druk: geen (niet-geforceerde) CTA als de kelner net iets deed
-  if (!opts.forced && lastKelnerAction != null && (clock - lastKelnerAction) < T.KELNER_IDLE) return;
+  // Kelner-druk: geen (niet-geforceerde) CTA als de kelner net iets deed — per CTA instelbaar (block by busy)
+  if (!opts.forced && blockByBusy[type] && lastKelnerAction != null && (clock - lastKelnerAction) < T.KELNER_IDLE) return;
   const c = { id: ctaSeq++, type, tableNr: nr, createdAt: clock, ...opts };
   ctas.push(c);
   log(`Oscar pusht <b>CTA ${type}</b>${nr?` · tafel ${nr}`:""} → handy`, "cta");
@@ -376,6 +376,8 @@ function toggleAuto(){
 }
 function setT(key, val){ T[key] = Math.max(0, parseInt(val) || 0); }
 function numInput(key){ return `<input type="number" min="0" value="${T[key]}" onchange="setT('${key}',this.value)">`; }
+// per CTA: geldt de kelner-druk-gate? (CTA 3 standaard uit — die wordt dóór een kelner-actie getriggerd)
+const blockByBusy = { 1:true, 2:true, 3:false, 4:true, 5:true, 6:true, 7:true, 8:true };
 const CFG = [
   { nr:1, naam:"First order",        acties:"order / wait / move / close",  times:[["check delay","CTA1_DELAY"],["postpone","CTA1_POSTPONE"],["levensduur","CTA1_LIFE"]], max:"tot 1e order" },
   { nr:2, naam:"Sleeping table",     acties:"order / wait / move / call lg", times:[["sleep threshold","CTA2_THRESHOLD"]], max:"terugkerend" },
@@ -390,11 +392,12 @@ function renderSettings(){
   const rows = CFG.map(c => {
     const times = c.times.length ? c.times.map(([lbl,key]) => `${lbl}: ${numInput(key)}`).join("<br>") : "—";
     const max = c.maxKey ? numInput(c.maxKey) : `<span class="small">${c.max}</span>`;
-    return `<tr><td><b>CTA ${c.nr}</b><br><span class="small">${c.naam}</span></td><td>${c.acties}</td><td>${times}</td><td>${max}</td></tr>`;
+    const blk = `<input type="checkbox" ${blockByBusy[c.nr]?"checked":""} onchange="blockByBusy[${c.nr}]=this.checked">`;
+    return `<tr><td><b>CTA ${c.nr}</b><br><span class="small">${c.naam}</span></td><td>${c.acties}</td><td>${times}</td><td>${max}</td><td style="text-align:center">${blk}</td></tr>`;
   }).join("");
   document.getElementById("settings").innerHTML =
-    `<div class="small" style="margin-bottom:6px;">Kelner-druk: géén CTA als de kelner &lt; ${numInput("KELNER_IDLE")} sec geleden iets deed (order / betalen / wachten).</div>
-     <table class="settings"><tr><th>CTA</th><th>Acties</th><th>Wachttijden (sec)</th><th>Max/ticket</th></tr>${rows}</table>`;
+    `<div class="small" style="margin-bottom:6px;">Kelner-druk: géén CTA als de kelner &lt; ${numInput("KELNER_IDLE")} sec geleden iets deed (order / betalen / wachten). Per CTA aan/uit via <b>block by busy</b>.</div>
+     <table class="settings"><tr><th>CTA</th><th>Acties</th><th>Wachttijden (sec)</th><th>Max/ticket</th><th>Block&nbsp;by&nbsp;busy</th></tr>${rows}</table>`;
 }
 
 /* ---------- engine tick ---------- */
