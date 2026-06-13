@@ -108,7 +108,7 @@
       <button class="tbtn" onclick="force(2)">CTA 2 · sleeping</button>
       <button class="tbtn" onclick="force(3)">CTA 3 · seater</button>
       <button class="tbtn" onclick="force(4)">CTA 4 · promo</button>
-      <button class="tbtn" onclick="force(5)">CTA 5 · offer drink</button>
+      <button class="tbtn" onclick="force(5)">CTA 5 · offer coffee</button>
       <button class="tbtn" onclick="force(6)">CTA 6 · ready main</button>
       <button class="tbtn" onclick="force(7)">CTA 7 · active?</button>
       <button class="tbtn" onclick="force(8)">CTA 8 · ready dessert</button>
@@ -217,7 +217,7 @@ const CARD = {
   2: () => ({ cls:"",       title:`Tafel ${table.nr} — Checken`,                    btns:[["order","primary","order"],["wait","","wait"],["move","","move"],["call lg","","calllg"]] }),
   3: () => ({ cls:"",       title:`Tafel ${table.nr} — Not seated. Previous table?`, btns:[["new","primary","new"],["pull","","pull"]] }),
   4: () => ({ cls:"",       title:`Tafel ${table.nr} — Promo: offreren toegestaan`, btns:[["ok","","ok"]] }),
-  5: () => ({ cls:"purple", title:`Tafel ${table.nr} — Offer a drink`,              btns:[["order","primary","order"],["wait","","wait"],["no","","no"]] }),
+  5: () => ({ cls:"purple", title:`Tafel ${table.nr} — Offer a coffee`,              btns:[["order","primary","order"],["wait","","wait"],["no","","no"]] }),
   6: () => ({ cls:"three",  title:`Tafel ${table.nr} — Ready for next course?`,     btns:[["go","primary","go"],["no","","no"]] }),
   7: () => ({ cls:"three",  title:`Hoi Peter, ben jij nog actief in RES Noord?`,    btns:[["ja","primary","ja"],["nee","","nee"],["pauze","","pauze"]] }),
   8: () => ({ cls:"",       title:`Tafel ${table.nr} — Ready for dessert?`,         btns:[["go","primary","go"],["no","","no"]] }),
