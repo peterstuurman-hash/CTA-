@@ -142,12 +142,15 @@
   <h3><span class="tag">CTA 5</span>Loyalty — bied drankje aan</h3>
   <p><strong>Doel:</strong> gulle of herkende gasten belonen. <strong>Trigger:</strong> niet druk én (gast geïdentificeerd óf hoge besteding per minuut per persoon). Evaluatie 70 min na openen ticket, vergeleken met het gemiddelde voor dat tijdvak (top 30%).</p>
   <p>Niet-druk is altijd vereist (actuele drukte). Valt het eval-moment in een gat tussen tijdvakken, dan geldt het dichtstbijzijnde tijdvak. Cooldown geldt per geïdentificeerde gast.</p>
-  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">WACHT</span></div>
+  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">WAIT</span><span class="btn">NO</span></div>
+  <p class="small">WAIT laat een teller lopen (komt later terug). NO = de kelner vindt het niet nodig → CTA 5 vervalt voor dit ticket.</p>
 </div>
 
-<div class="cta">
-  <h3><span class="tag">CTA 6</span>Auto kan door — <span style="color:#e7515a;">vervallen</span></h3>
-  <p>De automatische fire van het hoofdgerecht is geschrapt. Het firen ("kan door") gebeurt nu <strong>handmatig via CTA 8</strong> (knoppen MAIN/DESSERT). Het nummer blijft gereserveerd zodat de prio-volgorde van CTA 7 en 8 ongewijzigd blijft.</p>
+<div class="cta info">
+  <h3><span class="tag">CTA 6</span>Ready for next course (hoofdgerecht)</h3>
+  <p><strong>Doel:</strong> het hoofdgerecht op tijd doorzetten. <strong>Trigger:</strong> een ingestelde tijd (default 20 min) ná het voorgerecht. Kaart: <em>"Tafel [nr] — Ready for next course?"</em></p>
+  <div class="btnrow"><span class="btn primary">GO</span><span class="btn">NO</span></div>
+  <p class="small">GO → hoofdgerecht firen ("kan door"). NO → uitstellen; komt terug, <strong>max 2× per ticket</strong> (geen loop). Na de 2e NO firet het hoofdgerecht automatisch na 5 min, zodat de keuken niet blijft hangen.</p>
 </div>
 
 <div class="cta">
@@ -158,11 +161,11 @@
   <p class="small">JA = blijft eigenaar. NEE en PAUZE = uit het kelneroverzicht (geen routing meer naar hem). Geen antwoord → behandelen als NEE.</p>
 </div>
 
-<div class="cta">
-  <h3><span class="tag">CTA 8</span>Tafel schoon voor volgende gang</h3>
-  <p><strong>Doel:</strong> afruimen en de volgende gang doorzetten. <strong>Trigger:</strong> een ingestelde tijd (default 20 min) ná het firen van het voorgerecht én ná het firen van het hoofdgerecht.</p>
-  <div class="btnrow"><span class="btn primary">MAIN</span><span class="btn">DESSERT</span><span class="btn">READY</span></div>
-  <p class="small">MAIN → push "kan door" voor het hoofdgerecht (dit firet het hoofdgerecht; CTA 6 is hiervoor vervallen). DESSERT → push "kan door" voor het dessert. READY → tafel schoon en gereed (geen fire).</p>
+<div class="cta info">
+  <h3><span class="tag">CTA 8</span>Ready for dessert</h3>
+  <p><strong>Doel:</strong> het dessert doorzetten. <strong>Trigger:</strong> een ingestelde tijd (default 20 min) ná het firen van het hoofdgerecht. Zelfde principe als CTA 6, maar voor het dessert. Kaart: <em>"Tafel [nr] — Ready for dessert?"</em></p>
+  <div class="btnrow"><span class="btn primary">GO</span><span class="btn">NO</span></div>
+  <p class="small">GO → dessert firen ("kan door"). NO → komt nog één keer terug (max 2× per ticket, geen loop).</p>
 </div>
 
 <h2>5. Logging &amp; database</h2>
