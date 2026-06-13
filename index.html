@@ -102,8 +102,16 @@
   }
   .handy-screen {
     background: #0c1117; border-radius: 18px; min-height: 520px; padding: 14px;
-    display: flex; flex-direction: column; gap: 10px;
+    display: flex; flex-direction: column; gap: 10px; position: relative;
   }
+  .toast {
+    position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%) translateY(6px);
+    background: #2b3644; border: 1px solid var(--line); color: var(--text);
+    padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    box-shadow: 0 6px 20px rgba(0,0,0,.45); opacity: 0; transition: opacity .2s, transform .2s;
+    pointer-events: none; white-space: nowrap; max-width: 90%; overflow: hidden; text-overflow: ellipsis;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .handy-head {
     display: flex; justify-content: space-between; align-items: center;
     padding-bottom: 8px; border-bottom: 1px solid var(--line);
@@ -199,6 +207,7 @@
           <span class="badge" id="ctaCount">0 CTA's</span>
         </div>
         <div id="ctaList" style="display:flex; flex-direction:column; gap:10px; flex:1;"></div>
+        <div class="toast" id="toast"></div>
       </div>
     </div>
   </div>
@@ -241,6 +250,7 @@ function resetDynamic(t){
   t.seatedAt=null; t.lastOrderAt=null; t.lastActionAt=null; t.ordered=false;
   t.starterAt=null; t.mainFiredAt=null; t.dessertFiredAt=null;
   t.cta1PostponeUntil=0;
+  t.offered=false;   // staat er al een aangeboden product op de rekening?
   t.cta5Done=false; t.cta5RepushAt=0;
   t.cta6Shown=false; t.cta6Done=false; t.cta6Pushes=0; t.cta6RepushAt=0; t.cta6AutoFireAt=0;
   t.cta8Shown=false; t.cta8Done=false; t.cta8Pushes=0; t.cta8RepushAt=0;
@@ -276,11 +286,38 @@ function downloadCSV(){
   URL.revokeObjectURL(a.href);
 }
 
+/* ---------- toast (UX-feedback na een actie) ---------- */
+let toastTimer = null;
+function toast(msg){
+  const el = document.getElementById("toast"); if (!el) return;
+  el.textContent = msg; el.classList.add("show");
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2500);
+}
+function ctaToast(type, action){
+  const waits = { "1/wait": T.CTA1_POSTPONE, "2/wait": T.CTA2_THRESHOLD, "5/wait": T.CTA5_POSTPONE };
+  const key = type + "/" + action;
+  if (waits[key] != null) return `Wachttijd gegeven (${waits[key]}s)`;
+  const map = {
+    "1/order":"WaiterPro geopend", "1/move":"Bon overgenomen", "1/close":"Tafel gesloten",
+    "2/order":"WaiterPro geopend", "2/move":"Bon overgenomen", "2/calllg":"LG geïnformeerd",
+    "3/new":"Tafel geopend", "3/pull":"Bon overgenomen",
+    "4/ok":"Promo staat aan (achtergrond)",
+    "5/order":"Gift geregistreerd", "5/no":"Genoteerd: niet nodig",
+    "6/go":"Hoofdgerecht: kan door", "6/no":"Uitgesteld",
+    "7/ja":"Bevestigd: actief", "7/nee":"Uit kelneroverzicht", "7/pauze":"Op pauze",
+    "8/go":"Dessert: kan door", "8/no":"Uitgesteld",
+  };
+  return map[key] || "Genoteerd";
+}
+
 /* ---------- CTA helpers ---------- */
 function hasCTA(type, nr){ return ctas.some(c => c.type===type && c.tableNr===nr); }
 function getCTA(id){ return ctas.find(c => c.id===id); }
 function addCTA(type, nr, opts={}){
   if (hasCTA(type, nr)) return;
+  // CTA 5 vervalt als er al een aangeboden product op de rekening staat (kelner was al zover)
+  if (type===5 && nr && tbl(nr).offered){ log(`CTA 5 · tafel ${nr} vervalt — er staat al een aangeboden product op de rekening`, "ev"); return; }
   // Kelner-druk: geen (niet-geforceerde) CTA als de kelner net iets deed — per CTA instelbaar (block by busy)
   if (!opts.forced && blockByBusy[type] && lastKelnerAction != null && (clock - lastKelnerAction) < T.KELNER_IDLE) return;
   const c = { id: ctaSeq++, type, tableNr: nr, createdAt: clock, ...opts };
@@ -322,6 +359,14 @@ function voorgerecht(nr){
   posOrder(nr, "voorgerecht");
   const t = tbl(nr);
   t.starterAt = clock; t.cta6Shown=false; t.cta6Done=false; t.cta6Pushes=0; t.cta6RepushAt=0; t.cta6AutoFireAt=0;
+}
+function aanbieden(nr){
+  const t = tbl(nr);
+  if (t.state==="leeg"){ log(`Tafel ${nr} is niet open`, "ev"); return; }
+  t.offered = true; lastKelnerAction = clock;
+  log(`Tafel ${nr} — aangeboden product op de rekening gezet`, "ev");
+  ctas.filter(c=>c.type===5&&c.tableNr===nr).forEach(c=>removeCTA(c.id,"vervallen — al aangeboden product op rekening","vervallen"));
+  renderTables();
 }
 function wacht(nr){
   const t = tbl(nr);
@@ -452,6 +497,7 @@ function ctaAction(id, action){
   const nr = c.tableNr;
   const t = nr ? tbl(nr) : null;
   lastKelnerAction = clock;   // knop indrukken = kelner-actie
+  toast(ctaToast(c.type, action));   // korte UX-terugmelding
   switch (c.type + "/" + action){
     // CTA 1 — order / wait / move / close
     case "1/order":  order(nr); break;
@@ -473,7 +519,7 @@ function ctaAction(id, action){
     case "4/ok":     removeCTA(id,"promo-permissie staat op de achtergrond aan (geen actie nodig)","ok"); break;
 
     // CTA 5 — offer a drink: order / wait / no
-    case "5/order":  t.cta5Done = true; removeCTA(id,"gift geregistreerd","order"); break;
+    case "5/order":  t.cta5Done = true; t.offered = true; renderTables(); removeCTA(id,"gift geregistreerd → aangeboden product op rekening","order"); break;
     case "5/wait":   removeCTA(id,"WAIT — teller loopt, komt later terug","wait"); if (!busy) t.cta5RepushAt = clock + T.CTA5_POSTPONE; break;
     case "5/no":     t.cta5Done = true; removeCTA(id,"NO — kelner vindt 't niet nodig → CTA 5 vervalt voor dit ticket","no"); break;
 
@@ -559,13 +605,14 @@ function renderTables(){
     const open = t.state!=="leeg";
     return `<div class="table">
       <div class="top">
-        <div><span class="nr">Tafel ${t.nr}</span> ${t.naam?`<span class="naam">· ${t.naam}</span>`:""}</div>
+        <div><span class="nr">Tafel ${t.nr}</span> ${t.naam?`<span class="naam">· ${t.naam}</span>`:""}${t.offered?` <span class="naam" title="aangeboden product op rekening">🎁</span>`:""}</div>
         <span class="badge ${t.state}">${t.state}</span>
       </div>
       <div class="acts">
         <button class="small" onclick="seat(${t.nr})" ${open?"disabled":""}>Seat</button>
         <button class="small" onclick="order(${t.nr})" ${open?"":"disabled"}>Drankje</button>
         <button class="small" onclick="voorgerecht(${t.nr})" ${open?"":"disabled"}>Voorgerecht</button>
+        <button class="small" onclick="aanbieden(${t.nr})" ${open?"":"disabled"}>Aanbieden</button>
         <button class="small" onclick="wacht(${t.nr})" ${open?"":"disabled"}>Wil nog wachten</button>
         <button class="small" onclick="afrekenen(${t.nr})" ${open?"":"disabled"}>Afrekenen</button>
       </div>
