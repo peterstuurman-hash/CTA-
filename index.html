@@ -171,7 +171,7 @@
     <div class="controls">
       <button class="small" onclick="scenarioCTA1()">CTA 1 · first order</button>
       <button class="small" onclick="scenarioCTA2()">CTA 2 · sleeping table</button>
-      <button class="small" onclick="scenarioCTA3()">CTA 3 · not seated</button>
+      <button class="small" onclick="scenarioCTA3()">CTA 3 · seater actief</button>
       <button class="small" onclick="scenarioCTA4()">CTA 4 · promo</button>
       <button class="small" onclick="scenarioCTA5()">CTA 5 · offer a drink</button>
       <button class="small" onclick="scenarioCTA6()">CTA 6 · ready for main</button>
@@ -556,7 +556,7 @@ const CARD = {
   2: c => ({ cls:"", prio:"CTA 2 · Sleeping table",
         title:`Tafel ${c.tableNr} — checken`,
         btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CALL LG","","calllg"]] }),
-  3: c => ({ cls:"", prio:"CTA 3 · Tafel bij drukte (blokkeert openen)",
+  3: c => ({ cls:"", prio:"CTA 3 · Seater actief (why not seated?)",
         title:`Tafel ${c.tableNr} — not seated, moved?`,
         btns:[["NEW","primary","new"],["PULL","","pull"]] }),
   4: c => ({ cls:"info", prio:"CTA 4 · Promo (achtergrond)",
