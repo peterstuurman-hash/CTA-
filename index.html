@@ -297,7 +297,7 @@ function toast(msg){
 function ctaToast(type, action){
   const waits = { "1/wait": T.CTA1_POSTPONE, "2/wait": T.CTA2_THRESHOLD, "5/wait": T.CTA5_POSTPONE };
   const key = type + "/" + action;
-  if (waits[key] != null) return `${waits[key]} min extra wait`;   // afgerond op minuten
+  if (waits[key] != null) return `${Math.round(waits[key]/60)} min extra wait`;   // backend in sec, toast afgerond op minuten
   const map = {
     "1/order":"WaiterPro opened", "1/move":"Bill moved", "1/close":"Table closed",
     "2/order":"WaiterPro opened", "2/move":"Bill moved", "2/calllg":"LG informed",
