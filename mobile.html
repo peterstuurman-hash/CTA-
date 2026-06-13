@@ -5,96 +5,105 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="theme-color" content="#0c1117" />
+<meta name="theme-color" content="#11161d" />
 <title>Oscar — Handy (mobiel)</title>
 <style>
-  :root {
-    --bg: #0c1117; --panel: #1a212b; --panel-2: #232c38; --line: #2e3a48;
-    --text: #e6edf3; --muted: #8b9aac; --accent: #4c8dff; --red: #e7515a; --purple: #9b59ff;
-  }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; margin: 0; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+  html, body { height: 100%; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg); color: var(--text);
-    display: flex; flex-direction: column; overflow: hidden;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background: #11161d; color: #1c2530; display: flex; flex-direction: column; overflow: hidden;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
   }
-  header {
-    flex: 0 0 auto; padding: 14px 18px; border-bottom: 1px solid var(--line);
-    display: flex; justify-content: space-between; align-items: center; background: #0f1620;
+  /* status bar (decoratief) */
+  .statusbar {
+    flex: 0 0 auto; display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 18px; font-size: 13px; font-weight: 700; color: #11161d; background: #f4f6f9;
   }
-  header .who { font-size: 14px; font-weight: 700; }
-  header .who small { display: block; font-weight: 400; color: var(--muted); font-size: 11px; margin-top: 2px; }
-  header .clock { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12px; }
-  .screen {
-    flex: 1 1 auto; overflow-y: auto; padding: 14px;
-    display: flex; flex-direction: column; gap: 12px; position: relative;
+  /* POS-scherm */
+  .poswrap { flex: 1 1 auto; position: relative; overflow: hidden; background: #e9edf2; }
+  .grid {
+    height: 100%; overflow-y: auto; padding: 8px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; align-content: start;
   }
-  .empty { margin: auto; color: var(--muted); font-size: 14px; text-align: center; padding: 30px; }
+  .tile {
+    background: #dfe5ec; border: 1px solid #cfd7e0; border-left: 4px solid #b9c2cd; border-radius: 8px;
+    min-height: 70px; padding: 8px; font-size: 12px; font-weight: 600; color: #34404f;
+    display: flex; align-items: center; line-height: 1.25;
+  }
+  .tile.g { border-left-color: #46b87a; }
+  .tile.b { border-left-color: #4c8dff; }
+  .tile.o { border-left-color: #f0a050; }
+  /* CTA-overlay (valt over de grid) */
+  .cta-stack {
+    position: absolute; top: 8px; left: 8px; right: 8px; z-index: 20;
+    display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+  }
   .cta {
-    border-radius: 16px; padding: 16px; border: 1px solid var(--line); background: var(--panel-2);
-    animation: pop .18s ease-out;
+    pointer-events: auto; background: #fff; border-radius: 16px; padding: 14px 16px;
+    box-shadow: 0 12px 34px rgba(10,20,30,.45); animation: drop .2s ease-out;
   }
-  @keyframes pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-  .cta .prio { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
-  .cta .title { font-size: 18px; font-weight: 600; margin: 6px 0 14px; line-height: 1.3; }
-  .cta .btns { display: flex; flex-wrap: wrap; gap: 8px; }
-  .cta.purple { background: linear-gradient(160deg, #2a1f47, #1d1733); border-color: #4c357f; }
-  .cta.purple .prio { color: #c4abff; }
-  .cta.info { background: #14222e; border-color: #2b4a5e; }
-  .cta.info .title { color: #9fd6ff; }
-  .btn {
-    flex: 1 1 auto; min-width: 72px; min-height: 48px; font: inherit; font-weight: 700; font-size: 15px;
-    cursor: pointer; border: 1px solid var(--line); background: #2b3644; color: var(--text); border-radius: 12px;
+  @keyframes drop { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+  .cta .head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; color: #5b6b7a; }
+  .cta .head .ago { display: flex; align-items: center; gap: 6px; }
+  .cta .head .dot { width: 9px; height: 9px; border-radius: 50%; background: #2ecc71; display: inline-block; }
+  .cta .head .vib { color: #8190a0; font-weight: 600; }
+  .cta .title { font-size: 20px; font-weight: 800; color: #14202b; margin: 10px 0 14px; line-height: 1.25; }
+  .cta .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cta.three .btns { grid-template-columns: 1fr 1fr 1fr; }
+  .ob {
+    min-height: 52px; border-radius: 12px; font: inherit; font-weight: 800; font-size: 16px;
+    border: 1.5px solid #cdd7e2; background: #fff; color: #1f3a4a; cursor: pointer;
   }
-  .btn:active { transform: scale(.97); }
-  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .queue-note { font-size: 12px; color: var(--muted); text-align: center; }
+  .ob:active { transform: scale(.97); }
+  .ob.primary { background: #234b5c; border-color: #234b5c; color: #fff; }
+  .cta.purple { background: linear-gradient(160deg,#3a2a63,#241b3f); }
+  .cta.purple .title, .cta.purple .head { color: #ece5ff; }
+  .cta.purple .head .vib { color: #b9a8e8; }
+  .cta.purple .ob { background: rgba(255,255,255,.08); border-color: #6b54a0; color: #ece5ff; }
+  .cta.purple .ob.primary { background: #9b59ff; border-color: #9b59ff; color: #fff; }
+  /* toast */
   .toast {
-    position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(8px);
-    background: #2b3644; border: 1px solid var(--line); color: var(--text); padding: 10px 18px; border-radius: 22px;
-    font-size: 14px; font-weight: 600; box-shadow: 0 8px 26px rgba(0,0,0,.5); opacity: 0;
-    transition: opacity .2s, transform .2s; pointer-events: none; z-index: 50; max-width: 86%;
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%) scale(.9);
+    background: rgba(18,26,36,.97); border: 1px solid #3a4a5c; color: #fff; padding: 16px 24px; border-radius: 16px;
+    font-size: 18px; font-weight: 800; box-shadow: 0 16px 44px rgba(0,0,0,.6); opacity: 0;
+    transition: opacity .18s, transform .18s; pointer-events: none; z-index: 100; max-width: 80%; text-align: center;
   }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
   /* demo-lade */
   .tray-toggle {
-    flex: 0 0 auto; border: none; border-top: 1px solid var(--line); background: #0f1620; color: var(--muted);
-    padding: 14px; font: inherit; font-weight: 600; font-size: 13px; cursor: pointer;
+    flex: 0 0 auto; border: none; border-top: 1px solid #2e3a48; background: #11161d; color: #8b9aac;
+    padding: 14px; font: inherit; font-weight: 700; font-size: 13px; cursor: pointer;
     padding-bottom: calc(14px + env(safe-area-inset-bottom));
   }
-  .tray {
-    flex: 0 0 auto; background: #0f1620; border-top: 1px solid var(--line);
-    max-height: 0; overflow: hidden; transition: max-height .25s ease;
-  }
-  .tray.open { max-height: 60vh; overflow-y: auto; }
-  .tray-inner { padding: 12px 14px calc(16px + env(safe-area-inset-bottom)); }
-  .tray h4 { margin: 10px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .tray { flex: 0 0 auto; background: #11161d; max-height: 0; overflow: hidden; transition: max-height .25s ease; }
+  .tray.open { max-height: 62vh; overflow-y: auto; }
+  .tray-inner { padding: 4px 14px calc(16px + env(safe-area-inset-bottom)); }
+  .tray h4 { margin: 12px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #8b9aac; }
+  .tgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tgrid.three { grid-template-columns: 1fr 1fr 1fr; }
   .tbtn {
-    min-height: 44px; font: inherit; font-weight: 600; font-size: 13px; cursor: pointer;
-    border: 1px solid var(--line); background: #2b3644; color: var(--text); border-radius: 10px; padding: 6px;
+    min-height: 44px; font: inherit; font-weight: 700; font-size: 13px; cursor: pointer;
+    border: 1px solid #2e3a48; background: #2b3644; color: #e6edf3; border-radius: 10px; padding: 6px;
   }
   .tbtn:active { transform: scale(.97); }
-  .tbtn.on { background: var(--red); border-color: var(--red); color: #fff; }
 </style>
 </head>
 <body>
-<header>
-  <div class="who">Oscar · Handy<small>Peter · Wijk RES Noord</small></div>
-  <div class="clock" id="clock">⏱ 00:00</div>
-</header>
+<div class="statusbar"><span>14:45</span><span>5G ▪▪▪ ▮</span></div>
 
-<div class="screen" id="screen"></div>
+<div class="poswrap">
+  <div class="grid" id="grid"></div>
+  <div class="cta-stack" id="ctaStack"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <button class="tray-toggle" id="trayToggle" onclick="toggleTray()">▲ Demo-bediening</button>
 <div class="tray" id="tray">
   <div class="tray-inner">
-    <h4>Toon een CTA</h4>
-    <div class="grid">
+    <h4>Push een CTA (valt over de grid)</h4>
+    <div class="tgrid">
       <button class="tbtn" onclick="force(1)">CTA 1 · first order</button>
       <button class="tbtn" onclick="force(2)">CTA 2 · sleeping</button>
       <button class="tbtn" onclick="force(3)">CTA 3 · seater</button>
@@ -104,10 +113,10 @@
       <button class="tbtn" onclick="force(7)">CTA 7 · active?</button>
       <button class="tbtn" onclick="force(8)">CTA 8 · ready dessert</button>
     </div>
-    <h4>Tafel 3 (Sanne)</h4>
-    <div class="grid three">
+    <h4>Tafel 14 (Sanne)</h4>
+    <div class="tgrid three">
       <button class="tbtn" onclick="aanbieden()">Aanbieden 🎁</button>
-      <button class="tbtn" onclick="resetTable()">Reset tafel</button>
+      <button class="tbtn" onclick="resetTable()">Reset</button>
       <button class="tbtn" onclick="clearAll()">Wis CTA's</button>
     </div>
   </div>
@@ -116,22 +125,34 @@
 <script>
 const T = {
   CTA1_POSTPONE: 300, CTA2_THRESHOLD: 1800, CTA5_POSTPONE: 600,
-  CTA6_REPUSH: 300, CTA6_AUTOFIRE: 300, CTA6_MAX: 2,
-  CTA8_REPUSH: 300, CTA8_MAX: 2,
+  CTA6_REPUSH: 300, CTA6_AUTOFIRE: 300, CTA6_MAX: 2, CTA8_REPUSH: 300, CTA8_MAX: 2,
 };
 let clock = 0, ctaSeq = 1, ctas = [], toastTimer = null;
 const table = {};
 function resetTable(){
-  table.nr = 3; table.naam = "Sanne"; table.offered = false; table.mainFiredAt = null;
+  table.nr = 14; table.naam = "Sanne"; table.offered = false; table.mainFiredAt = null;
   table.cta5Done = false; table.cta5RepushAt = 0;
   table.cta6Done = false; table.cta6Pushes = 0; table.cta6RepushAt = 0; table.cta6AutoFireAt = 0;
   table.cta8Done = false; table.cta8Pushes = 0; table.cta8RepushAt = 0;
-  ctas = ctas.filter(c => c.tableNr == null);
-  log("Tafel gereset"); render(); toast("Tafel gereset");
+  ctas = []; render(); toast("Tafel gereset");
+}
+
+/* productgrid zoals de echte handy (drankjes) */
+const PRODUCTS = [
+  ["Macchiato"],["Flat White"],["Koffie verkeerd"],
+  ["Espresso","g"],["Dubbele espresso"],["Espresso macchiato"],
+  ["Cortado","b"],["Americano"],["Babyccino","b"],
+  ["IJskoffie"],["Thee »","g"],["Gember thee","g"],
+  ["Power Tea","g"],["Munt thee"],["Warme choco","g"],
+  ["Warme choco slagroom"],["Matcha Latte","b"],["ICED Matcha","b"],
+  ["Iced Matcha Mango"],["Choco Rum"],["Speciale koffie »"],
+];
+function renderGrid(){
+  document.getElementById("grid").innerHTML = PRODUCTS.map(([n,c]) =>
+    `<div class="tile ${c||""}">${n}</div>`).join("");
 }
 
 function fmt(s){ const m=Math.floor(s/60), ss=s%60; return String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0"); }
-function log(){ /* mobiel: geen logpaneel */ }
 function toast(msg){
   const el = document.getElementById("toast");
   el.textContent = msg; el.classList.add("show");
@@ -140,15 +161,18 @@ function toast(msg){
 }
 
 function hasCTA(type){ return ctas.some(c => c.type===type); }
-function addCTA(type, opts={}){
+function addCTA(type){
   if (hasCTA(type)) return;
   if (type===5 && table.offered){ toast("CTA 5 vervalt — al aangeboden"); return; }
-  ctas.push({ id: ctaSeq++, type, tableNr: (type===7?null:table.nr), createdAt: clock, ...opts });
-  render();
+  ctas.push({ id: ctaSeq++, type, createdAt: clock }); render();
 }
 function removeCTA(id){ ctas = ctas.filter(c => c.id!==id); render(); }
-function force(type){ if (type===6){ table.cta6Done=false; table.cta6Pushes=1; table.cta6RepushAt=0; table.cta6AutoFireAt=0; } if (type===8){ table.cta8Done=false; table.cta8Pushes=1; table.cta8RepushAt=0; } if (type===5){ table.cta5Done=false; } addCTA(type); }
-
+function force(type){
+  if (type===6){ table.cta6Done=false; table.cta6Pushes=1; table.cta6RepushAt=0; table.cta6AutoFireAt=0; }
+  if (type===8){ table.cta8Done=false; table.cta8Pushes=1; table.cta8RepushAt=0; }
+  if (type===5){ table.cta5Done=false; }
+  addCTA(type);
+}
 function aanbieden(){ table.offered = true; ctas = ctas.filter(c=>c.type!==5); render(); toast("Aangeboden product op rekening"); }
 function clearAll(){ ctas = []; render(); }
 
@@ -159,15 +183,14 @@ function ctaToast(type, action){
   if (key === "6/no") return `Wait ${Math.round(T.CTA6_REPUSH/60)} minutes`;
   if (key === "8/no") return `Wait ${Math.round(T.CTA8_REPUSH/60)} minutes`;
   const map = {
-    "1/order":"WaiterPro opened", "1/move":"Bill moved", "1/close":"Table closed",
-    "2/order":"WaiterPro opened", "2/move":"Bill moved", "2/calllg":"LG informed",
-    "3/new":"Table opened", "3/pull":"Bill moved", "4/ok":"Promo active (background)",
-    "5/order":"Gift registered", "5/no":"No need",
-    "6/go":"Main ordered", "7/ja":"Active", "7/nee":"Removed", "7/pauze":"break", "8/go":"Dessert Go",
+    "1/order":"WaiterPro opened","1/move":"Bill moved","1/close":"Table closed",
+    "2/order":"WaiterPro opened","2/move":"Bill moved","2/calllg":"LG informed",
+    "3/new":"Table opened","3/pull":"Bill moved","4/ok":"Promo active (background)",
+    "5/order":"Gift registered","5/no":"No need","6/go":"Main ordered",
+    "7/ja":"Active","7/nee":"Removed","7/pauze":"break","8/go":"Dessert Go",
   };
   return map[key] || "OK";
 }
-
 function ctaAction(id, action){
   const c = ctas.find(x => x.id===id); if (!c) return;
   toast(ctaToast(c.type, action));
@@ -176,65 +199,61 @@ function ctaAction(id, action){
     case "5/wait":   removeCTA(id); table.cta5RepushAt = clock + T.CTA5_POSTPONE; break;
     case "5/no":     table.cta5Done = true; removeCTA(id); break;
     case "6/go":     table.mainFiredAt = clock; table.cta6Done = true; removeCTA(id); break;
-    case "6/no":
-      removeCTA(id);
-      if (table.cta6Pushes < T.CTA6_MAX) table.cta6RepushAt = clock + T.CTA6_REPUSH;
-      else { table.cta6Done = true; table.cta6AutoFireAt = clock + T.CTA6_AUTOFIRE; }
-      break;
+    case "6/no":     removeCTA(id); if (table.cta6Pushes < T.CTA6_MAX) table.cta6RepushAt = clock + T.CTA6_REPUSH; else { table.cta6Done = true; table.cta6AutoFireAt = clock + T.CTA6_AUTOFIRE; } break;
     case "8/go":     table.cta8Done = true; removeCTA(id); break;
-    case "8/no":
-      removeCTA(id);
-      if (table.cta8Pushes < T.CTA8_MAX) table.cta8RepushAt = clock + T.CTA8_REPUSH;
-      else table.cta8Done = true;
-      break;
-    case "3/pull":   { const oud = prompt("Pull table → welke oude tafel?"); removeCTA(id); } break;
+    case "8/no":     removeCTA(id); if (table.cta8Pushes < T.CTA8_MAX) table.cta8RepushAt = clock + T.CTA8_REPUSH; else table.cta8Done = true; break;
+    case "3/pull":   { prompt("Pull table → welke oude tafel?"); removeCTA(id); } break;
     default:         removeCTA(id); break;
   }
 }
 
 const CARD = {
-  1: () => ({ cls:"",       prio:"CTA 1 · First order",                 title:`Tafel ${table.nr} — first order (${table.naam})`, btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CLOSE","","close"]] }),
-  2: () => ({ cls:"",       prio:"CTA 2 · Sleeping table",              title:`Tafel ${table.nr} — checken`,                     btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CALL LG","","calllg"]] }),
-  3: () => ({ cls:"",       prio:"CTA 3 · Seater actief (why not seated?)", title:`Tafel ${table.nr} — Not seated. Previous table?`, btns:[["NEW","primary","new"],["PULL","","pull"]] }),
-  4: () => ({ cls:"info",   prio:"CTA 4 · Promo (achtergrond)",         title:`Tafel ${table.nr} — promo: offreren toegestaan`,  btns:[["OK","","ok"]] }),
-  5: () => ({ cls:"purple", prio:"CTA 5 · Loyalty",                     title:`Tafel ${table.nr} — offer a drink`,               btns:[["ORDER","primary","order"],["WAIT","","wait"],["NO","","no"]] }),
-  6: () => ({ cls:"info",   prio:"CTA 6 · Ready for next course",       title:`Tafel ${table.nr} — ready for next course?`,      btns:[["GO","primary","go"],["NO","","no"]] }),
-  7: () => ({ cls:"",       prio:"CTA 7 · Actief-check",                title:`Hoi Peter, ben jij nog actief in wijk RES Noord?`, btns:[["JA","primary","ja"],["NEE","","nee"],["PAUZE","","pauze"]] }),
-  8: () => ({ cls:"info",   prio:"CTA 8 · Ready for dessert",           title:`Tafel ${table.nr} — ready for dessert?`,          btns:[["GO","primary","go"],["NO","","no"]] }),
+  1: () => ({ cls:"",       title:`Tafel ${table.nr} — Drankje opnemen`,            btns:[["order","primary","order"],["wait","","wait"],["move","","move"],["close","","close"]] }),
+  2: () => ({ cls:"",       title:`Tafel ${table.nr} — Checken`,                    btns:[["order","primary","order"],["wait","","wait"],["move","","move"],["call lg","","calllg"]] }),
+  3: () => ({ cls:"",       title:`Tafel ${table.nr} — Not seated. Previous table?`, btns:[["new","primary","new"],["pull","","pull"]] }),
+  4: () => ({ cls:"",       title:`Tafel ${table.nr} — Promo: offreren toegestaan`, btns:[["ok","","ok"]] }),
+  5: () => ({ cls:"purple", title:`Tafel ${table.nr} — Offer a drink`,              btns:[["order","primary","order"],["wait","","wait"],["no","","no"]] }),
+  6: () => ({ cls:"three",  title:`Tafel ${table.nr} — Ready for next course?`,     btns:[["go","primary","go"],["no","","no"]] }),
+  7: () => ({ cls:"three",  title:`Hoi Peter, ben jij nog actief in RES Noord?`,    btns:[["ja","primary","ja"],["nee","","nee"],["pauze","","pauze"]] }),
+  8: () => ({ cls:"",       title:`Tafel ${table.nr} — Ready for dessert?`,         btns:[["go","primary","go"],["no","","no"]] }),
 };
 
 function render(){
-  const el = document.getElementById("screen");
-  const sorted = [...ctas].sort((a,b)=> a.type-b.type || a.createdAt-b.createdAt);
-  const visible = sorted.slice(0,3);
-  const hidden = sorted.length - visible.length;
-  if (!sorted.length){
-    el.innerHTML = `<div class="empty">Geen meldingen.<br>Open hieronder de demo-bediening om een CTA te tonen.</div>`;
-    return;
-  }
-  el.innerHTML = visible.map(c => {
+  const el = document.getElementById("ctaStack");
+  const sorted = [...ctas].sort((a,b)=> a.type-b.type || a.createdAt-b.createdAt).slice(0,3);
+  el.innerHTML = sorted.map(c => {
     const def = CARD[c.type]();
+    const ago = clock - c.createdAt;
     const btns = def.btns.map(([label,cls,act]) =>
-      `<button class="btn ${cls||""}" onclick="ctaAction(${c.id},'${act}')">${label}</button>`).join("");
-    return `<div class="cta ${def.cls}"><div class="prio">${def.prio}</div><div class="title">${def.title}</div><div class="btns">${btns}</div></div>`;
-  }).join("") + (hidden>0 ? `<div class="queue-note">+ ${hidden} in wachtrij (max 3 zichtbaar)</div>` : "");
+      `<button class="ob ${cls==='primary'?'primary':''}" onclick="ctaAction(${c.id},'${act}')">${label}</button>`).join("");
+    const three = (def.cls.includes("three")) ? "three" : "";
+    const purple = (def.cls.includes("purple")) ? "purple" : "";
+    return `<div class="cta ${three} ${purple}">
+      <div class="head">
+        <span class="ago"><span class="dot"></span> CTA ${c.type} · ${ago}s geleden</span>
+        <span class="vib">📳 vibratie</span>
+      </div>
+      <div class="title">${def.title}</div>
+      <div class="btns">${btns}</div>
+    </div>`;
+  }).join("");
 }
 
 function toggleTray(){
   const tr = document.getElementById("tray"), tg = document.getElementById("trayToggle");
-  const open = tr.classList.toggle("open");
-  tg.textContent = (open ? "▼ Demo-bediening sluiten" : "▲ Demo-bediening");
+  tg.textContent = tr.classList.toggle("open") ? "▼ Demo-bediening sluiten" : "▲ Demo-bediening";
 }
 
 function tick(){
   clock++;
-  document.getElementById("clock").textContent = "⏱ " + fmt(clock);
   if (table.cta5RepushAt && clock >= table.cta5RepushAt && !table.cta5Done && !hasCTA(5)){ table.cta5RepushAt = 0; addCTA(5); }
   if (table.cta6RepushAt && clock >= table.cta6RepushAt && !table.cta6Done && table.mainFiredAt == null && !hasCTA(6)){ table.cta6RepushAt = 0; table.cta6Pushes++; addCTA(6); }
   if (table.cta6AutoFireAt && clock >= table.cta6AutoFireAt && table.mainFiredAt == null){ table.cta6AutoFireAt = 0; table.mainFiredAt = clock; toast("Main auto-fired"); }
   if (table.cta8RepushAt && clock >= table.cta8RepushAt && !table.cta8Done && !hasCTA(8)){ table.cta8RepushAt = 0; table.cta8Pushes++; addCTA(8); }
+  if (ctas.length) render();   // ververs "Xs geleden"
 }
 
+renderGrid();
 resetTable();
 setInterval(tick, 1000);
 </script>
