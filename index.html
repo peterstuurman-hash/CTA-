@@ -173,7 +173,7 @@
 
     <h2 style="margin-top:14px;">Overig</h2>
     <div class="controls">
-      <button class="toggle" id="autoBtn" onclick="toggleAuto()">Auto-timers: aan</button>
+      <button class="toggle on" id="autoBtn" onclick="toggleAuto()">Auto-timers: uit</button>
       <button class="toggle" id="busyBtn" onclick="toggleBusy()">Drukte: laag</button>
       <button class="small" onclick="downloadCSV()">⬇ DB-log (CSV)</button>
       <span class="badge" id="dbCount">0 in DB</span>
@@ -182,11 +182,11 @@
     <h2 style="margin-top:14px;">Backend — instellingen per CTA (sim-seconden)</h2>
     <div id="settings"></div>
     <div class="legend">
-      <strong>Flow:</strong> seat een tafel → <b>CTA 1</b> (first order). Sla een <b>voorgerecht</b> aan → na een tijdje
-      <b>CTA 6</b> ("ready for next course?" = hoofdgerecht): <b>GO</b> firet het hoofdgerecht, <b>NO</b> stelt uit
-      (max 2× per ticket; na de 2e NO firet 't automatisch). Daarna <b>CTA 8</b> ("ready for dessert?", GO/NO, max 2×).
-      <b>CTA 2</b> (sleeping) keert terug op kelner-actie. <b>CTA 4</b> (promo) draait op de achtergrond.
-      Met de knoppen hierboven toon je elke CTA direct. Max 3 kaarten per handy, prio = CTA-nummer.
+      <strong>Standaard:</strong> de <b>forceer-knoppen</b> staan centraal — klik een CTA om 'm te tonen. Er verschijnt niets uit zichzelf.
+      <br><strong>Tijd-gestuurde flow zien?</strong> Zet <b>Auto-timers aan</b>: seat een tafel → <b>CTA 1</b> (first order);
+      sla een <b>voorgerecht</b> aan → na een tijdje <b>CTA 6</b> ("ready for main", GO firet / NO stelt uit, na 2e NO auto-fire),
+      daarna <b>CTA 8</b> ("ready for dessert"). <b>CTA 2</b> (sleeping) keert terug op kelner-actie. <b>CTA 4</b> (promo) draait op de achtergrond.
+      Max 3 kaarten per handy, prio = CTA-nummer.
     </div>
   </div>
 
@@ -227,7 +227,7 @@ const T = {
   KELNER_IDLE: 3,            // geen CTA's < X sec na laatste kelner-actie
 };
 
-let clock = 0, busy = false, autoOn = true, lastKelnerAction = null, ctaSeq = 1, ctas = [], dbRecords = [];
+let clock = 0, busy = false, autoOn = false, lastKelnerAction = null, ctaSeq = 1, ctas = [], dbRecords = [];
 
 /* Nederlandse voornamen als dummy (geen achternamen); tafel 5 zonder naam. */
 const tables = [
