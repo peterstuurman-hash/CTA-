@@ -230,8 +230,7 @@ function render(){
     const purple = (def.cls.includes("purple")) ? "purple" : "";
     return `<div class="cta ${three} ${purple}">
       <div class="head">
-        <span class="ago"><span class="dot"></span> CTA ${c.type} · ${ago}s geleden</span>
-        <span class="vib">📳 vibratie</span>
+        <span class="ago"><span class="dot"></span> <span id="ago-${c.id}">CTA ${c.type} · ${ago}s geleden</span></span>
       </div>
       <div class="title">${def.title}</div>
       <div class="btns">${btns}</div>
@@ -250,7 +249,13 @@ function tick(){
   if (table.cta6RepushAt && clock >= table.cta6RepushAt && !table.cta6Done && table.mainFiredAt == null && !hasCTA(6)){ table.cta6RepushAt = 0; table.cta6Pushes++; addCTA(6); }
   if (table.cta6AutoFireAt && clock >= table.cta6AutoFireAt && table.mainFiredAt == null){ table.cta6AutoFireAt = 0; table.mainFiredAt = clock; toast("Main auto-fired"); }
   if (table.cta8RepushAt && clock >= table.cta8RepushAt && !table.cta8Done && !hasCTA(8)){ table.cta8RepushAt = 0; table.cta8Pushes++; addCTA(8); }
-  if (ctas.length) render();   // ververs "Xs geleden"
+  updateAgos();   // alleen de "Xs geleden" bijwerken — kaart niet herbouwen (geen beweging)
+}
+function updateAgos(){
+  for (const c of ctas){
+    const el = document.getElementById("ago-" + c.id);
+    if (el) el.textContent = `CTA ${c.type} · ${clock - c.createdAt}s geleden`;
+  }
 }
 
 renderGrid();
