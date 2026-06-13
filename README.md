@@ -7,17 +7,15 @@ Een zelfstandige, interactieve demo van het Oscar CTA-systeem voor de horeca: Os
 ## Wat je kunt doen
 
 **Werkvloer (links)** — per tafel:
-- **Seat** een tafel → na een paar seconden pusht Oscar **CTA 1 · Eerste drankje**.
-- **Drankje / Voorgerecht / Hoofdgerecht** = een POS-order. Dit sluit CTA 1/2 automatisch. Na de fire van een gang volgt **CTA 8 · Tafel schoon** — via **MAIN** firet de kelner het hoofdgerecht ("kan door"), via **DESSERT** het dessert.
-- Laat een tafel na het bestellen stilliggen → **CTA 2 · Sleeping table** (terugkerend).
-- **Wil nog wachten** = kelner-actie die de CTA 2-timer reset.
+- **Seat** een tafel → na een paar seconden pusht Oscar **CTA 1 · First order** (order / wait / move / close).
+- **Drankje / Voorgerecht** = een POS-order; dit sluit CTA 1/2 automatisch. Een **voorgerecht** start de gang-keten.
+- Na het voorgerecht volgt **CTA 6 · Ready for next course?** (hoofdgerecht): **GO** firet het hoofdgerecht; **NO** stelt uit (max 2× per ticket, daarna firet 't automatisch). Daarna **CTA 8 · Ready for dessert?** (GO / NO, max 2×).
+- Laat een tafel stilliggen → **CTA 2 · Sleeping table** (terugkerend; reset op elke kelner-actie). **Wil nog wachten** is zo'n actie.
 - **Afrekenen** → alle CTA's van die tafel verdwijnen direct.
 
-**Forceer een CTA (knoppen):** een knop per CTA (1, 2, 3, 4, 5, 7, 8) om elke melding direct te tonen, plus:
-- **Drukte hoog/laag** — schakelt de "actuele drukte" (order-rate). Beïnvloedt CTA 4 (promo-rechten bij drukte) en CTA 5 (vervalt bij drukte).
-- **CTA 4 · promo** draait stil op de achtergrond (geen handy-kaart) — het resultaat verschijnt in de log.
-
-> **Let op:** CTA 6 (auto fire) is vervallen — het firen gebeurt nu handmatig via CTA 8.
+**Forceer een CTA (knoppen):** een knop per CTA (1 t/m 8) om elke melding direct te tonen, plus:
+- **Drukte hoog/laag** — schakelt de "actuele drukte" (order-rate). Beïnvloedt CTA 5 (vervalt bij drukte).
+- **CTA 4 · promo** is in de praktijk een achtergrond-permissie (geen handy-actie nodig); in de demo als info-kaartje getoond zodat je 'm kunt bekijken.
 
 **Handy (rechts)** — toont max. 3 CTA-kaarten tegelijk, gesorteerd op prio (CTA-nummer). Elke knop voert de actie uit en je ziet het resultaat in de **log** onderaan.
 
