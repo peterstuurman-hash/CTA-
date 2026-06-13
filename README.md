@@ -4,6 +4,8 @@ Een zelfstandige, interactieve demo van het Oscar CTA-systeem voor de horeca: Os
 
 👉 **Demo openen:** dubbelklik op `index.html` (werkt in elke browser, geen installatie nodig).
 
+📱 **Mobiele / iPhone-versie:** [`mobile.html`](mobile.html) — full-screen handy zoals de kelner het op zijn telefoon ziet, met grote touch-knoppen en de demo-bediening in een uitklapbare lade onderaan. Open 'm op je telefoon (via GitHub Pages) en "voeg toe aan beginscherm" voor een app-gevoel.
+
 ## Wat je kunt doen
 
 **Werkvloer (links)** — per tafel:
