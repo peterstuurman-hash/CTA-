@@ -8,16 +8,16 @@ Een zelfstandige, interactieve demo van het Oscar CTA-systeem voor de horeca: Os
 
 **Werkvloer (links)** — per tafel:
 - **Seat** een tafel → na een paar seconden pusht Oscar **CTA 1 · Eerste drankje**.
-- **Drankje / Hoofdgerecht** = een POS-order. Dit sluit CTA 1/2 automatisch. Een hoofdgerecht leidt na de fire-delay tot **CTA 6 · Auto kan door**.
-- Laat een tafel na het bestellen stilliggen → **CTA 2 · Sleeping table**.
+- **Drankje / Voorgerecht / Hoofdgerecht** = een POS-order. Dit sluit CTA 1/2 automatisch. Na de fire van een gang volgt **CTA 8 · Tafel schoon** — via **MAIN** firet de kelner het hoofdgerecht ("kan door"), via **DESSERT** het dessert.
+- Laat een tafel na het bestellen stilliggen → **CTA 2 · Sleeping table** (terugkerend).
+- **Wil nog wachten** = kelner-actie die de CTA 2-timer reset.
 - **Afrekenen** → alle CTA's van die tafel verdwijnen direct.
 
-**Situaties forceren (knoppen):**
-- **Drukte hoog/laag** — schakelt de "actuele drukte" (order-rate). Beïnvloedt CTA 4 (blokkade-kaart) en CTA 5 (vervalt bij drukte).
-- **CTA 3** · brutaal geopende tafel (blokkerende keuzevraag)
-- **CTA 4** · reservering met aanbieding
-- **CTA 5** · gulle tafel / loyalty (paarse kaart)
-- **CTA 7** · kelner-actief-check
+**Forceer een CTA (knoppen):** een knop per CTA (1, 2, 3, 4, 5, 7, 8) om elke melding direct te tonen, plus:
+- **Drukte hoog/laag** — schakelt de "actuele drukte" (order-rate). Beïnvloedt CTA 4 (promo-rechten bij drukte) en CTA 5 (vervalt bij drukte).
+- **CTA 4 · promo** draait stil op de achtergrond (geen handy-kaart) — het resultaat verschijnt in de log.
+
+> **Let op:** CTA 6 (auto fire) is vervallen — het firen gebeurt nu handmatig via CTA 8.
 
 **Handy (rechts)** — toont max. 3 CTA-kaarten tegelijk, gesorteerd op prio (CTA-nummer). Elke knop voert de actie uit en je ziet het resultaat in de **log** onderaan.
 

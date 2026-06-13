@@ -68,7 +68,7 @@
 <ul>
   <li><strong>Eén melding, één handy.</strong> Elke CTA gaat naar precies één kelner (zie §2). Liever geen melding dan de verkeerde.</li>
   <li><strong>Max. 3 kaarten per handy.</strong> Zijn er meer, dan bepaalt de prioriteit (= het CTA-nummer, 1 is hoogst) welke 3 zichtbaar zijn; de rest staat in de wachtrij.</li>
-  <li><strong>Afhandelen is verplicht.</strong> Pas na afhandeling of verval schuift de volgende CTA door. Informatieve kaarten (CTA 6) vormen een uitzondering en tellen niet mee.</li>
+  <li><strong>Afhandelen is verplicht.</strong> Pas na afhandeling of verval schuift de volgende CTA door.</li>
   <li><strong>Ticket afgerekend = alle CTA's voor die tafel direct weg.</strong></li>
   <li><strong>Een tafel sluiten is altijd een kelner-beslissing</strong> — geen enkele CTA of melding doet dat automatisch.</li>
 </ul>
@@ -133,11 +133,9 @@
 </div>
 
 <div class="cta">
-  <h3><span class="tag">CTA 4</span>Aanbieden</h3>
-  <p><strong>Doel:</strong> een vooraf afgesproken aanbieding toepassen. <strong>Trigger:</strong> de seater heeft een reservering met een aanbieding (INVITE) ingelegd. (Geen escalatie/klacht.)</p>
-  <p>Geeft de kelner toestemming om — alleen voor dit ticket — gerechten en drank te offreren. Bij actuele drukte mogen alleen opener, sluiter, LG of EV offreren; anders verschijnt de blokkade-kaart "Het is druk, alleen aanbieden door LG".</p>
-  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">TERUG</span><span class="btn">ROEP LG</span></div>
-  <p class="small">ORDER opent WaiterPro met de aanbieding gekoppeld. TERUG sluit de kaart; de aanbieding blijft op de reservering. ROEP LG (op de blokkade-kaart) haalt de LG erbij.</p>
+  <h3><span class="tag">CTA 4</span>Aanbieden (promo — achtergrond)</h3>
+  <p><strong>Doel:</strong> offreren toestaan op een ticket met een afgesproken aanbieding. <strong>Trigger:</strong> aan het reserveringsticket hangt de tag <strong>"promo"</strong>.</p>
+  <p>Dit draait <strong>op de achtergrond</strong>: de kelner mag voor dit ticket gerechten en drank offreren — <strong>er is geen kaart en geen actie nodig</strong>, het recht staat automatisch aan zolang de "promo"-tag erop zit. Bij actuele drukte mogen alleen opener, sluiter, LG of EV offreren; een niet-gerechtigde poging wordt dan geblokkeerd ("Het is druk, alleen aanbieden door LG").</p>
 </div>
 
 <div class="cta purple">
@@ -147,10 +145,9 @@
   <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">WACHT</span></div>
 </div>
 
-<div class="cta info">
-  <h3><span class="tag">CTA 6</span>Auto kan door (fire main)</h3>
-  <p><strong>Doel:</strong> het hoofdgerecht automatisch op tijd naar de keuken sturen. <strong>Trigger:</strong> hoofdgerecht besteld → na de fire-delay automatisch "kan door". User = system.</p>
-  <p>Informatieve kaart: <em>"Tafel [nr] — is automatisch doorgeslagen, maak tafel klaar."</em> Geen verplichte afhandeling, geen stop, eenmalig per ticket.</p>
+<div class="cta">
+  <h3><span class="tag">CTA 6</span>Auto kan door — <span style="color:#e7515a;">vervallen</span></h3>
+  <p>De automatische fire van het hoofdgerecht is geschrapt. Het firen ("kan door") gebeurt nu <strong>handmatig via CTA 8</strong> (knoppen MAIN/DESSERT). Het nummer blijft gereserveerd zodat de prio-volgorde van CTA 7 en 8 ongewijzigd blijft.</p>
 </div>
 
 <div class="cta">
@@ -165,7 +162,7 @@
   <h3><span class="tag">CTA 8</span>Tafel schoon voor volgende gang</h3>
   <p><strong>Doel:</strong> afruimen en de volgende gang doorzetten. <strong>Trigger:</strong> een ingestelde tijd (default 20 min) ná het firen van het voorgerecht én ná het firen van het hoofdgerecht.</p>
   <div class="btnrow"><span class="btn primary">MAIN</span><span class="btn">DESSERT</span><span class="btn">READY</span></div>
-  <p class="small">MAIN → push "kan door" voor het hoofdgerecht. DESSERT → push "kan door" voor het dessert. READY → tafel schoon en gereed (geen fire). Stem af met CTA 6 om dubbele fire van het hoofdgerecht te voorkomen.</p>
+  <p class="small">MAIN → push "kan door" voor het hoofdgerecht (dit firet het hoofdgerecht; CTA 6 is hiervoor vervallen). DESSERT → push "kan door" voor het dessert. READY → tafel schoon en gereed (geen fire).</p>
 </div>
 
 <h2>5. Logging &amp; database</h2>
