@@ -210,6 +210,8 @@ function ctaAction(id, action){
   }
 }
 
+// prio-volgorde: 1, 2, 9, 10, 3, 4, 5, 6, 7, 8 (CTA 9/10 vlak na 1/2 — gast wacht)
+const PRIO = { 1:1, 2:2, 9:3, 10:4, 3:5, 4:6, 5:7, 6:8, 7:9, 8:10 };
 const CARD = {
   1: () => ({ cls:"",       title:`Tafel ${table.nr} — Drankje opnemen`,            btns:[["order","primary","order"],["wait","","wait"],["move","","move"],["close","","close"]] }),
   2: () => ({ cls:"",       title:`Tafel ${table.nr} — Checken`,                    btns:[["order","primary","order"],["wait","","wait"],["move","","move"],["call lg","","calllg"]] }),
@@ -225,7 +227,7 @@ const CARD = {
 
 function render(){
   const el = document.getElementById("ctaStack");
-  const sorted = [...ctas].sort((a,b)=> a.type-b.type || a.createdAt-b.createdAt).slice(0,3);
+  const sorted = [...ctas].sort((a,b)=> (PRIO[a.type]||99)-(PRIO[b.type]||99) || a.createdAt-b.createdAt).slice(0,3);
   el.innerHTML = sorted.map(c => {
     const def = CARD[c.type]();
     const ago = clock - c.createdAt;
