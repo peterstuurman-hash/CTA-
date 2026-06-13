@@ -343,14 +343,14 @@ function anyOpenTable(){
   if (!t){ t = tables[0]; seat(t.nr); }
   return t;
 }
-function scenarioCTA1(){ addCTA(1, anyOpenTable().nr); }
-function scenarioCTA2(){ addCTA(2, anyOpenTable().nr); }
-function scenarioCTA3(){ const t = tables.find(x=>x.state==="leeg") || tables[0]; addCTA(3, t.nr, { blocking:true }); }
-function scenarioCTA4(){ addCTA(4, anyOpenTable().nr); }
-function scenarioCTA5(){ const t = anyOpenTable(); t.cta5Done=false; t.cta5RepushAt=0; addCTA(5, t.nr); }
-function scenarioCTA6(){ const t = anyOpenTable(); t.cta6Done=false; t.cta6RepushAt=0; t.cta6AutoFireAt=0; t.cta6Shown=true; t.cta6Pushes=1; addCTA(6, t.nr); }
-function scenarioCTA7(){ addCTA(7, null); }
-function scenarioCTA8(){ const t = anyOpenTable(); t.cta8Done=false; t.cta8RepushAt=0; t.cta8Shown=true; t.cta8Pushes=1; addCTA(8, t.nr); }
+function scenarioCTA1(){ addCTA(1, anyOpenTable().nr, { forced:true }); }
+function scenarioCTA2(){ addCTA(2, anyOpenTable().nr, { forced:true }); }
+function scenarioCTA3(){ const t = tables.find(x=>x.state==="leeg") || tables[0]; addCTA(3, t.nr, { blocking:true, forced:true }); }
+function scenarioCTA4(){ addCTA(4, anyOpenTable().nr, { forced:true }); }
+function scenarioCTA5(){ const t = anyOpenTable(); t.cta5Done=false; t.cta5RepushAt=0; addCTA(5, t.nr, { forced:true }); }
+function scenarioCTA6(){ const t = anyOpenTable(); t.cta6Done=false; t.cta6RepushAt=0; t.cta6AutoFireAt=0; t.cta6Shown=true; t.cta6Pushes=1; addCTA(6, t.nr, { forced:true }); }
+function scenarioCTA7(){ addCTA(7, null, { forced:true }); }
+function scenarioCTA8(){ const t = anyOpenTable(); t.cta8Done=false; t.cta8RepushAt=0; t.cta8Shown=true; t.cta8Pushes=1; addCTA(8, t.nr, { forced:true }); }
 
 /* ---------- engine tick ---------- */
 function tick(){
@@ -365,7 +365,7 @@ function tick(){
       const inWindow = clock >= t.seatedAt + T.CTA1_DELAY && clock < t.seatedAt + T.CTA1_LIFE;
       if (inWindow && clock >= t.cta1PostponeUntil && !hasCTA(1, t.nr)) addCTA(1, t.nr);
       if (clock >= t.seatedAt + T.CTA1_LIFE && hasCTA(1, t.nr))
-        ctas.filter(c=>c.type===1&&c.tableNr===t.nr).forEach(c=>removeCTA(c.id,"vervallen (max. levensduur)","vervallen"));
+        ctas.filter(c=>c.type===1&&c.tableNr===t.nr&&!c.forced).forEach(c=>removeCTA(c.id,"vervallen (max. levensduur)","vervallen"));
     }
 
     // CTA 2 — sleeping table (terugkerend; vanaf laatste kelner-actie, gegate op géén CTA 1)
