@@ -112,6 +112,8 @@
       <button class="tbtn" onclick="force(6)">CTA 6 · ready main</button>
       <button class="tbtn" onclick="force(7)">CTA 7 · active?</button>
       <button class="tbtn" onclick="force(8)">CTA 8 · ready dessert</button>
+      <button class="tbtn" onclick="force(9)">CTA 9 · wil bestellen</button>
+      <button class="tbtn" onclick="force(10)">CTA 10 · wil betalen</button>
     </div>
     <h4>Tafel 14 (Sanne)</h4>
     <div class="tgrid three">
@@ -188,6 +190,7 @@ function ctaToast(type, action){
     "3/new":"Table opened","3/pull":"Bill moved","4/ok":"Promo active (background)",
     "5/order":"Gift registered","5/no":"No need","6/go":"Main ordered",
     "7/ja":"Active","7/nee":"Removed","7/pauze":"break","8/go":"Dessert Go",
+    "9/order":"WaiterPro opened","9/dismiss":"Dismissed","10/print":"Ticket printed","10/dismiss":"Dismissed",
   };
   return map[key] || "OK";
 }
@@ -216,6 +219,8 @@ const CARD = {
   6: () => ({ cls:"three",  title:`Tafel ${table.nr} — Ready for next course?`,     btns:[["go","primary","go"],["no","","no"]] }),
   7: () => ({ cls:"three",  title:`Hoi Peter, ben jij nog actief in RES Noord?`,    btns:[["ja","primary","ja"],["nee","","nee"],["pauze","","pauze"]] }),
   8: () => ({ cls:"",       title:`Tafel ${table.nr} — Ready for dessert?`,         btns:[["go","primary","go"],["no","","no"]] }),
+  9: () => ({ cls:"",       title:`Tafel ${table.nr} — ${table.naam} wil bestellen`, btns:[["order","primary","order"],["dismiss","","dismiss"]] }),
+ 10: () => ({ cls:"",       title:`Tafel ${table.nr} — ${table.naam} wil betalen`,   btns:[["print ticket","primary","print"],["dismiss","","dismiss"]] }),
 };
 
 function render(){

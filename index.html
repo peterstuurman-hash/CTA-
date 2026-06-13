@@ -178,6 +178,8 @@
       <button class="small" onclick="scenarioCTA6()">CTA 6 · ready for main</button>
       <button class="small" onclick="scenarioCTA7()">CTA 7 · kelner actief?</button>
       <button class="small" onclick="scenarioCTA8()">CTA 8 · ready for dessert</button>
+      <button class="small" onclick="scenarioCTA9()">CTA 9 · wil bestellen</button>
+      <button class="small" onclick="scenarioCTA10()">CTA 10 · wil betalen</button>
     </div>
 
     <h2 style="margin-top:14px;">Overig</h2>
@@ -310,6 +312,8 @@ function ctaToast(type, action){
     "6/go":"Main ordered",
     "7/ja":"Active", "7/nee":"Removed", "7/pauze":"break",
     "8/go":"Dessert Go",
+    "9/order":"WaiterPro opened", "9/dismiss":"Dismissed",
+    "10/print":"Ticket printed", "10/dismiss":"Dismissed",
   };
   return map[key] || "OK";
 }
@@ -413,6 +417,8 @@ function scenarioCTA5(){ const t = anyOpenTable(); t.cta5Done=false; t.cta5Repus
 function scenarioCTA6(){ const t = anyOpenTable(); t.cta6Done=false; t.cta6RepushAt=0; t.cta6AutoFireAt=0; t.cta6Shown=true; t.cta6Pushes=1; addCTA(6, t.nr, { forced:true }); }
 function scenarioCTA7(){ addCTA(7, null, { forced:true }); }
 function scenarioCTA8(){ const t = anyOpenTable(); t.cta8Done=false; t.cta8RepushAt=0; t.cta8Shown=true; t.cta8Pushes=1; addCTA(8, t.nr, { forced:true }); }
+function scenarioCTA9(){ addCTA(9, anyOpenTable().nr, { forced:true }); }
+function scenarioCTA10(){ addCTA(10, anyOpenTable().nr, { forced:true }); }
 
 /* ---------- auto-timers & backend-instellingen ---------- */
 function toggleAuto(){
@@ -425,9 +431,9 @@ function toggleAuto(){
 function setT(key, val){ T[key] = Math.max(0, parseInt(val) || 0); }
 function numInput(key){ return `<input type="number" min="0" value="${T[key]}" onchange="setT('${key}',this.value)">`; }
 // per CTA: geldt de kelner-druk-gate? (CTA 3 standaard uit — die wordt dóór een kelner-actie getriggerd)
-const blockByBusy = { 1:true, 2:true, 3:false, 4:true, 5:true, 6:true, 7:true, 8:true };
+const blockByBusy = { 1:true, 2:true, 3:false, 4:true, 5:true, 6:true, 7:true, 8:true, 9:true, 10:true };
 // per CTA: mag de handy trillen bij push? (backend-instelling)
-const vibrate = { 1:true, 2:true, 3:true, 4:false, 5:true, 6:true, 7:true, 8:true };
+const vibrate = { 1:true, 2:true, 3:true, 4:false, 5:true, 6:true, 7:true, 8:true, 9:true, 10:true };
 const CFG = [
   { nr:1, naam:"First order",        acties:"order / wait / move / close",  times:[["check delay","CTA1_DELAY"],["postpone","CTA1_POSTPONE"],["levensduur","CTA1_LIFE"]], max:"tot 1e order" },
   { nr:2, naam:"Sleeping table",     acties:"order / wait / move / call lg", times:[["sleep threshold","CTA2_THRESHOLD"]], max:"terugkerend" },
@@ -437,6 +443,8 @@ const CFG = [
   { nr:6, naam:"Ready for main",     acties:"go / no",                       times:[["na voorgerecht","CTA6_AFTER_STARTER"],["repush (no)","CTA6_REPUSH"],["autofire","CTA6_AUTOFIRE"]], maxKey:"CTA6_MAX" },
   { nr:7, naam:"Actief-check",       acties:"ja / nee / pauze",              times:[], max:"1" },
   { nr:8, naam:"Ready for dessert",  acties:"go / no",                       times:[["na hoofdgerecht","CTA8_AFTER_MAIN"],["repush (no)","CTA8_REPUSH"]], maxKey:"CTA8_MAX" },
+  { nr:9, naam:"Gast wil bestellen", acties:"order / dismiss",               times:[], max:"via iPad/runner" },
+  { nr:10, naam:"Gast wil betalen",  acties:"print ticket / dismiss",        times:[], max:"via iPad/runner" },
 ];
 function renderSettings(){
   const rows = CFG.map(c => {
@@ -549,6 +557,11 @@ function ctaAction(id, action){
       if (t.cta8Pushes < T.CTA8_MAX){ t.cta8RepushAt = clock + T.CTA8_REPUSH; log(`Tafel ${nr} — CTA 8 komt nog 1× terug over ${T.CTA8_REPUSH}s`, "ev"); }
       else { t.cta8Done = true; log(`Tafel ${nr} — CTA 8 niet meer getoond (max bereikt)`, "ev"); }
       break;
+
+    case "9/order":    order(nr); break;
+    case "9/dismiss":  removeCTA(id,"DISMISS","dismiss"); break;
+    case "10/print":   removeCTA(id,"ticket geprint / afrekenen","print"); break;
+    case "10/dismiss": removeCTA(id,"DISMISS","dismiss"); break;
   }
 }
 
@@ -578,6 +591,12 @@ const CARD = {
   8: c => ({ cls:"info", prio:"CTA 8 · Ready for dessert",
         title:`Tafel ${c.tableNr} — ready for dessert?`,
         btns:[["GO","primary","go"],["NO","","no"]] }),
+  9: c => ({ cls:"", prio:"CTA 9 · Gast wil bestellen (via runner/iPad)",
+        title:`Tafel ${c.tableNr} — ${tbl(c.tableNr)&&tbl(c.tableNr).naam?tbl(c.tableNr).naam:'gast'} wil bestellen`,
+        btns:[["ORDER","primary","order"],["DISMISS","","dismiss"]] }),
+  10: c => ({ cls:"", prio:"CTA 10 · Gast wil betalen (via runner/iPad)",
+        title:`Tafel ${c.tableNr} — ${tbl(c.tableNr)&&tbl(c.tableNr).naam?tbl(c.tableNr).naam:'gast'} wil betalen`,
+        btns:[["PRINT TICKET","primary","print"],["DISMISS","","dismiss"]] }),
 };
 
 function render(){
