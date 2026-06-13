@@ -297,18 +297,18 @@ function toast(msg){
 function ctaToast(type, action){
   const waits = { "1/wait": T.CTA1_POSTPONE, "2/wait": T.CTA2_THRESHOLD, "5/wait": T.CTA5_POSTPONE };
   const key = type + "/" + action;
-  if (waits[key] != null) return `Wachttijd gegeven (${waits[key]}s)`;
+  if (waits[key] != null) return `${waits[key]} min extra wait`;   // afgerond op minuten
   const map = {
-    "1/order":"WaiterPro geopend", "1/move":"Bon overgenomen", "1/close":"Tafel gesloten",
-    "2/order":"WaiterPro geopend", "2/move":"Bon overgenomen", "2/calllg":"LG geïnformeerd",
-    "3/new":"Tafel geopend", "3/pull":"Bon overgenomen",
-    "4/ok":"Promo staat aan (achtergrond)",
-    "5/order":"Gift geregistreerd", "5/no":"Genoteerd: niet nodig",
-    "6/go":"Hoofdgerecht: kan door", "6/no":"Uitgesteld",
-    "7/ja":"Bevestigd: actief", "7/nee":"Uit kelneroverzicht", "7/pauze":"Op pauze",
-    "8/go":"Dessert: kan door", "8/no":"Uitgesteld",
+    "1/order":"WaiterPro opened", "1/move":"Bill moved", "1/close":"Table closed",
+    "2/order":"WaiterPro opened", "2/move":"Bill moved", "2/calllg":"LG informed",
+    "3/new":"Table opened", "3/pull":"Bill moved",
+    "4/ok":"Promo active (background)",
+    "5/order":"Gift registered", "5/no":"No need",
+    "6/go":"Main ordered", "6/no":"Postpone",
+    "7/ja":"Active", "7/nee":"Removed", "7/pauze":"break",
+    "8/go":"Dessert Go", "8/no":"postpone",
   };
-  return map[key] || "Genoteerd";
+  return map[key] || "OK";
 }
 
 /* ---------- CTA helpers ---------- */
