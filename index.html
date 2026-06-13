@@ -154,13 +154,21 @@
     <h2>Werkvloer — Wijk RES Noord</h2>
     <div class="tables" id="tables"></div>
 
-    <h2 style="margin-top:18px;">Situaties forceren</h2>
+    <h2 style="margin-top:18px;">Forceer een CTA (direct tonen)</h2>
+    <div class="controls">
+      <button class="small" onclick="scenarioCTA1()">CTA 1 · eerste drankje</button>
+      <button class="small" onclick="scenarioCTA2()">CTA 2 · sleeping table</button>
+      <button class="small" onclick="scenarioCTA3()">CTA 3 · brutaal geopend</button>
+      <button class="small" onclick="scenarioCTA4()">CTA 4 · aanbieding</button>
+      <button class="small" onclick="scenarioCTA5()">CTA 5 · loyalty</button>
+      <button class="small" onclick="scenarioCTA6()">CTA 6 · auto kan door</button>
+      <button class="small" onclick="scenarioCTA7()">CTA 7 · kelner inactief</button>
+      <button class="small" onclick="scenarioCTA8()">CTA 8 · tafel schoon</button>
+    </div>
+
+    <h2 style="margin-top:14px;">Overig</h2>
     <div class="controls">
       <button class="toggle" id="busyBtn" onclick="toggleBusy()">Drukte: laag</button>
-      <button class="small" onclick="scenarioCTA3()">CTA 3 · brutaal geopende tafel</button>
-      <button class="small" onclick="scenarioCTA4()">CTA 4 · reservering met aanbieding</button>
-      <button class="small" onclick="scenarioCTA5()">CTA 5 · gulle tafel (loyalty)</button>
-      <button class="small" onclick="scenarioCTA7()">CTA 7 · kelner inactief</button>
       <button class="small" onclick="downloadCSV()">⬇ DB-log (CSV)</button>
       <span class="badge" id="dbCount">0 in DB</span>
     </div>
@@ -336,7 +344,14 @@ function toggleBusy(){
   if (busy) ctas.filter(c=>c.type===5).forEach(c=>removeCTA(c.id,"vervallen — werd druk","vervallen"));
 }
 
-/* ---------- scenario-knoppen ---------- */
+/* ---------- forceer-knoppen (elke CTA direct tonen) ---------- */
+function anyOpenTable(){
+  let t = tables.find(x => x.state!=="leeg");
+  if (!t){ t = tables[0]; seat(t.nr); }   // geen open tafel? seat de eerste
+  return t;
+}
+function scenarioCTA1(){ addCTA(1, anyOpenTable().nr); }
+function scenarioCTA2(){ addCTA(2, anyOpenTable().nr); }
 function scenarioCTA3(){
   const free = tables.find(t=>t.state==="leeg") || tables[0];
   addCTA(3, free.nr, { blocking:true });
@@ -350,9 +365,9 @@ function scenarioCTA5(){
   const t = tables.find(x=>x.state==="actief") || tables[0];
   addCTA(5, t.nr);
 }
-function scenarioCTA7(){
-  addCTA(7, null);
-}
+function scenarioCTA6(){ addCTA(6, anyOpenTable().nr, { expiresAt: clock + T.CTA6_VISIBLE }); }
+function scenarioCTA7(){ addCTA(7, null); }
+function scenarioCTA8(){ addCTA(8, anyOpenTable().nr); }
 
 /* ---------- engine tick ---------- */
 function tick(){
