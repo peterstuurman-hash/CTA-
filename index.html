@@ -253,7 +253,6 @@ function resetDynamic(t){
   t.seatedAt=null; t.lastOrderAt=null; t.lastActionAt=null; t.ordered=false;
   t.starterAt=null; t.mainFiredAt=null; t.dessertFiredAt=null;
   t.cta1PostponeUntil=0;
-  t.offered=false;   // staat er al een aangeboden product op de rekening?
   t.cta5Done=false; t.cta5RepushAt=0;
   t.cta6Shown=false; t.cta6Done=false; t.cta6Pushes=0; t.cta6RepushAt=0; t.cta6AutoFireAt=0;
   t.cta8Shown=false; t.cta8Done=false; t.cta8Pushes=0; t.cta8RepushAt=0;
@@ -300,9 +299,7 @@ function toast(msg){
 function ctaToast(type, action){
   const waits = { "1/wait": T.CTA1_POSTPONE, "2/wait": T.CTA2_THRESHOLD, "5/wait": T.CTA5_POSTPONE };
   const key = type + "/" + action;
-  if (waits[key] != null) return `${Math.round(waits[key]/60)} min extra wait`;   // backend in sec, toast afgerond op minuten
-  if (key === "6/no") return `Wait ${Math.round(T.CTA6_REPUSH/60)} minutes`;
-  if (key === "8/no") return `Wait ${Math.round(T.CTA8_REPUSH/60)} minutes`;
+  if (waits[key] != null || key === "6/no" || key === "8/no") return "extra wait";   // geen specifieke tijd noemen (voorkomt discussie op de vloer)
   const map = {
     "1/order":"WaiterPro opened", "1/move":"Bill moved", "1/close":"Table closed",
     "2/order":"WaiterPro opened", "2/move":"Bill moved", "2/calllg":"LG informed",
@@ -323,8 +320,6 @@ function hasCTA(type, nr){ return ctas.some(c => c.type===type && c.tableNr===nr
 function getCTA(id){ return ctas.find(c => c.id===id); }
 function addCTA(type, nr, opts={}){
   if (hasCTA(type, nr)) return;
-  // CTA 5 vervalt als er al een aangeboden product op de rekening staat (kelner was al zover)
-  if (type===5 && nr && tbl(nr).offered){ log(`CTA 5 · tafel ${nr} vervalt — er staat al een aangeboden product op de rekening`, "ev"); return; }
   // Kelner-druk: geen (niet-geforceerde) CTA als de kelner net iets deed — per CTA instelbaar (block by busy)
   if (!opts.forced && blockByBusy[type] && lastKelnerAction != null && (clock - lastKelnerAction) < T.KELNER_IDLE) return;
   const c = { id: ctaSeq++, type, tableNr: nr, createdAt: clock, ...opts };
@@ -366,14 +361,6 @@ function voorgerecht(nr){
   posOrder(nr, "voorgerecht");
   const t = tbl(nr);
   t.starterAt = clock; t.cta6Shown=false; t.cta6Done=false; t.cta6Pushes=0; t.cta6RepushAt=0; t.cta6AutoFireAt=0;
-}
-function aanbieden(nr){
-  const t = tbl(nr);
-  if (t.state==="leeg"){ log(`Tafel ${nr} is niet open`, "ev"); return; }
-  t.offered = true; lastKelnerAction = clock;
-  log(`Tafel ${nr} — aangeboden product op de rekening gezet`, "ev");
-  ctas.filter(c=>c.type===5&&c.tableNr===nr).forEach(c=>removeCTA(c.id,"vervallen — al aangeboden product op rekening","vervallen"));
-  renderTables();
 }
 function wacht(nr){
   const t = tbl(nr);
@@ -533,7 +520,7 @@ function ctaAction(id, action){
     case "4/ok":     removeCTA(id,"promo-permissie staat op de achtergrond aan (geen actie nodig)","ok"); break;
 
     // CTA 5 — offer a drink: order / wait / no
-    case "5/order":  t.cta5Done = true; t.offered = true; renderTables(); removeCTA(id,"gift geregistreerd → aangeboden product op rekening","order"); break;
+    case "5/order":  t.cta5Done = true; removeCTA(id,"gift geregistreerd","order"); break;
     case "5/wait":   removeCTA(id,"WAIT — teller loopt, komt later terug","wait"); if (!busy) t.cta5RepushAt = clock + T.CTA5_POSTPONE; break;
     case "5/no":     t.cta5Done = true; removeCTA(id,"NO — kelner vindt 't niet nodig → CTA 5 vervalt voor dit ticket","no"); break;
 
@@ -633,14 +620,13 @@ function renderTables(){
     const open = t.state!=="leeg";
     return `<div class="table">
       <div class="top">
-        <div><span class="nr">Tafel ${t.nr}</span> ${t.naam?`<span class="naam">· ${t.naam}</span>`:""}${t.offered?` <span class="naam" title="aangeboden product op rekening">🎁</span>`:""}</div>
+        <div><span class="nr">Tafel ${t.nr}</span> ${t.naam?`<span class="naam">· ${t.naam}</span>`:""}</div>
         <span class="badge ${t.state}">${t.state}</span>
       </div>
       <div class="acts">
         <button class="small" onclick="seat(${t.nr})" ${open?"disabled":""}>Seat</button>
         <button class="small" onclick="order(${t.nr})" ${open?"":"disabled"}>Drankje</button>
         <button class="small" onclick="voorgerecht(${t.nr})" ${open?"":"disabled"}>Voorgerecht</button>
-        <button class="small" onclick="aanbieden(${t.nr})" ${open?"":"disabled"}>Aanbieden</button>
         <button class="small" onclick="wacht(${t.nr})" ${open?"":"disabled"}>Wil nog wachten</button>
         <button class="small" onclick="afrekenen(${t.nr})" ${open?"":"disabled"}>Afrekenen</button>
       </div>
