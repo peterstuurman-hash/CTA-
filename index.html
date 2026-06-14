@@ -426,7 +426,7 @@ const CFG = [
   { nr:2, naam:"Sleeping table",     acties:"order / wait / move / call lg", times:[["sleep threshold","CTA2_THRESHOLD"]], max:"terugkerend" },
   { nr:3, naam:"Not seated, moved?", acties:"new / pull",                    times:[], max:"1 (blokkerend)" },
   { nr:4, naam:"Promo",              acties:"— (achtergrond)",               times:[], max:"—" },
-  { nr:5, naam:"Offer a drink",      acties:"order / wait / no",             times:[["postpone (wait)","CTA5_POSTPONE"]], max:"tot order/no" },
+  { nr:5, naam:"Offer a coffee",     acties:"order / wait / no",             times:[["postpone (wait)","CTA5_POSTPONE"]], max:"tot order/no" },
   { nr:6, naam:"Ready for main",     acties:"go / no",                       times:[["na voorgerecht","CTA6_AFTER_STARTER"],["repush (no)","CTA6_REPUSH"],["autofire","CTA6_AUTOFIRE"]], maxKey:"CTA6_MAX" },
   { nr:7, naam:"Actief-check",       acties:"ja / nee / pauze",              times:[], max:"1" },
   { nr:8, naam:"Ready for dessert",  acties:"go / no",                       times:[["na hoofdgerecht","CTA8_AFTER_MAIN"],["repush (no)","CTA8_REPUSH"]], maxKey:"CTA8_MAX" },
