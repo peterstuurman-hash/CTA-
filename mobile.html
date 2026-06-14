@@ -57,6 +57,7 @@
   }
   .ob:active { transform: scale(.97); }
   .ob.primary { background: #234b5c; border-color: #234b5c; color: #fff; }
+  .ob.danger { background: #7a2533; border-color: #a23445; color: #fff; }
   .cta.purple { background: linear-gradient(160deg,#3a2a63,#241b3f); }
   .cta.purple .title, .cta.purple .head { color: #ece5ff; }
   .cta.purple .head .vib { color: #b9a8e8; }
@@ -185,12 +186,13 @@ function ctaToast(type, action){
     "3/new":"Table opened","3/pull":"Bill moved","4/ok":"Promo active (background)",
     "5/order":"Gift registered","5/no":"No need","6/go":"Main ordered",
     "7/ja":"Active","7/nee":"Removed","7/pauze":"break","8/go":"Dessert Go",
-    "9/order":"WaiterPro opened","9/dismiss":"Dismissed","10/print":"Ticket printed","10/dismiss":"Dismissed",
+    "9/order":"Order — runner ✓","9/dismiss":"Declined → runner","10/print":"Printed — runner ✓","10/dismiss":"Declined → runner",
   };
   return map[key] || "OK";
 }
 function ctaAction(id, action){
   const c = ctas.find(x => x.id===id); if (!c) return;
+  if (c.type===1 && action==="close" && !confirm(`Tafel ${table.nr} echt sluiten?`)) return;
   toast(ctaToast(c.type, action));
   switch (c.type + "/" + action){
     case "5/order":  table.cta5Done = true; removeCTA(id); break;
@@ -209,16 +211,16 @@ function ctaAction(id, action){
 const PRIO = { 1:1, 2:2, 9:3, 10:4, 3:5, 4:6, 5:7, 6:8, 7:9, 8:10 };
 function tl(){ return table.naam ? `Tafel ${table.nr} (${table.naam})` : `Tafel ${table.nr}`; }
 const CARD = {
-  1: () => ({ cls:"",       title:`${tl()} — Drankje opnemen`,            btns:[["order","primary","order"],["wait","","wait"],["move","","move"],["close","","close"]] }),
-  2: () => ({ cls:"",       title:`${tl()} — Checken`,                    btns:[["order","primary","order"],["wait","","wait"],["move","","move"],["call lg","","calllg"]] }),
-  3: () => ({ cls:"",       title:`${tl()} — Not seated. Previous table?`, btns:[["new","primary","new"],["pull","","pull"]] }),
-  4: () => ({ cls:"",       title:`${tl()} — Promo: offreren toegestaan`, btns:[["ok","","ok"]] }),
-  5: () => ({ cls:"purple", title:`${tl()} — Offer a coffee`,              btns:[["order","primary","order"],["wait","","wait"],["no","","no"]] }),
-  6: () => ({ cls:"three",  title:`${tl()} — Ready for next course?`,     btns:[["go","primary","go"],["no","","no"]] }),
-  7: () => ({ cls:"three",  title:`Hoi Peter, ben jij nog actief in RES Noord?`,    btns:[["ja","primary","ja"],["nee","","nee"],["pauze","","pauze"]] }),
-  8: () => ({ cls:"",       title:`${tl()} — Ready for dessert?`,         btns:[["go","primary","go"],["no","","no"]] }),
-  9: () => ({ cls:"",       title:`${tl()} — wil bestellen`, btns:[["order","primary","order"],["dismiss","","dismiss"]] }),
- 10: () => ({ cls:"",       title:`${tl()} — wil betalen`,   btns:[["print ticket","primary","print"],["dismiss","","dismiss"]] }),
+  1: () => ({ cls:"",       title:`${tl()} — Drankje opnemen`,            btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CLOSE TABLE","danger","close"]] }),
+  2: () => ({ cls:"",       title:`${tl()} — Checken`,                    btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CALL LG","","calllg"]] }),
+  3: () => ({ cls:"",       title:`${tl()} — Not seated. Previous table?`, btns:[["NEW","primary","new"],["PULL","","pull"]] }),
+  4: () => ({ cls:"",       title:`${tl()} — Promo: offreren toegestaan`, btns:[["OK","","ok"]] }),
+  5: () => ({ cls:"purple", title:`${tl()} — Offer a coffee`,              btns:[["ORDER","primary","order"],["WAIT","","wait"],["NO","","no"]] }),
+  6: () => ({ cls:"three",  title:`${tl()} — Ready for next course?`,     btns:[["GO","primary","go"],["NO","","no"]] }),
+  7: () => ({ cls:"three",  title:`Hoi Peter, ben jij nog actief in RES Noord?`,    btns:[["YES","primary","ja"],["NO","","nee"],["BREAK","","pauze"]] }),
+  8: () => ({ cls:"",       title:`${tl()} — Ready for dessert?`,         btns:[["GO","primary","go"],["NO","","no"]] }),
+  9: () => ({ cls:"",       title:`${tl()} — wil bestellen`, btns:[["ORDER","primary","order"],["NO","","dismiss"]] }),
+ 10: () => ({ cls:"",       title:`${tl()} — wil betalen`,   btns:[["PRINT","primary","print"],["NO","","dismiss"]] }),
 };
 
 function render(){
@@ -228,7 +230,7 @@ function render(){
     const def = CARD[c.type]();
     const ago = clock - c.createdAt;
     const btns = def.btns.map(([label,cls,act]) =>
-      `<button class="ob ${cls==='primary'?'primary':''}" onclick="ctaAction(${c.id},'${act}')">${label}</button>`).join("");
+      `<button class="ob ${cls||''}" onclick="ctaAction(${c.id},'${act}')">${label}</button>`).join("");
     const three = (def.cls.includes("three")) ? "three" : "";
     const purple = (def.cls.includes("purple")) ? "purple" : "";
     return `<div class="cta ${three} ${purple}">

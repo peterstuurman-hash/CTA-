@@ -75,6 +75,7 @@
   <li><strong>Vibratie</strong> staat per CTA in de backend aan/uit — de handy trilt bij een push als het aanstaat (niet getoond op de kaart).</li>
   <li><strong>Niet overspoelen + meten of het werkt.</strong> Max. 3 per handy, niets naar een drukke kelner, en per CTA meet Oscar via de log of het gewenste effect volgt. Een CTA die structureel genegeerd wordt, gaat eruit of wordt vervangen — liever een paar effectieve CTA's dan veel ruis.</li>
   <li><strong>Gefaseerde introductie (CTA-niveau 1–3).</strong> Eén knop per locatie bepaalt hoeveel CTA's aan staan én hoe streng de rem. Start op niveau 1 (alleen kern-CTA's, strenge rem) zodat kelners het accepteren; schaal later op. Nog-uitgeschakelde CTA's worden wél shadow-gelogd, zodat je ziet wanneer opschalen zinvol is.</li>
+  <li><strong>Knoppen: één taal, mistap-proof.</strong> Alle knoppen Engels en consistent (<em>doe nu</em> = ORDER/GO/YES/NEW/PULL/PRINT · <em>later</em> = WAIT · <em>weiger</em> = NO). <strong>CLOSE TABLE</strong> staat apart, rood en met bevestiging. Elke tik geeft directe feedback.</li>
 </ul>
 
 <h2>2. Kelnerselectie (routing)</h2>
@@ -112,7 +113,8 @@
   <h3><span class="tag">CTA 1</span>Eerste drankje</h3>
   <p><strong>Doel:</strong> de eerste bestelling binnenhalen. <strong>Trigger:</strong> een ingestelde tijd na seaten zonder POS-order.</p>
   <p>Sluit automatisch zodra er een POS-order komt (via welke weg dan ook). Zolang er niets besteld is, komt hij meerdere keren terug, tot de eerste order binnen is of de levensduur verloopt. Daarna neemt CTA 2 het over.</p>
-  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">WACHT</span><span class="btn">VERPLAATS</span><span class="btn">SLUIT TAFEL</span></div>
+  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">WAIT</span><span class="btn">MOVE</span><span class="btn" style="background:#fdecee;border-color:#e7515a;color:#b0202f;">CLOSE TABLE</span></div>
+  <p class="small">CLOSE TABLE staat apart en rood + vraagt een bevestiging — beschermd tegen mistaps.</p>
 </div>
 
 <div class="cta">
@@ -156,8 +158,8 @@
   <h3><span class="tag">CTA 7</span>Actief-check kelner</h3>
   <p><strong>Doel:</strong> het kelneroverzicht en daarmee de routing schoon houden. <strong>Trigger:</strong> een kelner is langere tijd inactief in zijn wijk.</p>
   <p>Kaart: <em>"Hoi [kelner], ben jij nu nog steeds actief in wijk [wijk]?"</em></p>
-  <div class="btnrow"><span class="btn primary">JA</span><span class="btn">NEE</span><span class="btn">PAUZE</span></div>
-  <p class="small">JA = blijft eigenaar. NEE en PAUZE = uit het kelneroverzicht (geen routing meer naar hem). Geen antwoord → behandelen als NEE.</p>
+  <div class="btnrow"><span class="btn primary">YES</span><span class="btn">NO</span><span class="btn">BREAK</span></div>
+  <p class="small">YES = blijft eigenaar. NO en BREAK = uit het kelneroverzicht (geen routing meer naar hem). <strong>Geen antwoord → fail-safe:</strong> de kelner blijft behouden; Oscar vraagt later gewoon opnieuw (nooit droppen op een gemist tikje).</p>
 </div>
 
 <div class="cta info">
@@ -170,15 +172,15 @@
 <div class="cta">
   <h3><span class="tag">CTA 9</span>Gast wil bestellen</h3>
   <p><strong>Doel:</strong> een bestelverzoek van de gast bij de kelner krijgen. <strong>Trigger:</strong> een <strong>runner</strong> (geen kelner) geeft via het externe <strong>iPad-scherm</strong> door dat een tafel wil bestellen — de gast vraagt het aan de runner, die tikt op de iPad de tafel + "bestellen". Oscar pusht naar de kelner van de wijk.</p>
-  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">DISMISS</span></div>
-  <p class="small">ORDER → open WaiterPro en neem de bestelling op. DISMISS → wegklikken.</p>
+  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">NO</span></div>
+  <p class="small">ORDER → open WaiterPro en neem de bestelling op. NO → wegklikken. <strong>Status gaat terug naar de runner-iPad</strong> ("opgepakt"/"afgewezen") — geen dubbele kaarten, geen wachtende gast.</p>
 </div>
 
 <div class="cta">
   <h3><span class="tag">CTA 10</span>Gast wil betalen</h3>
   <p><strong>Doel:</strong> een betaalverzoek bij de kelner krijgen. <strong>Trigger:</strong> zoals CTA 9, maar de runner kiest op de iPad "betalen".</p>
-  <div class="btnrow"><span class="btn primary">PRINT TICKET</span><span class="btn">DISMISS</span></div>
-  <p class="small">PRINT TICKET → reken af / druk de bon af. DISMISS → wegklikken.</p>
+  <div class="btnrow"><span class="btn primary">PRINT</span><span class="btn">NO</span></div>
+  <p class="small">PRINT → reken af / druk de bon af. NO → wegklikken. Status gaat terug naar de runner-iPad ("klaar"/"afgewezen").</p>
 </div>
 
 <h2>5. Logging &amp; database</h2>

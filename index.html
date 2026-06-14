@@ -90,6 +90,8 @@
   button:disabled { opacity: .35; cursor: default; }
   button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
   button.primary:hover { background: #5d99ff; }
+  button.danger { background: var(--red); border-color: var(--red); color: #fff; }
+  button.danger:hover { background: #ef6670; }
   button.small { padding: 4px 8px; font-size: 11px; }
   .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
   .toggle.on { background: var(--red); border-color: var(--red); color: #fff; }
@@ -355,8 +357,8 @@ function ctaToast(type, action){
     "6/go":"Main ordered",
     "7/ja":"Active", "7/nee":"Removed", "7/pauze":"break",
     "8/go":"Dessert Go",
-    "9/order":"WaiterPro opened", "9/dismiss":"Dismissed",
-    "10/print":"Ticket printed", "10/dismiss":"Dismissed",
+    "9/order":"Order — runner ✓", "9/dismiss":"Declined → runner",
+    "10/print":"Printed — runner ✓", "10/dismiss":"Declined → runner",
   };
   return map[key] || "OK";
 }
@@ -474,7 +476,7 @@ function numInput(key){ return `<input type="number" min="0" value="${T[key]}" o
 // per CTA: geldt de kelner-druk-gate? (CTA 3 standaard uit — die wordt dóór een kelner-actie getriggerd)
 const blockByBusy = { 1:true, 2:true, 3:false, 4:true, 5:true, 6:true, 7:true, 8:true, 9:true, 10:true };
 // per CTA: mag de handy trillen bij push? (backend-instelling)
-const vibrate = { 1:true, 2:true, 3:true, 4:false, 5:true, 6:true, 7:true, 8:true, 9:true, 10:true };
+const vibrate = { 1:true, 2:true, 3:true, 4:false, 5:false, 6:false, 7:false, 8:false, 9:true, 10:true };
 // per CTA status: enabled / disabled (telt wel mee, toont niet) / deleted (weg)
 const status = { 1:"enabled", 2:"enabled", 3:"enabled", 4:"enabled", 5:"enabled", 6:"enabled", 7:"enabled", 8:"enabled", 9:"enabled", 10:"enabled" };
 const CFG = [
@@ -555,6 +557,7 @@ function ctaAction(id, action){
   const c = getCTA(id); if (!c) return;
   const nr = c.tableNr;
   const t = nr ? tbl(nr) : null;
+  if (c.type===1 && action==="close" && !confirm(`Tafel ${nr} echt sluiten?`)) return;   // CLOSE TABLE beschermen
   lastKelnerAction = clock;   // knop indrukken = kelner-actie
   toast(ctaToast(c.type, action));   // korte UX-terugmelding
   switch (c.type + "/" + action){
@@ -617,7 +620,7 @@ function tlabel(nr){ const t = tbl(nr); return (t && t.naam) ? `Tafel ${nr} (${t
 const CARD = {
   1: c => ({ cls:"", prio:"CTA 1 · First order",
         title:`${tlabel(c.tableNr)} — first order`,
-        btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CLOSE","","close"]] }),
+        btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CLOSE TABLE","danger","close"]] }),
   2: c => ({ cls:"", prio:"CTA 2 · Sleeping table",
         title:`${tlabel(c.tableNr)} — checken`,
         btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CALL LG","","calllg"]] }),
@@ -635,16 +638,16 @@ const CARD = {
         btns:[["GO","primary","go"],["NO","","no"]] }),
   7: c => ({ cls:"", prio:"CTA 7 · Actief-check",
         title:`Hoi Peter, ben jij nu nog steeds actief in wijk RES Noord?`,
-        btns:[["JA","primary","ja"],["NEE","","nee"],["PAUZE","","pauze"]] }),
+        btns:[["YES","primary","ja"],["NO","","nee"],["BREAK","","pauze"]] }),
   8: c => ({ cls:"info", prio:"CTA 8 · Ready for dessert",
         title:`${tlabel(c.tableNr)} — ready for dessert?`,
         btns:[["GO","primary","go"],["NO","","no"]] }),
   9: c => ({ cls:"", prio:"CTA 9 · Gast wil bestellen (via runner/iPad)",
         title:`${tlabel(c.tableNr)} — wil bestellen`,
-        btns:[["ORDER","primary","order"],["DISMISS","","dismiss"]] }),
+        btns:[["ORDER","primary","order"],["NO","","dismiss"]] }),
   10: c => ({ cls:"", prio:"CTA 10 · Gast wil betalen (via runner/iPad)",
         title:`${tlabel(c.tableNr)} — wil betalen`,
-        btns:[["PRINT TICKET","primary","print"],["DISMISS","","dismiss"]] }),
+        btns:[["PRINT","primary","print"],["NO","","dismiss"]] }),
 };
 
 function render(){
