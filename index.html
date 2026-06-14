@@ -153,8 +153,8 @@
   table.settings th { color: var(--muted); font-weight: 600; }
   table.settings input { background: #11161d; color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 1px 3px; font: inherit; width: 46px; }
   table.settings select { background: #11161d; color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 2px; font: inherit; }
-  table.dblog td { font-variant-numeric: tabular-nums; }
-  table.dblog .dis td { color: var(--muted); font-style: italic; }
+  .dbline { font-family: ui-monospace, Consolas, monospace; font-size: 11px; padding: 3px 6px; border-bottom: 1px solid #1d2530; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dbline.dis { color: var(--muted); font-style: italic; }
 </style>
 </head>
 <body>
@@ -287,9 +287,13 @@ function addDbRow(cta_nr, tafelnr, st, actie, resp){
 function renderDbLog(){
   const el = document.getElementById("dblog"); if (!el) return;
   if (!dbRecords.length){ el.innerHTML = `<div class="small">Nog geen regels — toon/forceer een CTA en handel 'm af.</div>`; return; }
-  const rows = [...dbRecords].slice(-80).reverse().map(r =>
-    `<tr class="${r.status==='disabled'?'dis':''}"><td>${r.tijd}</td><td>CTA ${r.cta_nr}</td><td>${r.tafelnr}</td><td>${r.status}</td><td>${r.actie||'—'}</td><td>${r.response_sec===''?'—':r.response_sec+'s'}</td></tr>`).join("");
-  el.innerHTML = `<table class="settings dblog"><tr><th>tijd</th><th>CTA</th><th>tafel</th><th>status</th><th>actie</th><th>resp</th></tr>${rows}</table>`;
+  el.innerHTML = [...dbRecords].slice(-100).reverse().map(r => {
+    let line = `${r.datum} ${r.tijd} · CTA ${r.cta_nr} · tafel ${r.tafelnr} · ${r.kelner} · ${r.status}`;
+    if (r.actie) line += ` · ${r.actie}`;
+    if (r.response_sec !== "") line += ` · reactie na ${r.response_sec}s`;
+    else if (r.status === "disabled") line += ` · (niet getoond)`;
+    return `<div class="dbline ${r.status==='disabled'?'dis':''}">${line}</div>`;
+  }).join("");
 }
 function pushRecord(c, actie){ addDbRow(c.type, c.tableNr, "enabled", actie, clock - c.createdAt); }
 function shadowLog(type, nr){ addDbRow(type, nr, "disabled", "", ""); }   // zou getoond zijn, maar CTA staat uit
