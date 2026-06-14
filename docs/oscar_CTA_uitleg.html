@@ -186,7 +186,8 @@
   <li><strong>Live log (backend):</strong> rollend overzicht van de laatste ~500 regels, voor snelle monitoring.</li>
   <li><strong>Database (persistent):</strong> élke regel wordt apart ge-insert. Volledige historie, als basis voor het LG-dashboard en analyses (response-tijden, CTA-volume per kelner/locatie/tijdvak, hoe vaak CTA's vervallen).</li>
 </ul>
-<p>Record-formaat: <code>cta_nr;kelner;datum;tijd;actie;response_sec</code> — bijvoorbeeld <code>1;Peter;2026-06-12;19:42:13;ORDER;12</code>, waarbij <code>response_sec</code> de tijd is tussen het tonen van de CTA en de actie.</p>
+<p>Record-formaat: <code>cta_nr;datum;tijd;kelner;tafelnr;status;actie;response_sec</code> — bijv. <code>1;2026-06-12;19:42:13;Peter;14;enabled;ORDER;12</code>.</p>
+<p>Elke CTA is per locatie <strong>enabled</strong>, <strong>disabled</strong> of <strong>deleted</strong>. Staat een CTA op <strong>disabled</strong>, dan verschijnt hij niet op de handy maar wordt elke keer dat hij <em>zou</em> afgaan tóch gelogd (zonder respons) — zo zie je hoe vaak hij zou triggeren. Over tijd laat dat zien of <strong>kelners beter worden</strong> (minder zou-fires, of sneller/zelf opgelost na correctie). <strong>deleted</strong> logt niets.</p>
 
 <footer>
   Oscar CTA-systeem · interne uitleg · juni 2026. Volledige specificatie met parameters en beslislog: <code>oscar_cta_specs.md</code>. Interactieve demo: github.com/peterstuurman-hash/CTA-

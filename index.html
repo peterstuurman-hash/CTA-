@@ -152,6 +152,7 @@
   table.settings th, table.settings td { border: 1px solid var(--line); padding: 4px 7px; text-align: left; vertical-align: top; }
   table.settings th { color: var(--muted); font-weight: 600; }
   table.settings input { background: #11161d; color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 1px 3px; font: inherit; width: 46px; }
+  table.settings select { background: #11161d; color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 2px; font: inherit; }
 </style>
 </head>
 <body>
@@ -268,20 +269,22 @@ function log(msg, cls="ev"){
   el.prepend(d);
 }
 function pad2(n){ return String(n).padStart(2,"0"); }
-function pushRecord(c, actie){
+function addDbRow(cta_nr, tafelnr, st, actie, resp){
   const d = new Date();
   const datum = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
   const tijd = `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
-  const resp = clock - c.createdAt;
-  dbRecords.push({ cta_nr: c.type, kelner: "Peter", datum, tijd, actie, response_sec: resp });
-  log(`DB ◀ <code>${c.type};Peter;${datum};${tijd};${actie};${resp}</code>`, "db");
+  const tnr = (tafelnr==null?'-':tafelnr);
+  dbRecords.push({ cta_nr, datum, tijd, kelner:"Peter", tafelnr:tnr, status:st, actie, response_sec:resp });
+  log(`DB ◀ <code>${cta_nr};${datum};${tijd};Peter;${tnr};${st};${actie};${resp}</code>`, "db");
   const badge = document.getElementById("dbCount");
   if (badge) badge.textContent = dbRecords.length + " in DB";
 }
+function pushRecord(c, actie){ addDbRow(c.type, c.tableNr, "enabled", actie, clock - c.createdAt); }
+function shadowLog(type, nr){ addDbRow(type, nr, "disabled", "", ""); }   // zou getoond zijn, maar CTA staat uit
 function downloadCSV(){
   if (!dbRecords.length){ log("Nog geen DB-regels om te exporteren.", "ev"); return; }
-  const head = "cta_nr;kelner;datum;tijd;actie;response_sec";
-  const rows = dbRecords.map(r => `${r.cta_nr};${r.kelner};${r.datum};${r.tijd};${r.actie};${r.response_sec}`);
+  const head = "cta_nr;datum;tijd;kelner;tafelnr;status;actie;response_sec";
+  const rows = dbRecords.map(r => `${r.cta_nr};${r.datum};${r.tijd};${r.kelner};${r.tafelnr};${r.status};${r.actie};${r.response_sec}`);
   const blob = new Blob([head + "\n" + rows.join("\n")], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = "oscar_cta_log.csv"; a.click();
@@ -320,6 +323,9 @@ function hasCTA(type, nr){ return ctas.some(c => c.type===type && c.tableNr===nr
 function getCTA(id){ return ctas.find(c => c.id===id); }
 function addCTA(type, nr, opts={}){
   if (hasCTA(type, nr)) return;
+  // Status: deleted = niets; disabled = niet tonen maar wél loggen (shadow)
+  if (status[type]==="deleted"){ toast(`CTA ${type} is deleted`); return; }
+  if (status[type]==="disabled"){ shadowLog(type, nr); toast(`CTA ${type} disabled — alleen gelogd`); return; }
   // Kelner-druk: geen (niet-geforceerde) CTA als de kelner net iets deed — per CTA instelbaar (block by busy)
   if (!opts.forced && blockByBusy[type] && lastKelnerAction != null && (clock - lastKelnerAction) < T.KELNER_IDLE) return;
   const c = { id: ctaSeq++, type, tableNr: nr, createdAt: clock, ...opts };
@@ -421,6 +427,8 @@ function numInput(key){ return `<input type="number" min="0" value="${T[key]}" o
 const blockByBusy = { 1:true, 2:true, 3:false, 4:true, 5:true, 6:true, 7:true, 8:true, 9:true, 10:true };
 // per CTA: mag de handy trillen bij push? (backend-instelling)
 const vibrate = { 1:true, 2:true, 3:true, 4:false, 5:true, 6:true, 7:true, 8:true, 9:true, 10:true };
+// per CTA status: enabled / disabled (telt wel mee, toont niet) / deleted (weg)
+const status = { 1:"enabled", 2:"enabled", 3:"enabled", 4:"enabled", 5:"enabled", 6:"enabled", 7:"enabled", 8:"enabled", 9:"enabled", 10:"enabled" };
 const CFG = [
   { nr:1, naam:"First order",        acties:"order / wait / move / close",  times:[["check delay","CTA1_DELAY"],["postpone","CTA1_POSTPONE"],["levensduur","CTA1_LIFE"]], max:"tot 1e order" },
   { nr:2, naam:"Sleeping table",     acties:"order / wait / move / call lg", times:[["sleep threshold","CTA2_THRESHOLD"]], max:"terugkerend" },
@@ -439,11 +447,13 @@ function renderSettings(){
     const max = c.maxKey ? numInput(c.maxKey) : `<span class="small">${c.max}</span>`;
     const blk = `<input type="checkbox" ${blockByBusy[c.nr]?"checked":""} onchange="blockByBusy[${c.nr}]=this.checked">`;
     const vib = `<input type="checkbox" ${vibrate[c.nr]?"checked":""} onchange="vibrate[${c.nr}]=this.checked">`;
-    return `<tr><td><b>CTA ${c.nr}</b><br><span class="small">${c.naam}</span></td><td>${c.acties}</td><td>${times}</td><td>${max}</td><td style="text-align:center">${blk}</td><td style="text-align:center">${vib}</td></tr>`;
+    const opt = s => `<option value="${s}" ${status[c.nr]===s?"selected":""}>${s}</option>`;
+    const sta = `<select onchange="status[${c.nr}]=this.value">${opt("enabled")}${opt("disabled")}${opt("deleted")}</select>`;
+    return `<tr><td><b>CTA ${c.nr}</b><br><span class="small">${c.naam}</span></td><td>${sta}</td><td>${c.acties}</td><td>${times}</td><td>${max}</td><td style="text-align:center">${blk}</td><td style="text-align:center">${vib}</td></tr>`;
   }).join("");
   document.getElementById("settings").innerHTML =
-    `<div class="small" style="margin-bottom:6px;">Kelner-druk: géén CTA als de kelner &lt; ${numInput("KELNER_IDLE")} sec geleden iets deed (order / betalen / wachten). Per CTA aan/uit via <b>block by busy</b>. <b>Vibratie</b> is een backend-instelling per CTA.</div>
-     <table class="settings"><tr><th>CTA</th><th>Acties</th><th>Wachttijden (sec)</th><th>Max/ticket</th><th>Block&nbsp;by&nbsp;busy</th><th>Vibratie</th></tr>${rows}</table>`;
+    `<div class="small" style="margin-bottom:6px;">Status: <b>enabled</b> = normaal · <b>disabled</b> = niet tonen maar wél loggen (shadow) · <b>deleted</b> = weg. Kelner-druk: géén CTA als de kelner &lt; ${numInput("KELNER_IDLE")} sec geleden iets deed. <b>Vibratie</b> per CTA in de backend.</div>
+     <table class="settings"><tr><th>CTA</th><th>Status</th><th>Acties</th><th>Wachttijden (sec)</th><th>Max/ticket</th><th>Block&nbsp;by&nbsp;busy</th><th>Vibratie</th></tr>${rows}</table>`;
 }
 
 /* ---------- engine tick ---------- */
