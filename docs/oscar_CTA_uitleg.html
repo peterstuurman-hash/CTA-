@@ -73,6 +73,7 @@
   <li><strong>Een tafel sluiten is altijd een kelner-beslissing</strong> — geen enkele CTA of melding doet dat automatisch.</li>
   <li><strong>Geen onderbreking van een drukke kelner.</strong> Zolang de kelner net iets deed (order / betalen / wachten) wacht Oscar even; CTA's komen pas op een rustig moment. Per CTA in/uit te schakelen ("block by busy"); CTA 3 is uitgezonderd. Staat los van de venue-brede drukte.</li>
   <li><strong>Vibratie</strong> staat per CTA in de backend aan/uit — de handy trilt bij een push als het aanstaat (niet getoond op de kaart).</li>
+  <li><strong>Niet overspoelen + meten of het werkt.</strong> Max. 3 per handy, niets naar een drukke kelner, en per CTA meet Oscar via de log of het gewenste effect volgt. Een CTA die structureel genegeerd wordt, gaat eruit of wordt vervangen — liever een paar effectieve CTA's dan veel ruis.</li>
 </ul>
 
 <h2>2. Kelnerselectie (routing)</h2>
@@ -99,14 +100,9 @@
   <strong>Randgeval — eerste tafel van de wijk.</strong> CTA 1 (eerste drankje) kan vuren vóór er ook maar iets is aangeslagen in een verse wijk. Dan is er nog geen eigenaar en vervalt die ene CTA. Bewust geaccepteerd; geen seeding.
 </div>
 
-<h2>3. Druk: verwacht versus actueel</h2>
-<p>"Druk" betekent in Oscar twee verschillende dingen — niet door elkaar halen:</p>
-<table>
-  <tr><th>Soort</th><th>Definitie</th><th>Gebruikt door</th></tr>
-  <tr><td><strong>Verwachte drukte</strong></td><td>Piekuren ∧ forecast ∧ seater actief — een voorspelling.</td><td>CTA 3 (signaleren van brutaal geopende tafels)</td></tr>
-  <tr><td><strong>Actuele drukte</strong></td><td>De order-rate (POS-orders per tijdseenheid) ligt boven een drempel — de werkelijke werkdruk <em>nu</em>.</td><td>CTA 4 &amp; 5</td></tr>
-</table>
-<p class="small">De actuele druktemeter loopt vanzelf terug als de zaak leegloopt — een nalopende tafel op een uitgelopen avond houdt "druk" dus niet kunstmatig hoog. Deze meter staat ook als live metric op het LG-dashboard.</p>
+<h2>3. Druk</h2>
+<p>"Druk" = de <strong>actuele werkdruk nu</strong>: de order-rate (POS-orders per tijdseenheid over een recent venster) ligt boven een drempel. Gebruikt door CTA 5 (geen gift tijdens drukte) en als druktemeter op het LG-dashboard.</p>
+<p class="small">De druktemeter loopt vanzelf terug als de zaak leegloopt — een nalopende tafel op een uitgelopen avond houdt "druk" dus niet kunstmatig hoog. (CTA 3 gebruikt géén drukte, maar puur "seater actief".)</p>
 
 <div class="pagebreak"></div>
 <h2>4. De CTA's</h2>
@@ -137,7 +133,7 @@
 <div class="cta">
   <h3><span class="tag">CTA 4</span>Aanbieden (promo — achtergrond)</h3>
   <p><strong>Doel:</strong> offreren toestaan op een ticket met een afgesproken aanbieding. <strong>Trigger:</strong> aan het reserveringsticket hangt de tag <strong>"promo"</strong>.</p>
-  <p>Dit draait <strong>op de achtergrond</strong>: de kelner mag voor dit ticket gerechten en drank offreren — <strong>er is geen kaart en geen actie nodig</strong>, het recht staat automatisch aan zolang de "promo"-tag erop zit. Bij actuele drukte mogen alleen opener, sluiter, LG of EV offreren; een niet-gerechtigde poging wordt dan geblokkeerd ("Het is druk, alleen aanbieden door LG").</p>
+  <p>Dit draait <strong>op de achtergrond</strong>: <strong>iedere kelner</strong> mag voor dit ticket gerechten en drank offreren — geen kaart, geen actie nodig; het recht staat automatisch aan zolang de "promo"-tag erop zit. Geen rol-rechten of blokkade: de aanbieding is immers al goedgekeurd op de reservering.</p>
 </div>
 
 <div class="cta purple">
