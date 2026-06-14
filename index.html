@@ -153,6 +153,8 @@
   table.settings th { color: var(--muted); font-weight: 600; }
   table.settings input { background: #11161d; color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 1px 3px; font: inherit; width: 46px; }
   table.settings select { background: #11161d; color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 2px; font: inherit; }
+  table.dblog td { font-variant-numeric: tabular-nums; }
+  table.dblog .dis td { color: var(--muted); font-style: italic; }
 </style>
 </head>
 <body>
@@ -193,6 +195,9 @@
 
     <h2 style="margin-top:14px;">Backend — instellingen per CTA (sim-seconden)</h2>
     <div id="settings"></div>
+
+    <h2 style="margin-top:14px;">DB-log (live)</h2>
+    <div id="dblog" style="max-height:220px; overflow-y:auto;"></div>
     <div class="legend">
       <strong>Standaard:</strong> de <b>forceer-knoppen</b> staan centraal — klik een CTA om 'm te tonen. Er verschijnt niets uit zichzelf.
       <br><strong>Tijd-gestuurde flow zien?</strong> Zet <b>Auto-timers aan</b>: seat een tafel → <b>CTA 1</b> (first order);
@@ -275,9 +280,16 @@ function addDbRow(cta_nr, tafelnr, st, actie, resp){
   const tijd = `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
   const tnr = (tafelnr==null?'-':tafelnr);
   dbRecords.push({ cta_nr, datum, tijd, kelner:"Peter", tafelnr:tnr, status:st, actie, response_sec:resp });
-  log(`DB ◀ <code>${cta_nr};${datum};${tijd};Peter;${tnr};${st};${actie};${resp}</code>`, "db");
   const badge = document.getElementById("dbCount");
   if (badge) badge.textContent = dbRecords.length + " in DB";
+  renderDbLog();
+}
+function renderDbLog(){
+  const el = document.getElementById("dblog"); if (!el) return;
+  if (!dbRecords.length){ el.innerHTML = `<div class="small">Nog geen regels — toon/forceer een CTA en handel 'm af.</div>`; return; }
+  const rows = [...dbRecords].slice(-80).reverse().map(r =>
+    `<tr class="${r.status==='disabled'?'dis':''}"><td>${r.tijd}</td><td>CTA ${r.cta_nr}</td><td>${r.tafelnr}</td><td>${r.status}</td><td>${r.actie||'—'}</td><td>${r.response_sec===''?'—':r.response_sec+'s'}</td></tr>`).join("");
+  el.innerHTML = `<table class="settings dblog"><tr><th>tijd</th><th>CTA</th><th>tafel</th><th>status</th><th>actie</th><th>resp</th></tr>${rows}</table>`;
 }
 function pushRecord(c, actie){ addDbRow(c.type, c.tableNr, "enabled", actie, clock - c.createdAt); }
 function shadowLog(type, nr){ addDbRow(type, nr, "disabled", "", ""); }   // zou getoond zijn, maar CTA staat uit
@@ -648,6 +660,7 @@ function renderTables(){
 renderTables();
 render();
 renderSettings();
+renderDbLog();
 log("Demo gestart. Seat een tafel of forceer een CTA om te beginnen.", "ev");
 setInterval(tick, 1000);
 </script>

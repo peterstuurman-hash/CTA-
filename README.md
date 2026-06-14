@@ -21,7 +21,7 @@ Een zelfstandige, interactieve demo van het Oscar CTA-systeem voor de horeca: Os
 
 **Handy (rechts)** — toont max. 3 CTA-kaarten tegelijk, gesorteerd op prio (CTA-nummer). Elke knop voert de actie uit en je ziet het resultaat in de **log** onderaan.
 
-**Logging & database** — elke afgeronde CTA (knop-respons óf verval) wordt als regel vastgelegd in het formaat `cta_nr;kelner;datum;tijd;actie;response_sec`. In de log zie je de DB-regels paars; met **⬇ DB-log (CSV)** download je alle regels — dit staat model voor de database-insert in de echte backend.
+**Logging & database** — elke (zou-)getoonde CTA wordt vastgelegd: `cta_nr;datum;tijd;kelner;tafelnr;status;actie;response_sec`. In het backend-scherm staat een **live DB-log-tabel** die meteen meegroeit; met **⬇ DB-log (CSV)** kun je alles exporteren. `disabled` CTA's verschijnen niet op de handy maar worden wél gelogd (shadow), zodat je ziet hoe vaak ze zóúden afgaan.
 
 ## Let op
 
