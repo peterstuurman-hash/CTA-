@@ -193,6 +193,9 @@
       <span class="badge" id="dbCount">0 in DB</span>
     </div>
 
+    <h2 style="margin-top:14px;">Backend — CTA-niveau (start zacht, schaal later op)</h2>
+    <div class="controls" id="niveau"></div>
+
     <h2 style="margin-top:14px;">Backend — instellingen per CTA (sim-seconden)</h2>
     <div id="settings"></div>
 
@@ -243,7 +246,31 @@ const T = {
   CTA8_REPUSH: 300,          // CTA8 NO -> komt nog 1x terug na (backend in sec)
   CTA8_MAX: 2,               // max. keer CTA8 per ticket
   KELNER_IDLE: 3,            // geen CTA's < X sec na laatste kelner-actie
+  CTA_MAX_PER_WINDOW: 6,     // tempo-limiet: max CTA's per venster per handy
+  CTA_WINDOW: 600,           // venster voor tempo-limiet (sec)
 };
+// CTA-niveau (adoptie-ramp): welke CTA's aan + hoe streng de rem
+let currentNiveau = 3;
+let shownTimes = [];   // tijdstippen waarop een CTA daadwerkelijk getoond is (tempo-limiet)
+const NIVEAUS = {
+  1: { aan:[1,4,6,8,9,10],            idle:60, max:1, window:600 },  // introductie: streng
+  2: { aan:[1,2,3,4,6,8,9,10],        idle:20, max:3, window:600 },  // gemiddeld
+  3: { aan:[1,2,3,4,5,6,7,8,9,10],    idle:3,  max:6, window:600 },  // volledig
+};
+function setNiveau(n){
+  const cfg = NIVEAUS[n]; if (!cfg) return;
+  for (let t=1; t<=10; t++) status[t] = cfg.aan.includes(t) ? "enabled" : "disabled";
+  T.KELNER_IDLE = cfg.idle; T.CTA_MAX_PER_WINDOW = cfg.max; T.CTA_WINDOW = cfg.window;
+  currentNiveau = n;
+  renderNiveau(); renderSettings();
+  log(`CTA-niveau ${n} ingesteld`, "ev"); toast(`CTA-niveau ${n}`);
+}
+function renderNiveau(){
+  const el = document.getElementById("niveau"); if (!el) return;
+  const labels = { 1:"1 · Introductie", 2:"2 · Gemiddeld", 3:"3 · Volledig" };
+  el.innerHTML = `<span class="small" style="align-self:center;margin-right:4px;">CTA-niveau:</span>` +
+    [1,2,3].map(n => `<button class="small ${currentNiveau===n?'primary':''}" onclick="setNiveau(${n})">${labels[n]}</button>`).join("");
+}
 
 let clock = 0, busy = false, autoOn = false, lastKelnerAction = null, ctaSeq = 1, ctas = [], dbRecords = [];
 
@@ -344,8 +371,13 @@ function addCTA(type, nr, opts={}){
   if (status[type]==="disabled"){ shadowLog(type, nr); toast(`CTA ${type} disabled — alleen gelogd`); return; }
   // Kelner-druk: geen (niet-geforceerde) CTA als de kelner net iets deed — per CTA instelbaar (block by busy)
   if (!opts.forced && blockByBusy[type] && lastKelnerAction != null && (clock - lastKelnerAction) < T.KELNER_IDLE) return;
+  // Tempo-limiet: max X CTA's per venster per handy (CTA-niveau)
+  if (!opts.forced && T.CTA_MAX_PER_WINDOW){
+    const recent = shownTimes.filter(ts => clock - ts < T.CTA_WINDOW).length;
+    if (recent >= T.CTA_MAX_PER_WINDOW) return;
+  }
   const c = { id: ctaSeq++, type, tableNr: nr, createdAt: clock, ...opts };
-  ctas.push(c);
+  ctas.push(c); shownTimes.push(clock);
   log(`Oscar pusht <b>CTA ${type}</b>${nr?` · tafel ${nr}`:""} → handy`, "cta");
   render();
   return c;
@@ -663,6 +695,7 @@ function renderTables(){
 /* ---------- start ---------- */
 renderTables();
 render();
+renderNiveau();
 renderSettings();
 renderDbLog();
 log("Demo gestart. Seat een tafel of forceer een CTA om te beginnen.", "ev");
