@@ -6,30 +6,33 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="theme-color" content="#0b0f14" />
+<meta name="theme-color" content="#070b10" />
 <title>Oscar — Handy (mobiel)</title>
 <style>
   :root {
-    --bg: #0b0f14;
-    --screen: #10151c;
-    --card: #1a212b;
-    --card-2: #212b37;
-    --line: #2a3644;
-    --line-soft: #202a35;
-    --text: #eaf1f8;
-    --muted: #8595a6;
-    --accent: #4c8dff;
-    --green: #2ecc71;
-    --amber: #f5a623;
-    --red: #e7515a;
-    --purple: #9b59ff;
+    --text: #f4f8fc;
+    --muted: rgba(228,238,248,.62);
+    --faint: rgba(228,238,248,.40);
+    --glass: rgba(30,40,54,.62);
+    --glass-line: rgba(255,255,255,.14);
+    --accent: #64a0ff;
+    --green: #37d67a;
+    --amber: #f7b23b;
+    --red: #ff5d68;
+    --purple: #b48bff;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg); color: var(--text); line-height: 1.4;
-    display: flex; flex-direction: column; overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text); overflow: hidden; user-select: none; -webkit-user-select: none;
+    display: flex; flex-direction: column;
+    /* lockscreen wallpaper */
+    background:
+      radial-gradient(120% 80% at 20% -10%, #1c3a5e 0%, transparent 55%),
+      radial-gradient(130% 90% at 90% 110%, #3a1f52 0%, transparent 55%),
+      linear-gradient(160deg, #0b1220 0%, #070b10 60%, #05070b 100%);
+    background-color: #070b10;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
     -webkit-font-smoothing: antialiased;
   }
@@ -37,142 +40,147 @@
   /* ---------- device status bar ---------- */
   .statusbar {
     flex: 0 0 auto; display: flex; justify-content: space-between; align-items: center;
-    padding: 8px 20px 6px; font-size: 14px; font-weight: 700;
-    font-variant-numeric: tabular-nums; color: var(--text);
+    padding: 8px 22px 4px; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums;
   }
-  .statusbar .sig { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
-  .statusbar .bat { width: 24px; height: 12px; border: 1.5px solid var(--muted); border-radius: 3px; position: relative; }
-  .statusbar .bat::after { content: ""; position: absolute; right: -3px; top: 3px; width: 2px; height: 6px; background: var(--muted); border-radius: 0 1px 1px 0; }
-  .statusbar .bat i { position: absolute; inset: 1.5px; width: 70%; background: var(--green); border-radius: 1px; display: block; }
+  .statusbar .sig { display: flex; gap: 7px; align-items: center; font-size: 12px; }
+  .bat { width: 24px; height: 12px; border: 1.5px solid rgba(255,255,255,.65); border-radius: 3px; position: relative; }
+  .bat::after { content: ""; position: absolute; right: -3px; top: 3.5px; width: 2px; height: 5px; background: rgba(255,255,255,.65); border-radius: 0 1px 1px 0; }
+  .bat i { position: absolute; inset: 1.5px; width: 72%; background: var(--green); border-radius: 1px; display: block; }
 
-  /* ---------- app header (waiter identity) ---------- */
-  .apphead {
-    flex: 0 0 auto; display: flex; align-items: center; gap: 12px;
-    padding: 10px 18px 14px; border-bottom: 1px solid var(--line-soft);
+  /* ---------- lockscreen clock ---------- */
+  .lock {
+    flex: 0 0 auto; text-align: center; padding: 10px 16px 6px;
   }
-  .apphead .logo {
-    width: 40px; height: 40px; flex: 0 0 auto; border-radius: 12px;
-    background: linear-gradient(150deg, #2f6bd6, #1b3f86);
-    display: grid; place-items: center; font-size: 20px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.15);
+  .lock .date { font-size: 15px; font-weight: 600; color: rgba(255,255,255,.82); letter-spacing: .01em; }
+  .lock .time { font-size: 68px; font-weight: 300; letter-spacing: -.02em; line-height: 1.02; font-variant-numeric: tabular-nums; }
+  .lock .who {
+    margin-top: 2px; font-size: 13px; color: var(--muted); font-weight: 600;
+    display: inline-flex; align-items: center; gap: 7px;
   }
-  .apphead .who { flex: 1 1 auto; min-width: 0; }
-  .apphead .who .name { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-  .apphead .who .name .live {
-    font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
-    color: var(--green); display: inline-flex; align-items: center; gap: 5px;
-  }
-  .apphead .who .name .live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(46,204,113,.6); animation: pulse 2s infinite; }
-  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46,204,113,.5);} 70% { box-shadow: 0 0 0 6px rgba(46,204,113,0);} 100% { box-shadow: 0 0 0 0 rgba(46,204,113,0);} }
-  .apphead .who .sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
-  .apphead .count {
-    flex: 0 0 auto; font-size: 12px; font-weight: 700; color: var(--muted);
-    background: var(--card); border: 1px solid var(--line); padding: 5px 11px; border-radius: 20px;
-    font-variant-numeric: tabular-nums;
-  }
+  .lock .who .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
 
   /* ---------- notification feed ---------- */
   .feed {
     flex: 1 1 auto; overflow-y: auto; overflow-x: hidden;
-    padding: 14px 14px 8px; display: flex; flex-direction: column; gap: 12px;
+    padding: 14px 12px 10px; display: flex; flex-direction: column; gap: 11px;
     -webkit-overflow-scrolling: touch;
   }
-  .empty {
-    margin: auto; text-align: center; color: var(--muted); padding: 30px 20px;
+  .feed-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 6px 2px; font-size: 13px; font-weight: 700; color: var(--muted);
   }
-  .empty .big { font-size: 40px; margin-bottom: 10px; opacity: .55; }
-  .empty .t { font-size: 15px; font-weight: 600; color: var(--text); }
-  .empty .s { font-size: 13px; margin-top: 4px; }
+  .feed-head .clr { color: var(--accent); font-weight: 700; background: none; border: none; font: inherit; padding: 4px; cursor: pointer; }
+  .empty { margin: auto; text-align: center; color: var(--muted); padding: 24px; }
+  .empty .big { font-size: 34px; opacity: .5; margin-bottom: 8px; }
+  .empty .t { font-size: 15px; font-weight: 600; color: rgba(255,255,255,.85); }
+  .empty .s { font-size: 13px; margin-top: 3px; color: var(--faint); }
 
-  .cta {
-    background: var(--card); border: 1px solid var(--line); border-radius: 18px;
-    padding: 15px 16px 14px; box-shadow: 0 8px 24px rgba(0,0,0,.35);
-    animation: drop .22s cubic-bezier(.2,.7,.3,1);
-    border-left: 4px solid var(--accent);
-  }
-  @keyframes drop { from { opacity: 0; transform: translateY(-12px) scale(.98); } to { opacity: 1; transform: none; } }
-  .cta.leaving { animation: leave .2s ease-in forwards; }
-  @keyframes leave { to { opacity: 0; transform: translateX(40px) scale(.96); } }
+  /* notification = swipeable surface over a reveal background */
+  .note { position: relative; border-radius: 22px; }
+  .note.dropin { animation: drop .26s cubic-bezier(.2,.8,.3,1); }
+  @keyframes drop { from { opacity: 0; transform: translateY(-14px) scale(.97); } to { opacity: 1; transform: none; } }
+  .note.dismiss-l { animation: outL .22s ease-in forwards; }
+  .note.dismiss-r { animation: outR .22s ease-in forwards; }
+  @keyframes outL { to { opacity: 0; transform: translateX(-120%); } }
+  @keyframes outR { to { opacity: 0; transform: translateX(120%); } }
+  .note.collapsing { animation: collapse .22s ease forwards; overflow: hidden; }
+  @keyframes collapse { to { opacity: 0; max-height: 0; margin-top: -11px; transform: scaleY(.6); } }
 
-  .cta .head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .cta .head .tag {
-    font-size: 11px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
-    color: var(--muted); display: flex; align-items: center; gap: 7px; min-width: 0;
+  .reveal {
+    position: absolute; inset: 0; border-radius: 22px; display: flex; align-items: center;
+    justify-content: space-between; padding: 0 26px; font-size: 14px; font-weight: 800;
   }
-  .cta .head .tag .nr {
-    color: var(--accent); background: rgba(76,141,255,.14); border-radius: 6px;
-    padding: 1px 7px; font-size: 11px; letter-spacing: 0;
-  }
-  .cta .head .ago { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .cta .title { font-size: 19px; font-weight: 800; letter-spacing: -.01em; margin: 11px 0 14px; line-height: 1.2; text-wrap: balance; }
-  .cta .table { color: var(--muted); font-weight: 600; }
-  .cta .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
-  .cta .btns.b3 { grid-template-columns: 1fr 1fr 1fr; }
-  .cta .btns.b1 { grid-template-columns: 1fr; }
+  .reveal .r-ok { color: var(--green); display: flex; align-items: center; gap: 8px; opacity: 0; }
+  .reveal .r-later { color: var(--faint); display: flex; align-items: center; gap: 8px; opacity: 0; margin-left: auto; }
 
+  .surface {
+    position: relative; z-index: 2;
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(26px) saturate(150%); backdrop-filter: blur(26px) saturate(150%);
+    border: 1px solid var(--glass-line); border-radius: 22px;
+    padding: 13px 15px 14px; box-shadow: 0 10px 30px rgba(0,0,0,.38);
+    touch-action: pan-y;
+  }
+  .surface::before {
+    /* accent stripe by urgency */
+    content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px;
+    border-radius: 3px; background: var(--accent);
+  }
+  .v-blue   .surface::before { background: var(--accent); }
+  .v-amber  .surface::before { background: var(--amber); }
+  .v-red    .surface::before { background: var(--red); }
+  .v-green  .surface::before { background: var(--green); }
+  .v-purple .surface::before { background: var(--purple); }
+
+  .n-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding-left: 8px; }
+  .n-app { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; letter-spacing: .02em; color: rgba(255,255,255,.9); }
+  .n-app .ic {
+    width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; font-size: 13px;
+    background: linear-gradient(150deg, #3a74d6, #1e2c66); box-shadow: inset 0 1px 0 rgba(255,255,255,.2);
+  }
+  .n-app .cta-nr { color: var(--muted); font-weight: 600; }
+  .n-when { margin-left: auto; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .n-title { font-size: 17px; font-weight: 700; line-height: 1.25; letter-spacing: -.01em; padding-left: 8px; text-wrap: balance; }
+  .n-title b { font-weight: 800; }
+  .n-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 13px; padding-left: 8px; }
+  .n-actions.a3 { grid-template-columns: 1fr 1fr 1fr; }
+  .n-actions.a1 { grid-template-columns: 1fr; }
   .ob {
-    min-height: 50px; border-radius: 13px; font: inherit; font-weight: 800; font-size: 15px;
-    border: 1.5px solid var(--line); background: var(--card-2); color: var(--text); cursor: pointer;
-    transition: transform .06s, filter .12s; display: grid; place-items: center;
+    min-height: 46px; border-radius: 13px; font: inherit; font-weight: 700; font-size: 15px;
+    border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.09); color: var(--text);
+    cursor: pointer; transition: transform .06s, filter .12s; display: grid; place-items: center;
   }
-  .ob:active { transform: scale(.96); filter: brightness(1.15); }
-  .ob.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .ob.danger { background: transparent; border-color: rgba(231,81,90,.55); color: #ff8b93; }
+  .ob:active { transform: scale(.95); filter: brightness(1.25); }
+  .ob.primary { background: var(--accent); border-color: transparent; color: #06131f; font-weight: 800; }
+  .ob.danger  { background: rgba(255,93,104,.14); border-color: rgba(255,93,104,.4); color: #ff9ba2; }
+  .v-purple .ob.primary { background: var(--purple); color: #150a2b; }
+  .v-green  .ob.primary { background: var(--green); color: #032013; }
 
-  /* accent variants per CTA family */
-  .cta.v-blue   { border-left-color: var(--accent); }
-  .cta.v-amber  { border-left-color: var(--amber); }
-  .cta.v-red    { border-left-color: var(--red); }
-  .cta.v-green  { border-left-color: var(--green); }
-  .cta.v-purple { border-left-color: var(--purple); }
-  .cta.v-purple .head .tag .nr { color: #c8b4ff; background: rgba(155,89,255,.16); }
-  .cta.v-purple .ob.primary { background: var(--purple); border-color: var(--purple); }
-
-  .queue {
-    text-align: center; font-size: 12px; color: var(--muted); padding: 2px 0 6px;
-    display: flex; align-items: center; gap: 8px; justify-content: center;
-  }
-  .queue::before, .queue::after { content: ""; height: 1px; flex: 1; background: var(--line-soft); max-width: 60px; }
+  .swipe-tip { text-align: center; font-size: 11.5px; color: var(--faint); padding: 4px 0 2px; }
 
   /* ---------- toast ---------- */
   .toast {
-    position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%) translateY(12px);
-    background: rgba(20,28,38,.97); border: 1px solid var(--line); color: var(--text);
-    padding: 12px 20px; border-radius: 30px; font-size: 15px; font-weight: 700;
+    position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%) translateY(12px);
+    background: rgba(16,22,30,.92); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,.14); color: var(--text);
+    padding: 11px 20px; border-radius: 30px; font-size: 15px; font-weight: 700;
     box-shadow: 0 14px 40px rgba(0,0,0,.55); opacity: 0; pointer-events: none; z-index: 100;
     max-width: 82%; text-align: center; transition: opacity .18s, transform .18s;
     display: flex; align-items: center; gap: 9px;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast .ic { color: var(--green); font-size: 16px; }
+  .toast .ic { color: var(--green); }
 
-  /* ---------- demo control dock ---------- */
+  /* ---------- demo dock ---------- */
   .dock-toggle {
-    flex: 0 0 auto; border: none; border-top: 1px solid var(--line);
-    background: var(--screen); color: var(--muted); cursor: pointer;
-    padding: 13px; padding-bottom: calc(13px + env(safe-area-inset-bottom));
+    flex: 0 0 auto; border: none; border-top: 1px solid rgba(255,255,255,.08);
+    background: rgba(10,14,20,.6); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+    color: var(--muted); cursor: pointer;
+    padding: 12px; padding-bottom: calc(12px + env(safe-area-inset-bottom));
     font: inherit; font-weight: 700; font-size: 13px;
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
-  .dock-toggle .chev { transition: transform .25s; }
+  .dock-toggle .chev { transition: transform .25s; display: inline-block; }
   .dock-toggle.open .chev { transform: rotate(180deg); }
-  .dock { flex: 0 0 auto; background: var(--screen); max-height: 0; overflow: hidden; transition: max-height .28s ease; }
-  .dock.open { max-height: 64vh; overflow-y: auto; border-top: 1px solid var(--line-soft); }
-  .dock-inner { padding: 6px 14px calc(18px + env(safe-area-inset-bottom)); }
-  .dock h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 14px 2px 8px; font-weight: 700; }
+  .dock { flex: 0 0 auto; background: rgba(8,12,18,.9); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); max-height: 0; overflow: hidden; transition: max-height .28s ease; }
+  .dock.open { max-height: 62vh; overflow-y: auto; border-top: 1px solid rgba(255,255,255,.06); }
+  .dock-inner { padding: 4px 14px calc(16px + env(safe-area-inset-bottom)); }
+  .dock h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); margin: 14px 2px 8px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
   .dgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .dbtn {
     min-height: 46px; font: inherit; font-weight: 700; font-size: 13px; cursor: pointer;
-    border: 1px solid var(--line); background: var(--card); color: var(--text);
-    border-radius: 12px; padding: 8px 10px; text-align: left; line-height: 1.25;
+    border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.05); color: var(--text);
+    border-radius: 12px; padding: 8px 10px; text-align: left; line-height: 1.2;
     display: flex; flex-direction: column; justify-content: center;
   }
   .dbtn:active { transform: scale(.97); }
-  .dbtn .k { font-size: 11px; color: var(--accent); font-weight: 800; }
+  .dbtn .k { font-size: 11px; color: var(--accent); font-weight: 800; margin-bottom: 1px; }
   .dbtn.wide { grid-column: 1 / -1; text-align: center; align-items: center; }
-  .dbtn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .dbtn.on .k { color: rgba(255,255,255,.85); }
-  .dnote { font-size: 12px; color: var(--muted); margin: 2px 2px 0; line-height: 1.5; }
+  .dbtn.on { background: var(--accent); border-color: var(--accent); color: #06131f; }
+  .dbtn.on .k { color: rgba(6,19,31,.7); }
+  .switch { font-size: 12px; font-weight: 700; color: var(--muted); background: none; border: none; cursor: pointer; padding: 2px 6px; }
+  .switch b { color: var(--accent); }
+  .dnote { font-size: 12px; color: var(--faint); margin: 4px 2px 0; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -182,13 +190,10 @@
   <span class="sig">5G ▪▪▪▪ <span class="bat"><i></i></span></span>
 </div>
 
-<div class="apphead">
-  <div class="logo">🍽️</div>
-  <div class="who">
-    <div class="name">Peter <span class="live">actief</span></div>
-    <div class="sub">Handy · Wijk RES Noord · tafels 1–19</div>
-  </div>
-  <div class="count" id="count">0</div>
+<div class="lock">
+  <div class="date" id="date">donderdag 9 juli</div>
+  <div class="time" id="bigclock">14:45</div>
+  <div class="who"><span class="dot"></span> Handy · kelner Peter · RES Noord</div>
 </div>
 
 <div class="feed" id="feed"></div>
@@ -202,12 +207,12 @@
   <div class="dock-inner">
     <h4>Auto-verhaallijn</h4>
     <div class="dgrid">
-      <button class="dbtn wide on" id="autoBtn" onclick="toggleAuto()">
+      <button class="dbtn wide" id="autoBtn" onclick="toggleAuto()">
         <span class="k">▶ Speel de service af</span>
-        <span id="autoLabel" style="font-weight:600;color:var(--muted)">seat → drankje → hoofd → dessert</span>
+        <span style="font-weight:600;color:var(--muted)">seat → drankje → hoofd → dessert</span>
       </button>
     </div>
-    <h4>Forceer een CTA (verschijnt op de handy)</h4>
+    <h4>Forceer een CTA</h4>
     <div class="dgrid">
       <button class="dbtn" onclick="force(1)"><span class="k">CTA 1</span>First order</button>
       <button class="dbtn" onclick="force(2)"><span class="k">CTA 2</span>Sleeping table</button>
@@ -220,17 +225,17 @@
       <button class="dbtn" onclick="force(9)"><span class="k">CTA 9</span>Gast wil bestellen</button>
       <button class="dbtn" onclick="force(10)"><span class="k">CTA 10</span>Gast wil betalen</button>
     </div>
-    <h4>Reset</h4>
+    <h4>Instellingen <button class="switch" id="soundBtn" onclick="toggleSound()">Geluid: <b>aan</b></button></h4>
     <div class="dgrid">
-      <button class="dbtn wide" onclick="clearAll()">Wis alle CTA's</button>
+      <button class="dbtn wide" onclick="clearAll()">Wis alle meldingen</button>
     </div>
-    <p class="dnote">Max 3 kaarten zichtbaar, gesorteerd op prioriteit (CTA-nummer). Trilt op een echte telefoon bij een nieuwe melding.</p>
+    <p class="dnote">Swipe een melding naar rechts om 'm af te handelen, naar links om later te doen. Trilt en pingt bij binnenkomst (op een echte telefoon).</p>
   </div>
 </div>
 
 <script>
 /* ----------------------------------------------------------------------
-   Oscar — kelnerhandy (mobiel). Zelfstandige demo, geen dependencies.
+   Oscar — kelnerhandy (mobiel). Native-notificatie demo. Geen dependencies.
    Versnelde simulatie: seconden i.p.v. minuten. Eén tafel: 14 (Sanne).
 ---------------------------------------------------------------------- */
 
@@ -241,7 +246,7 @@ const T = {
   CTA5_POSTPONE: 8,
 };
 
-let clock = 0, ctaSeq = 1, ctas = [], toastTimer = null, autoOn = false;
+let clock = 0, ctaSeq = 1, ctas = [], toastTimer = null, autoOn = false, soundOn = true;
 const table = { nr: 14, naam: "Sanne" };
 
 function resetStory(){
@@ -254,14 +259,46 @@ function resetStory(){
 }
 resetStory();
 
-/* ---------- clock (device + engine) ---------- */
+/* ---------- device clock (cosmetic) ---------- */
 let hh = 14, mm = 45;
-function paintClock(){ document.getElementById("clock").textContent = String(hh).padStart(2,"0")+":"+String(mm).padStart(2,"0"); }
-function fmtAgo(s){ return s < 60 ? s+"s geleden" : Math.floor(s/60)+"m geleden"; }
+const DAYS = ["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"];
+const MONTHS = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"];
+function paintClock(){
+  const hhmm = String(hh).padStart(2,"0")+":"+String(mm).padStart(2,"0");
+  document.getElementById("clock").textContent = hhmm;
+  document.getElementById("bigclock").textContent = hhmm;
+}
+function paintDate(){
+  const d = new Date();
+  document.getElementById("date").textContent = `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}
+function fmtAgo(s){ return s < 5 ? "nu" : s < 60 ? s+"s geleden" : Math.floor(s/60)+"m geleden"; }
 
-/* ---------- haptics ---------- */
-const vibrate = { 1:true, 2:true, 3:true, 4:false, 5:false, 6:false, 7:false, 8:false, 9:true, 10:true };
-function buzz(type){ if (vibrate[type] && navigator.vibrate) { try { navigator.vibrate(45); } catch(e){} } }
+/* ---------- haptics + sound ---------- */
+const vibePattern = { 1:[35], 2:[30,60,30], 3:[40], 9:[35], 10:[35] };
+let actx = null;
+function unlockAudio(){
+  if (actx) return;
+  try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ actx = null; }
+}
+function ping(urgent){
+  if (!soundOn || !actx) return;
+  const now = actx.currentTime;
+  [ [urgent?740:588, 0], [urgent?988:784, .09] ].forEach(([f,dt]) => {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = "sine"; o.frequency.value = f; o.connect(g); g.connect(actx.destination);
+    g.gain.setValueAtTime(0.0001, now+dt);
+    g.gain.exponentialRampToValueAtTime(0.16, now+dt+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, now+dt+0.32);
+    o.start(now+dt); o.stop(now+dt+0.34);
+  });
+}
+function alertUser(type){
+  const urgent = (type===2 || type===9 || type===10);
+  if (navigator.vibrate) { try { navigator.vibrate(vibePattern[type] || [25]); } catch(e){} }
+  ping(urgent);
+}
+document.addEventListener("pointerdown", unlockAudio, { once:false });
 
 /* ---------- toast ---------- */
 function toast(msg){
@@ -269,18 +306,18 @@ function toast(msg){
   el.innerHTML = `<span class="ic">✓</span><span>${msg}</span>`;
   el.classList.add("show");
   if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2100);
 }
 
 /* ---------- CTA store ---------- */
 function hasCTA(type){ return ctas.some(c => c.type === type); }
 function addCTA(type){
   if (hasCTA(type)) return;
-  ctas.push({ id: ctaSeq++, type, createdAt: clock });
-  buzz(type); render();
+  const c = { id: ctaSeq++, type, createdAt: clock, fresh: true };
+  ctas.push(c); alertUser(type); syncFeed();
 }
-function removeCTA(id){ ctas = ctas.filter(c => c.id !== id); render(); }
-function clearAll(){ ctas = []; render(); toast("Meldingen gewist"); }
+function removeCTA(id){ ctas = ctas.filter(c => c.id !== id); syncFeed(); }
+function clearAll(){ if(!ctas.length) return; ctas = []; syncFeed(); toast("Meldingen gewist"); }
 
 function force(type){
   if (table.state === "leeg") { table.state = "geseat"; table.seatedAt = clock; }
@@ -290,7 +327,7 @@ function force(type){
   addCTA(type);
 }
 
-/* ---------- response feedback text ---------- */
+/* ---------- response feedback ---------- */
 function respText(type, action){
   if (["1/wait","2/wait","5/wait","6/no","8/no"].includes(type+"/"+action)) return "Extra wachttijd — komt terug";
   const map = {
@@ -305,7 +342,6 @@ function respText(type, action){
   return map[type+"/"+action] || "OK";
 }
 
-/* ---------- handle a response ---------- */
 function ctaAction(id, action){
   const c = ctas.find(x => x.id === id); if (!c) return;
   if (c.type === 1 && action === "close" && !confirm(`Tafel ${table.nr} echt sluiten?`)) return;
@@ -339,52 +375,151 @@ function ctaAction(id, action){
 const PRIO = { 1:1, 2:2, 9:3, 10:4, 3:5, 4:6, 5:7, 6:8, 7:9, 8:10 };
 function tl(){ return `Tafel ${table.nr} · ${table.naam}`; }
 const CARD = {
-  1:  { v:"v-blue",   title:()=>`${tl()} — eerste drankje opnemen`,        btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CLOSE","danger","close"]] },
-  2:  { v:"v-amber",  title:()=>`${tl()} — even checken`,                  btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CALL LG","","calllg"]] },
-  3:  { v:"v-red",    title:()=>`${tl()} — niet geseat. Vorige tafel?`,    btns:[["NEW","primary","new"],["PULL","","pull"]] },
-  4:  { v:"v-blue",   title:()=>`${tl()} — promo: offreren toegestaan`,    btns:[["OK","","ok"]] },
-  5:  { v:"v-purple", title:()=>`${tl()} — offer a coffee`,                btns:[["ORDER","primary","order"],["WAIT","","wait"],["NO","","no"]] },
-  6:  { v:"v-green",  title:()=>`${tl()} — klaar voor hoofdgerecht?`,      btns:[["GO","primary","go"],["NO","","no"]] },
-  7:  { v:"v-blue",   title:()=>`Hoi Peter, ben je nog actief in RES Noord?`, btns:[["JA","primary","ja"],["NEE","","nee"],["PAUZE","","pauze"]] },
-  8:  { v:"v-green",  title:()=>`${tl()} — klaar voor dessert?`,           btns:[["GO","primary","go"],["NO","","no"]] },
-  9:  { v:"v-blue",   title:()=>`${tl()} — gast wil bestellen`,            btns:[["ORDER","primary","order"],["NEE","","dismiss"]] },
-  10: { v:"v-blue",   title:()=>`${tl()} — gast wil betalen`,              btns:[["PRINT","primary","print"],["NEE","","dismiss"]] },
+  1:  { v:"v-blue",   title:()=>`<b>${tl()}</b> — eerste drankje opnemen`,        btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CLOSE","danger","close"]], primary:"order" },
+  2:  { v:"v-amber",  title:()=>`<b>${tl()}</b> — slaapt, even checken`,          btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CALL LG","","calllg"]], primary:"order" },
+  3:  { v:"v-red",    title:()=>`<b>${tl()}</b> — niet geseat. Vorige tafel?`,     btns:[["NEW","primary","new"],["PULL","","pull"]], primary:"new" },
+  4:  { v:"v-blue",   title:()=>`<b>${tl()}</b> — promo: offreren toegestaan`,     btns:[["OK","primary","ok"]], primary:"ok" },
+  5:  { v:"v-purple", title:()=>`<b>${tl()}</b> — offer a coffee`,                 btns:[["ORDER","primary","order"],["WAIT","","wait"],["NO","","no"]], primary:"order" },
+  6:  { v:"v-green",  title:()=>`<b>${tl()}</b> — klaar voor hoofdgerecht?`,       btns:[["GO","primary","go"],["NO","","no"]], primary:"go" },
+  7:  { v:"v-blue",   title:()=>`Hoi Peter, ben je nog actief in <b>RES Noord</b>?`, btns:[["JA","primary","ja"],["NEE","","nee"],["PAUZE","","pauze"]], primary:"ja" },
+  8:  { v:"v-green",  title:()=>`<b>${tl()}</b> — klaar voor dessert?`,            btns:[["GO","primary","go"],["NO","","no"]], primary:"go" },
+  9:  { v:"v-blue",   title:()=>`<b>${tl()}</b> — gast wil bestellen`,             btns:[["ORDER","primary","order"],["NEE","","dismiss"]], primary:"order" },
+  10: { v:"v-blue",   title:()=>`<b>${tl()}</b> — gast wil betalen`,               btns:[["PRINT","primary","print"],["NEE","","dismiss"]], primary:"print" },
 };
 
-/* ---------- render ---------- */
-function render(){
+/* ---------- DOM: build one notification node ---------- */
+function buildNote(c){
+  const def = CARD[c.type];
+  const node = document.createElement("div");
+  node.className = `note ${def.v} dropin`;
+  node.dataset.id = c.id;
+
+  const primaryLabel = (def.btns.find(b => b[2] === def.primary) || def.btns[0])[0];
+  const aCls = def.btns.length === 1 ? "a1" : def.btns.length === 3 ? "a3" : "";
+  const btns = def.btns.map(([label, style, act]) =>
+    `<button class="ob ${style||''}" data-act="${act}">${label}</button>`).join("");
+
+  node.innerHTML = `
+    <div class="reveal">
+      <span class="r-ok">✓ ${primaryLabel}</span>
+      <span class="r-later">later ›</span>
+    </div>
+    <div class="surface">
+      <div class="n-top">
+        <span class="n-app"><span class="ic">🍽️</span> OSCAR <span class="cta-nr">· CTA ${c.type}</span></span>
+        <span class="n-when" data-when>${fmtAgo(clock - c.createdAt)}</span>
+      </div>
+      <div class="n-title">${def.title()}</div>
+      <div class="n-actions ${aCls}">${btns}</div>
+    </div>`;
+
+  // button actions
+  node.querySelectorAll(".ob").forEach(b => {
+    b.addEventListener("click", e => { e.stopPropagation(); ctaAction(c.id, b.dataset.act); });
+  });
+  attachSwipe(node, c, def);
+  return node;
+}
+
+/* ---------- swipe gesture ---------- */
+function attachSwipe(node, c, def){
+  const surface = node.querySelector(".surface");
+  const reveal  = node.querySelector(".reveal");
+  const rOk = reveal.querySelector(".r-ok");
+  const rLater = reveal.querySelector(".r-later");
+  let startX = 0, startY = 0, dx = 0, dragging = false, decided = null;
+
+  const onDown = e => {
+    if (e.target.closest(".ob")) return;   // buttons handle themselves
+    dragging = true; decided = null;
+    startX = e.clientX; startY = e.clientY; dx = 0;
+    surface.style.transition = "none";
+    surface.setPointerCapture && surface.setPointerCapture(e.pointerId);
+  };
+  const onMove = e => {
+    if (!dragging) return;
+    const mx = e.clientX - startX, my = e.clientY - startY;
+    if (decided === null){
+      if (Math.abs(mx) < 6 && Math.abs(my) < 6) return;
+      decided = Math.abs(mx) > Math.abs(my) ? "h" : "v";
+    }
+    if (decided !== "h") { dragging = false; surface.style.transform = ""; return; }
+    e.preventDefault();
+    dx = mx;
+    surface.style.transform = `translateX(${dx}px)`;
+    const p = Math.min(1, Math.abs(dx) / 90);
+    rOk.style.opacity = dx > 0 ? p : 0;
+    rLater.style.opacity = dx < 0 ? p : 0;
+  };
+  const onUp = () => {
+    if (!dragging) return;
+    dragging = false;
+    surface.style.transition = "transform .2s ease";
+    const TH = 92;
+    if (dx > TH){
+      node.classList.add("dismiss-r");
+      setTimeout(() => { ctaAction(c.id, def.primary); node.remove(); }, 200);
+    } else if (dx < -TH){
+      node.classList.add("dismiss-l");
+      const later = (c.type===6||c.type===8) ? "no" : (CARD[c.type].btns.some(b=>b[2]==="wait") ? "wait" : "dismiss");
+      setTimeout(() => { toast("Later — komt terug"); ctaAction(c.id, later); node.remove(); }, 200);
+    } else {
+      surface.style.transform = "";
+      rOk.style.opacity = 0; rLater.style.opacity = 0;
+    }
+  };
+  surface.addEventListener("pointerdown", onDown);
+  surface.addEventListener("pointermove", onMove);
+  surface.addEventListener("pointerup", onUp);
+  surface.addEventListener("pointercancel", onUp);
+}
+
+/* ---------- feed sync (add/remove nodes, keep order + animations) ---------- */
+function syncFeed(){
   const feed = document.getElementById("feed");
-  document.getElementById("count").textContent = ctas.length;
-
   const sorted = [...ctas].sort((a,b)=> (PRIO[a.type]||99)-(PRIO[b.type]||99) || a.createdAt-b.createdAt);
-  const visible = sorted.slice(0, 3);
-  const hidden = sorted.length - visible.length;
 
+  // empty state / header
+  let head = feed.querySelector(".feed-head");
+  let empty = feed.querySelector(".empty");
   if (!sorted.length){
-    feed.innerHTML =
-      `<div class="empty">
-         <div class="big">🔔</div>
-         <div class="t">Geen meldingen</div>
-         <div class="s">Speel de service af of forceer een CTA via de demo-bediening onderaan.</div>
-       </div>`;
+    feed.querySelectorAll(".note").forEach(n => n.remove());
+    if (head) head.remove();
+    if (!empty){
+      feed.innerHTML = `<div class="empty"><div class="big">🔔</div><div class="t">Geen meldingen</div><div class="s">Speel de service af of forceer een CTA onderaan.</div></div>`;
+    }
     return;
   }
+  if (empty) empty.remove();
+  if (!head){
+    head = document.createElement("div");
+    head.className = "feed-head";
+    head.innerHTML = `<span>Meldingen</span><button class="clr" onclick="clearAll()">Wis alles</button>`;
+    feed.prepend(head);
+  }
 
-  feed.innerHTML = visible.map(c => {
-    const def = CARD[c.type];
-    const cls = def.btns.length === 1 ? "b1" : def.btns.length === 3 ? "b3" : "";
-    const btns = def.btns.map(([label, style, act]) =>
-      `<button class="ob ${style||''}" onclick="ctaAction(${c.id},'${act}')">${label}</button>`).join("");
-    return `<div class="cta ${def.v}">
-      <div class="head">
-        <span class="tag"><span class="nr">CTA ${c.type}</span></span>
-        <span class="ago" id="ago-${c.id}">${fmtAgo(clock - c.createdAt)}</span>
-      </div>
-      <div class="title">${def.title()}</div>
-      <div class="btns ${cls}">${btns}</div>
-    </div>`;
-  }).join("")
-  + (hidden > 0 ? `<div class="queue">+ ${hidden} in wachtrij</div>` : "");
+  const wanted = new Set(sorted.map(c => String(c.id)));
+  // remove nodes that are gone
+  feed.querySelectorAll(".note").forEach(n => {
+    if (!wanted.has(n.dataset.id) && !n.classList.contains("dismiss-l") && !n.classList.contains("dismiss-r")){
+      n.classList.add("collapsing"); setTimeout(() => n.remove(), 220);
+    }
+  });
+  // add/order nodes
+  let prev = head;
+  sorted.forEach(c => {
+    let node = feed.querySelector(`.note[data-id="${c.id}"]`);
+    if (!node){ node = buildNote(c); }
+    if (node.previousElementSibling !== prev){ prev.after(node); }
+    prev = node;
+  });
+}
+
+function updateWhens(){
+  ctas.forEach(c => {
+    const n = document.querySelector(`.note[data-id="${c.id}"] [data-when]`);
+    if (n) n.textContent = fmtAgo(clock - c.createdAt);
+  });
 }
 
 /* ---------- auto storyline ---------- */
@@ -394,55 +529,43 @@ function toggleAuto(){
   b.classList.toggle("on", autoOn);
   b.querySelector(".k").textContent = autoOn ? "⏸ Verhaallijn loopt…" : "▶ Speel de service af";
   if (autoOn){
-    resetStory(); ctas = []; render();
+    resetStory(); ctas = []; syncFeed();
     table.state = "geseat"; table.seatedAt = clock;
     toast("Tafel 14 geseat");
   }
 }
+function toggleSound(){
+  soundOn = !soundOn; unlockAudio();
+  document.getElementById("soundBtn").innerHTML = "Geluid: <b>" + (soundOn?"aan":"uit") + "</b>";
+  if (soundOn) ping(false);
+}
 
 function engine(){
   clock++;
-  // device clock advances 1 min per 2 sim-sec, cosmetic
   if (clock % 2 === 0){ mm++; if (mm >= 60){ mm = 0; hh = (hh+1) % 24; } paintClock(); }
-
-  // "Xs geleden" bijwerken zonder de kaart te herbouwen (geen sprong)
-  for (const c of ctas){
-    const el = document.getElementById("ago-" + c.id);
-    if (el) el.textContent = fmtAgo(clock - c.createdAt);
-  }
+  updateWhens();
 
   if (!autoOn || table.state === "leeg") return;
   const t = table;
-
-  // CTA 1 — first order
   if (!t.ordered && clock >= t.seatedAt + T.CTA1_DELAY && clock >= t.cta1PostponeUntil && !hasCTA(1)) addCTA(1);
-
-  // CTA 5 — offer a coffee terug na WAIT
   if (t.cta5RepushAt && clock >= t.cta5RepushAt && !t.cta5Done && !hasCTA(5)){ t.cta5RepushAt = 0; addCTA(5); }
-
-  // CTA 6 — ready for main na voorgerecht
-  if (t.starterAt != null && !t.cta6Shown && !t.cta6Done && t.mainFiredAt == null && clock >= t.starterAt + T.CTA6_AFTER_STARTER){
-    t.cta6Shown = true; t.cta6Pushes = 1; addCTA(6);
-  }
+  if (t.starterAt != null && !t.cta6Shown && !t.cta6Done && t.mainFiredAt == null && clock >= t.starterAt + T.CTA6_AFTER_STARTER){ t.cta6Shown = true; t.cta6Pushes = 1; addCTA(6); }
   if (t.cta6RepushAt && clock >= t.cta6RepushAt && !t.cta6Done && t.mainFiredAt == null && !hasCTA(6)){ t.cta6RepushAt = 0; t.cta6Pushes++; addCTA(6); }
   if (t.cta6AutoFireAt && clock >= t.cta6AutoFireAt && t.mainFiredAt == null){ t.cta6AutoFireAt = 0; t.mainFiredAt = clock; toast("Geen reactie — hoofdgerecht auto-gefired"); }
-
-  // CTA 8 — ready for dessert na hoofdgerecht
-  if (t.mainFiredAt != null && !t.cta8Shown && !t.cta8Done && clock >= t.mainFiredAt + T.CTA8_AFTER_MAIN){
-    t.cta8Shown = true; t.cta8Pushes = 1; addCTA(8);
-  }
+  if (t.mainFiredAt != null && !t.cta8Shown && !t.cta8Done && clock >= t.mainFiredAt + T.CTA8_AFTER_MAIN){ t.cta8Shown = true; t.cta8Pushes = 1; addCTA(8); }
   if (t.cta8RepushAt && clock >= t.cta8RepushAt && !t.cta8Done && !hasCTA(8)){ t.cta8RepushAt = 0; t.cta8Pushes++; addCTA(8); }
 }
 
 /* ---------- dock ---------- */
 function toggleDock(){
-  const d = document.getElementById("dock"), t = document.getElementById("dockToggle");
-  d.classList.toggle("open"); t.classList.toggle("open");
+  document.getElementById("dock").classList.toggle("open");
+  document.getElementById("dockToggle").classList.toggle("open");
 }
 
 /* ---------- boot ---------- */
+paintDate();
 paintClock();
-render();
+syncFeed();
 setInterval(engine, 1000);
 </script>
 </body>
