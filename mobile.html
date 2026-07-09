@@ -4,268 +4,446 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="theme-color" content="#11161d" />
+<meta name="theme-color" content="#0b0f14" />
 <title>Oscar — Handy (mobiel)</title>
 <style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+  :root {
+    --bg: #0b0f14;
+    --screen: #10151c;
+    --card: #1a212b;
+    --card-2: #212b37;
+    --line: #2a3644;
+    --line-soft: #202a35;
+    --text: #eaf1f8;
+    --muted: #8595a6;
+    --accent: #4c8dff;
+    --green: #2ecc71;
+    --amber: #f5a623;
+    --red: #e7515a;
+    --purple: #9b59ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: #11161d; color: #1c2530; display: flex; flex-direction: column; overflow: hidden;
+    background: var(--bg); color: var(--text); line-height: 1.4;
+    display: flex; flex-direction: column; overflow: hidden;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+    -webkit-font-smoothing: antialiased;
   }
-  /* status bar (decoratief) */
+
+  /* ---------- device status bar ---------- */
   .statusbar {
     flex: 0 0 auto; display: flex; justify-content: space-between; align-items: center;
-    padding: 6px 18px; font-size: 13px; font-weight: 700; color: #11161d; background: #f4f6f9;
+    padding: 8px 20px 6px; font-size: 14px; font-weight: 700;
+    font-variant-numeric: tabular-nums; color: var(--text);
   }
-  /* POS-scherm */
-  .poswrap { flex: 1 1 auto; position: relative; overflow: hidden; background: #e9edf2; }
-  .grid {
-    height: 100%; overflow-y: auto; padding: 8px;
-    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; align-content: start;
+  .statusbar .sig { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+  .statusbar .bat { width: 24px; height: 12px; border: 1.5px solid var(--muted); border-radius: 3px; position: relative; }
+  .statusbar .bat::after { content: ""; position: absolute; right: -3px; top: 3px; width: 2px; height: 6px; background: var(--muted); border-radius: 0 1px 1px 0; }
+  .statusbar .bat i { position: absolute; inset: 1.5px; width: 70%; background: var(--green); border-radius: 1px; display: block; }
+
+  /* ---------- app header (waiter identity) ---------- */
+  .apphead {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 12px;
+    padding: 10px 18px 14px; border-bottom: 1px solid var(--line-soft);
   }
-  .tile {
-    background: #dfe5ec; border: 1px solid #cfd7e0; border-left: 4px solid #b9c2cd; border-radius: 8px;
-    min-height: 70px; padding: 8px; font-size: 12px; font-weight: 600; color: #34404f;
-    display: flex; align-items: center; line-height: 1.25;
+  .apphead .logo {
+    width: 40px; height: 40px; flex: 0 0 auto; border-radius: 12px;
+    background: linear-gradient(150deg, #2f6bd6, #1b3f86);
+    display: grid; place-items: center; font-size: 20px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.15);
   }
-  .tile.g { border-left-color: #46b87a; }
-  .tile.b { border-left-color: #4c8dff; }
-  .tile.o { border-left-color: #f0a050; }
-  /* CTA-overlay (valt over de grid) */
-  .cta-stack {
-    position: absolute; top: 8px; left: 8px; right: 8px; z-index: 20;
-    display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+  .apphead .who { flex: 1 1 auto; min-width: 0; }
+  .apphead .who .name { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .apphead .who .name .live {
+    font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--green); display: inline-flex; align-items: center; gap: 5px;
   }
+  .apphead .who .name .live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(46,204,113,.6); animation: pulse 2s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46,204,113,.5);} 70% { box-shadow: 0 0 0 6px rgba(46,204,113,0);} 100% { box-shadow: 0 0 0 0 rgba(46,204,113,0);} }
+  .apphead .who .sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .apphead .count {
+    flex: 0 0 auto; font-size: 12px; font-weight: 700; color: var(--muted);
+    background: var(--card); border: 1px solid var(--line); padding: 5px 11px; border-radius: 20px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- notification feed ---------- */
+  .feed {
+    flex: 1 1 auto; overflow-y: auto; overflow-x: hidden;
+    padding: 14px 14px 8px; display: flex; flex-direction: column; gap: 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .empty {
+    margin: auto; text-align: center; color: var(--muted); padding: 30px 20px;
+  }
+  .empty .big { font-size: 40px; margin-bottom: 10px; opacity: .55; }
+  .empty .t { font-size: 15px; font-weight: 600; color: var(--text); }
+  .empty .s { font-size: 13px; margin-top: 4px; }
+
   .cta {
-    pointer-events: auto; background: #fff; border-radius: 16px; padding: 14px 16px;
-    box-shadow: 0 12px 34px rgba(10,20,30,.45); animation: drop .2s ease-out;
+    background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+    padding: 15px 16px 14px; box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    animation: drop .22s cubic-bezier(.2,.7,.3,1);
+    border-left: 4px solid var(--accent);
   }
-  @keyframes drop { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
-  .cta .head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; color: #5b6b7a; }
-  .cta .head .ago { display: flex; align-items: center; gap: 6px; }
-  .cta .head .dot { width: 9px; height: 9px; border-radius: 50%; background: #2ecc71; display: inline-block; }
-  .cta .head .vib { color: #8190a0; font-weight: 600; }
-  .cta .title { font-size: 20px; font-weight: 800; color: #14202b; margin: 10px 0 14px; line-height: 1.25; }
-  .cta .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .cta.three .btns { grid-template-columns: 1fr 1fr 1fr; }
+  @keyframes drop { from { opacity: 0; transform: translateY(-12px) scale(.98); } to { opacity: 1; transform: none; } }
+  .cta.leaving { animation: leave .2s ease-in forwards; }
+  @keyframes leave { to { opacity: 0; transform: translateX(40px) scale(.96); } }
+
+  .cta .head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .cta .head .tag {
+    font-size: 11px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+    color: var(--muted); display: flex; align-items: center; gap: 7px; min-width: 0;
+  }
+  .cta .head .tag .nr {
+    color: var(--accent); background: rgba(76,141,255,.14); border-radius: 6px;
+    padding: 1px 7px; font-size: 11px; letter-spacing: 0;
+  }
+  .cta .head .ago { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .cta .title { font-size: 19px; font-weight: 800; letter-spacing: -.01em; margin: 11px 0 14px; line-height: 1.2; text-wrap: balance; }
+  .cta .table { color: var(--muted); font-weight: 600; }
+  .cta .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .cta .btns.b3 { grid-template-columns: 1fr 1fr 1fr; }
+  .cta .btns.b1 { grid-template-columns: 1fr; }
+
   .ob {
-    min-height: 52px; border-radius: 12px; font: inherit; font-weight: 800; font-size: 16px;
-    border: 1.5px solid #cdd7e2; background: #fff; color: #1f3a4a; cursor: pointer;
+    min-height: 50px; border-radius: 13px; font: inherit; font-weight: 800; font-size: 15px;
+    border: 1.5px solid var(--line); background: var(--card-2); color: var(--text); cursor: pointer;
+    transition: transform .06s, filter .12s; display: grid; place-items: center;
   }
-  .ob:active { transform: scale(.97); }
-  .ob.primary { background: #234b5c; border-color: #234b5c; color: #fff; }
-  .ob.danger { background: #7a2533; border-color: #a23445; color: #fff; }
-  .cta.purple { background: linear-gradient(160deg,#3a2a63,#241b3f); }
-  .cta.purple .title, .cta.purple .head { color: #ece5ff; }
-  .cta.purple .head .vib { color: #b9a8e8; }
-  .cta.purple .ob { background: rgba(255,255,255,.08); border-color: #6b54a0; color: #ece5ff; }
-  .cta.purple .ob.primary { background: #9b59ff; border-color: #9b59ff; color: #fff; }
-  /* toast */
+  .ob:active { transform: scale(.96); filter: brightness(1.15); }
+  .ob.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .ob.danger { background: transparent; border-color: rgba(231,81,90,.55); color: #ff8b93; }
+
+  /* accent variants per CTA family */
+  .cta.v-blue   { border-left-color: var(--accent); }
+  .cta.v-amber  { border-left-color: var(--amber); }
+  .cta.v-red    { border-left-color: var(--red); }
+  .cta.v-green  { border-left-color: var(--green); }
+  .cta.v-purple { border-left-color: var(--purple); }
+  .cta.v-purple .head .tag .nr { color: #c8b4ff; background: rgba(155,89,255,.16); }
+  .cta.v-purple .ob.primary { background: var(--purple); border-color: var(--purple); }
+
+  .queue {
+    text-align: center; font-size: 12px; color: var(--muted); padding: 2px 0 6px;
+    display: flex; align-items: center; gap: 8px; justify-content: center;
+  }
+  .queue::before, .queue::after { content: ""; height: 1px; flex: 1; background: var(--line-soft); max-width: 60px; }
+
+  /* ---------- toast ---------- */
   .toast {
-    position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%) scale(.9);
-    background: rgba(18,26,36,.97); border: 1px solid #3a4a5c; color: #fff; padding: 16px 24px; border-radius: 16px;
-    font-size: 18px; font-weight: 800; box-shadow: 0 16px 44px rgba(0,0,0,.6); opacity: 0;
-    transition: opacity .18s, transform .18s; pointer-events: none; z-index: 100; max-width: 80%; text-align: center;
+    position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%) translateY(12px);
+    background: rgba(20,28,38,.97); border: 1px solid var(--line); color: var(--text);
+    padding: 12px 20px; border-radius: 30px; font-size: 15px; font-weight: 700;
+    box-shadow: 0 14px 40px rgba(0,0,0,.55); opacity: 0; pointer-events: none; z-index: 100;
+    max-width: 82%; text-align: center; transition: opacity .18s, transform .18s;
+    display: flex; align-items: center; gap: 9px;
   }
-  .toast.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
-  /* demo-lade */
-  .tray-toggle {
-    flex: 0 0 auto; border: none; border-top: 1px solid #2e3a48; background: #11161d; color: #8b9aac;
-    padding: 14px; font: inherit; font-weight: 700; font-size: 13px; cursor: pointer;
-    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast .ic { color: var(--green); font-size: 16px; }
+
+  /* ---------- demo control dock ---------- */
+  .dock-toggle {
+    flex: 0 0 auto; border: none; border-top: 1px solid var(--line);
+    background: var(--screen); color: var(--muted); cursor: pointer;
+    padding: 13px; padding-bottom: calc(13px + env(safe-area-inset-bottom));
+    font: inherit; font-weight: 700; font-size: 13px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
   }
-  .tray { flex: 0 0 auto; background: #11161d; max-height: 0; overflow: hidden; transition: max-height .25s ease; }
-  .tray.open { max-height: 62vh; overflow-y: auto; }
-  .tray-inner { padding: 4px 14px calc(16px + env(safe-area-inset-bottom)); }
-  .tray h4 { margin: 12px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #8b9aac; }
-  .tgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .tgrid.three { grid-template-columns: 1fr 1fr 1fr; }
-  .tbtn {
-    min-height: 44px; font: inherit; font-weight: 700; font-size: 13px; cursor: pointer;
-    border: 1px solid #2e3a48; background: #2b3644; color: #e6edf3; border-radius: 10px; padding: 6px;
+  .dock-toggle .chev { transition: transform .25s; }
+  .dock-toggle.open .chev { transform: rotate(180deg); }
+  .dock { flex: 0 0 auto; background: var(--screen); max-height: 0; overflow: hidden; transition: max-height .28s ease; }
+  .dock.open { max-height: 64vh; overflow-y: auto; border-top: 1px solid var(--line-soft); }
+  .dock-inner { padding: 6px 14px calc(18px + env(safe-area-inset-bottom)); }
+  .dock h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 14px 2px 8px; font-weight: 700; }
+  .dgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .dbtn {
+    min-height: 46px; font: inherit; font-weight: 700; font-size: 13px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--card); color: var(--text);
+    border-radius: 12px; padding: 8px 10px; text-align: left; line-height: 1.25;
+    display: flex; flex-direction: column; justify-content: center;
   }
-  .tbtn:active { transform: scale(.97); }
+  .dbtn:active { transform: scale(.97); }
+  .dbtn .k { font-size: 11px; color: var(--accent); font-weight: 800; }
+  .dbtn.wide { grid-column: 1 / -1; text-align: center; align-items: center; }
+  .dbtn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .dbtn.on .k { color: rgba(255,255,255,.85); }
+  .dnote { font-size: 12px; color: var(--muted); margin: 2px 2px 0; line-height: 1.5; }
 </style>
 </head>
 <body>
-<div class="statusbar"><span>14:45</span><span>5G ▪▪▪ ▮</span></div>
 
-<div class="poswrap">
-  <div class="grid" id="grid"></div>
-  <div class="cta-stack" id="ctaStack"></div>
+<div class="statusbar">
+  <span id="clock">14:45</span>
+  <span class="sig">5G ▪▪▪▪ <span class="bat"><i></i></span></span>
 </div>
+
+<div class="apphead">
+  <div class="logo">🍽️</div>
+  <div class="who">
+    <div class="name">Peter <span class="live">actief</span></div>
+    <div class="sub">Handy · Wijk RES Noord · tafels 1–19</div>
+  </div>
+  <div class="count" id="count">0</div>
+</div>
+
+<div class="feed" id="feed"></div>
 
 <div class="toast" id="toast"></div>
 
-<button class="tray-toggle" id="trayToggle" onclick="toggleTray()">▲ Demo-bediening</button>
-<div class="tray" id="tray">
-  <div class="tray-inner">
-    <h4>Push een CTA (valt over de grid)</h4>
-    <div class="tgrid">
-      <button class="tbtn" onclick="force(1)">CTA 1 · first order</button>
-      <button class="tbtn" onclick="force(2)">CTA 2 · sleeping</button>
-      <button class="tbtn" onclick="force(3)">CTA 3 · seater</button>
-      <button class="tbtn" onclick="force(4)">CTA 4 · promo</button>
-      <button class="tbtn" onclick="force(5)">CTA 5 · offer coffee</button>
-      <button class="tbtn" onclick="force(6)">CTA 6 · ready main</button>
-      <button class="tbtn" onclick="force(7)">CTA 7 · active?</button>
-      <button class="tbtn" onclick="force(8)">CTA 8 · ready dessert</button>
-      <button class="tbtn" onclick="force(9)">CTA 9 · wil bestellen</button>
-      <button class="tbtn" onclick="force(10)">CTA 10 · wil betalen</button>
+<button class="dock-toggle" id="dockToggle" onclick="toggleDock()">
+  <span>Demo-bediening</span><span class="chev">▲</span>
+</button>
+<div class="dock" id="dock">
+  <div class="dock-inner">
+    <h4>Auto-verhaallijn</h4>
+    <div class="dgrid">
+      <button class="dbtn wide on" id="autoBtn" onclick="toggleAuto()">
+        <span class="k">▶ Speel de service af</span>
+        <span id="autoLabel" style="font-weight:600;color:var(--muted)">seat → drankje → hoofd → dessert</span>
+      </button>
     </div>
-    <h4>Tafel 14 (Sanne)</h4>
-    <div class="tgrid three">
-      <button class="tbtn" onclick="resetTable()">Reset</button>
-      <button class="tbtn" onclick="clearAll()">Wis CTA's</button>
+    <h4>Forceer een CTA (verschijnt op de handy)</h4>
+    <div class="dgrid">
+      <button class="dbtn" onclick="force(1)"><span class="k">CTA 1</span>First order</button>
+      <button class="dbtn" onclick="force(2)"><span class="k">CTA 2</span>Sleeping table</button>
+      <button class="dbtn" onclick="force(3)"><span class="k">CTA 3</span>Seater actief</button>
+      <button class="dbtn" onclick="force(4)"><span class="k">CTA 4</span>Promo</button>
+      <button class="dbtn" onclick="force(5)"><span class="k">CTA 5</span>Offer a coffee</button>
+      <button class="dbtn" onclick="force(6)"><span class="k">CTA 6</span>Ready for main</button>
+      <button class="dbtn" onclick="force(7)"><span class="k">CTA 7</span>Actief-check</button>
+      <button class="dbtn" onclick="force(8)"><span class="k">CTA 8</span>Ready for dessert</button>
+      <button class="dbtn" onclick="force(9)"><span class="k">CTA 9</span>Gast wil bestellen</button>
+      <button class="dbtn" onclick="force(10)"><span class="k">CTA 10</span>Gast wil betalen</button>
     </div>
+    <h4>Reset</h4>
+    <div class="dgrid">
+      <button class="dbtn wide" onclick="clearAll()">Wis alle CTA's</button>
+    </div>
+    <p class="dnote">Max 3 kaarten zichtbaar, gesorteerd op prioriteit (CTA-nummer). Trilt op een echte telefoon bij een nieuwe melding.</p>
   </div>
 </div>
 
 <script>
+/* ----------------------------------------------------------------------
+   Oscar — kelnerhandy (mobiel). Zelfstandige demo, geen dependencies.
+   Versnelde simulatie: seconden i.p.v. minuten. Eén tafel: 14 (Sanne).
+---------------------------------------------------------------------- */
+
 const T = {
-  CTA1_POSTPONE: 300, CTA2_THRESHOLD: 1800, CTA5_POSTPONE: 600,
-  CTA6_REPUSH: 300, CTA6_AUTOFIRE: 300, CTA6_MAX: 2, CTA8_REPUSH: 300, CTA8_MAX: 2,
+  CTA1_DELAY: 4, CTA1_POSTPONE: 6,
+  CTA6_AFTER_STARTER: 6, CTA6_REPUSH: 8, CTA6_AUTOFIRE: 6, CTA6_MAX: 2,
+  CTA8_AFTER_MAIN: 6, CTA8_REPUSH: 8, CTA8_MAX: 2,
+  CTA5_POSTPONE: 8,
 };
-let clock = 0, ctaSeq = 1, ctas = [], toastTimer = null;
-const table = {};
-function resetTable(){
-  table.nr = 14; table.naam = "Sanne"; table.mainFiredAt = null;
+
+let clock = 0, ctaSeq = 1, ctas = [], toastTimer = null, autoOn = false;
+const table = { nr: 14, naam: "Sanne" };
+
+function resetStory(){
+  table.state = "leeg";
+  table.seatedAt = null; table.ordered = false; table.cta1PostponeUntil = 0;
+  table.starterAt = null; table.mainFiredAt = null; table.dessertFiredAt = null;
   table.cta5Done = false; table.cta5RepushAt = 0;
-  table.cta6Done = false; table.cta6Pushes = 0; table.cta6RepushAt = 0; table.cta6AutoFireAt = 0;
-  table.cta8Done = false; table.cta8Pushes = 0; table.cta8RepushAt = 0;
-  ctas = []; render(); toast("Tafel gereset");
+  table.cta6Shown = false; table.cta6Done = false; table.cta6Pushes = 0; table.cta6RepushAt = 0; table.cta6AutoFireAt = 0;
+  table.cta8Shown = false; table.cta8Done = false; table.cta8Pushes = 0; table.cta8RepushAt = 0;
 }
+resetStory();
 
-/* productgrid zoals de echte handy (drankjes) */
-const PRODUCTS = [
-  ["Macchiato"],["Flat White"],["Koffie verkeerd"],
-  ["Espresso","g"],["Dubbele espresso"],["Espresso macchiato"],
-  ["Cortado","b"],["Americano"],["Babyccino","b"],
-  ["IJskoffie"],["Thee »","g"],["Gember thee","g"],
-  ["Power Tea","g"],["Munt thee"],["Warme choco","g"],
-  ["Warme choco slagroom"],["Matcha Latte","b"],["ICED Matcha","b"],
-  ["Iced Matcha Mango"],["Choco Rum"],["Speciale koffie »"],
-];
-function renderGrid(){
-  document.getElementById("grid").innerHTML = PRODUCTS.map(([n,c]) =>
-    `<div class="tile ${c||""}">${n}</div>`).join("");
-}
+/* ---------- clock (device + engine) ---------- */
+let hh = 14, mm = 45;
+function paintClock(){ document.getElementById("clock").textContent = String(hh).padStart(2,"0")+":"+String(mm).padStart(2,"0"); }
+function fmtAgo(s){ return s < 60 ? s+"s geleden" : Math.floor(s/60)+"m geleden"; }
 
-function fmt(s){ const m=Math.floor(s/60), ss=s%60; return String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0"); }
+/* ---------- haptics ---------- */
+const vibrate = { 1:true, 2:true, 3:true, 4:false, 5:false, 6:false, 7:false, 8:false, 9:true, 10:true };
+function buzz(type){ if (vibrate[type] && navigator.vibrate) { try { navigator.vibrate(45); } catch(e){} } }
+
+/* ---------- toast ---------- */
 function toast(msg){
   const el = document.getElementById("toast");
-  el.textContent = msg; el.classList.add("show");
+  el.innerHTML = `<span class="ic">✓</span><span>${msg}</span>`;
+  el.classList.add("show");
   if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove("show"), 2500);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
 }
 
-function hasCTA(type){ return ctas.some(c => c.type===type); }
+/* ---------- CTA store ---------- */
+function hasCTA(type){ return ctas.some(c => c.type === type); }
 function addCTA(type){
   if (hasCTA(type)) return;
-  ctas.push({ id: ctaSeq++, type, createdAt: clock }); render();
+  ctas.push({ id: ctaSeq++, type, createdAt: clock });
+  buzz(type); render();
 }
-function removeCTA(id){ ctas = ctas.filter(c => c.id!==id); render(); }
+function removeCTA(id){ ctas = ctas.filter(c => c.id !== id); render(); }
+function clearAll(){ ctas = []; render(); toast("Meldingen gewist"); }
+
 function force(type){
-  if (type===6){ table.cta6Done=false; table.cta6Pushes=1; table.cta6RepushAt=0; table.cta6AutoFireAt=0; }
-  if (type===8){ table.cta8Done=false; table.cta8Pushes=1; table.cta8RepushAt=0; }
-  if (type===5){ table.cta5Done=false; }
+  if (table.state === "leeg") { table.state = "geseat"; table.seatedAt = clock; }
+  if (type === 5){ table.cta5Done = false; }
+  if (type === 6){ table.cta6Done = false; table.cta6Pushes = 1; table.cta6RepushAt = 0; table.cta6AutoFireAt = 0; }
+  if (type === 8){ table.cta8Done = false; table.cta8Pushes = 1; table.cta8RepushAt = 0; }
   addCTA(type);
 }
-function clearAll(){ ctas = []; render(); }
 
-function ctaToast(type, action){
-  const waits = { "1/wait": T.CTA1_POSTPONE, "2/wait": T.CTA2_THRESHOLD, "5/wait": T.CTA5_POSTPONE };
-  const key = type + "/" + action;
-  if (waits[key] != null || key === "6/no" || key === "8/no") return "extra wait";   // geen specifieke tijd noemen
+/* ---------- response feedback text ---------- */
+function respText(type, action){
+  if (["1/wait","2/wait","5/wait","6/no","8/no"].includes(type+"/"+action)) return "Extra wachttijd — komt terug";
   const map = {
-    "1/order":"WaiterPro opened","1/move":"Bill moved","1/close":"Table closed",
-    "2/order":"WaiterPro opened","2/move":"Bill moved","2/calllg":"LG informed",
-    "3/new":"Table opened","3/pull":"Bill moved","4/ok":"Promo active (background)",
-    "5/order":"Gift registered","5/no":"No need","6/go":"Main ordered",
-    "7/ja":"Active","7/nee":"Removed","7/pauze":"break","8/go":"Dessert Go",
-    "9/order":"Order — runner ✓","9/dismiss":"Declined → runner","10/print":"Printed — runner ✓","10/dismiss":"Declined → runner",
+    "1/order":"WaiterPro geopend","1/move":"Bon overgenomen","1/close":"Tafel gesloten",
+    "2/order":"WaiterPro geopend","2/move":"Bon overgenomen","2/calllg":"Leidinggevende geïnformeerd",
+    "3/new":"Tafel geopend","3/pull":"Bon verplaatst","4/ok":"Promo actief op achtergrond",
+    "5/order":"Attentie geregistreerd","5/no":"Niet nodig",
+    "6/go":"Hoofdgerecht besteld","7/ja":"Actief bevestigd","7/nee":"Uit overzicht","7/pauze":"Pauze ingepland",
+    "8/go":"Dessert besteld","9/order":"Order door — runner ✓","9/dismiss":"Afgewezen → runner",
+    "10/print":"Ticket geprint — runner ✓","10/dismiss":"Afgewezen → runner",
   };
-  return map[key] || "OK";
+  return map[type+"/"+action] || "OK";
 }
+
+/* ---------- handle a response ---------- */
 function ctaAction(id, action){
-  const c = ctas.find(x => x.id===id); if (!c) return;
-  if (c.type===1 && action==="close" && !confirm(`Tafel ${table.nr} echt sluiten?`)) return;
-  toast(ctaToast(c.type, action));
+  const c = ctas.find(x => x.id === id); if (!c) return;
+  if (c.type === 1 && action === "close" && !confirm(`Tafel ${table.nr} echt sluiten?`)) return;
+  toast(respText(c.type, action));
+  const t = table;
   switch (c.type + "/" + action){
-    case "5/order":  table.cta5Done = true; removeCTA(id); break;
-    case "5/wait":   removeCTA(id); table.cta5RepushAt = clock + T.CTA5_POSTPONE; break;
-    case "5/no":     table.cta5Done = true; removeCTA(id); break;
-    case "6/go":     table.mainFiredAt = clock; table.cta6Done = true; removeCTA(id); break;
-    case "6/no":     removeCTA(id); if (table.cta6Pushes < T.CTA6_MAX) table.cta6RepushAt = clock + T.CTA6_REPUSH; else { table.cta6Done = true; table.cta6AutoFireAt = clock + T.CTA6_AUTOFIRE; } break;
-    case "8/go":     table.cta8Done = true; removeCTA(id); break;
-    case "8/no":     removeCTA(id); if (table.cta8Pushes < T.CTA8_MAX) table.cta8RepushAt = clock + T.CTA8_REPUSH; else table.cta8Done = true; break;
-    case "3/pull":   { prompt("Pull table → welke oude tafel?"); removeCTA(id); } break;
-    default:         removeCTA(id); break;
+    case "1/order": t.ordered = true; t.starterAt = clock; removeCTA(id); break;
+    case "1/wait":  t.cta1PostponeUntil = clock + T.CTA1_POSTPONE; removeCTA(id); break;
+    case "5/order": t.cta5Done = true; removeCTA(id); break;
+    case "5/wait":  removeCTA(id); t.cta5RepushAt = clock + T.CTA5_POSTPONE; break;
+    case "5/no":    t.cta5Done = true; removeCTA(id); break;
+    case "6/go":    t.mainFiredAt = clock; t.cta6Done = true; removeCTA(id); break;
+    case "6/no":
+      removeCTA(id);
+      if (t.cta6Pushes < T.CTA6_MAX) t.cta6RepushAt = clock + T.CTA6_REPUSH;
+      else { t.cta6Done = true; t.cta6AutoFireAt = clock + T.CTA6_AUTOFIRE; }
+      break;
+    case "8/go":    t.dessertFiredAt = clock; t.cta8Done = true; removeCTA(id); break;
+    case "8/no":
+      removeCTA(id);
+      if (t.cta8Pushes < T.CTA8_MAX) t.cta8RepushAt = clock + T.CTA8_REPUSH;
+      else t.cta8Done = true;
+      break;
+    case "3/pull":  { prompt("Pull table → welke oude tafel naar tafel "+t.nr+" halen?"); removeCTA(id); } break;
+    default: removeCTA(id); break;
   }
 }
 
-// prio-volgorde: 1, 2, 9, 10, 3, 4, 5, 6, 7, 8 (CTA 9/10 vlak na 1/2 — gast wacht)
+/* ---------- card definitions ---------- */
+// prio: 1, 2, 9, 10, 3, 4, 5, 6, 7, 8
 const PRIO = { 1:1, 2:2, 9:3, 10:4, 3:5, 4:6, 5:7, 6:8, 7:9, 8:10 };
-function tl(){ return table.naam ? `Tafel ${table.nr} (${table.naam})` : `Tafel ${table.nr}`; }
+function tl(){ return `Tafel ${table.nr} · ${table.naam}`; }
 const CARD = {
-  1: () => ({ cls:"",       title:`${tl()} — Drankje opnemen`,            btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CLOSE TABLE","danger","close"]] }),
-  2: () => ({ cls:"",       title:`${tl()} — Checken`,                    btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CALL LG","","calllg"]] }),
-  3: () => ({ cls:"",       title:`${tl()} — Not seated. Previous table?`, btns:[["NEW","primary","new"],["PULL","","pull"]] }),
-  4: () => ({ cls:"",       title:`${tl()} — Promo: offreren toegestaan`, btns:[["OK","","ok"]] }),
-  5: () => ({ cls:"purple", title:`${tl()} — Offer a coffee`,              btns:[["ORDER","primary","order"],["WAIT","","wait"],["NO","","no"]] }),
-  6: () => ({ cls:"three",  title:`${tl()} — Ready for next course?`,     btns:[["GO","primary","go"],["NO","","no"]] }),
-  7: () => ({ cls:"three",  title:`Hoi Peter, ben jij nog actief in RES Noord?`,    btns:[["YES","primary","ja"],["NO","","nee"],["BREAK","","pauze"]] }),
-  8: () => ({ cls:"",       title:`${tl()} — Ready for dessert?`,         btns:[["GO","primary","go"],["NO","","no"]] }),
-  9: () => ({ cls:"",       title:`${tl()} — wil bestellen`, btns:[["ORDER","primary","order"],["NO","","dismiss"]] }),
- 10: () => ({ cls:"",       title:`${tl()} — wil betalen`,   btns:[["PRINT","primary","print"],["NO","","dismiss"]] }),
+  1:  { v:"v-blue",   title:()=>`${tl()} — eerste drankje opnemen`,        btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CLOSE","danger","close"]] },
+  2:  { v:"v-amber",  title:()=>`${tl()} — even checken`,                  btns:[["ORDER","primary","order"],["WAIT","","wait"],["MOVE","","move"],["CALL LG","","calllg"]] },
+  3:  { v:"v-red",    title:()=>`${tl()} — niet geseat. Vorige tafel?`,    btns:[["NEW","primary","new"],["PULL","","pull"]] },
+  4:  { v:"v-blue",   title:()=>`${tl()} — promo: offreren toegestaan`,    btns:[["OK","","ok"]] },
+  5:  { v:"v-purple", title:()=>`${tl()} — offer a coffee`,                btns:[["ORDER","primary","order"],["WAIT","","wait"],["NO","","no"]] },
+  6:  { v:"v-green",  title:()=>`${tl()} — klaar voor hoofdgerecht?`,      btns:[["GO","primary","go"],["NO","","no"]] },
+  7:  { v:"v-blue",   title:()=>`Hoi Peter, ben je nog actief in RES Noord?`, btns:[["JA","primary","ja"],["NEE","","nee"],["PAUZE","","pauze"]] },
+  8:  { v:"v-green",  title:()=>`${tl()} — klaar voor dessert?`,           btns:[["GO","primary","go"],["NO","","no"]] },
+  9:  { v:"v-blue",   title:()=>`${tl()} — gast wil bestellen`,            btns:[["ORDER","primary","order"],["NEE","","dismiss"]] },
+  10: { v:"v-blue",   title:()=>`${tl()} — gast wil betalen`,              btns:[["PRINT","primary","print"],["NEE","","dismiss"]] },
 };
 
+/* ---------- render ---------- */
 function render(){
-  const el = document.getElementById("ctaStack");
-  const sorted = [...ctas].sort((a,b)=> (PRIO[a.type]||99)-(PRIO[b.type]||99) || a.createdAt-b.createdAt).slice(0,3);
-  el.innerHTML = sorted.map(c => {
-    const def = CARD[c.type]();
-    const ago = clock - c.createdAt;
-    const btns = def.btns.map(([label,cls,act]) =>
-      `<button class="ob ${cls||''}" onclick="ctaAction(${c.id},'${act}')">${label}</button>`).join("");
-    const three = (def.cls.includes("three")) ? "three" : "";
-    const purple = (def.cls.includes("purple")) ? "purple" : "";
-    return `<div class="cta ${three} ${purple}">
+  const feed = document.getElementById("feed");
+  document.getElementById("count").textContent = ctas.length;
+
+  const sorted = [...ctas].sort((a,b)=> (PRIO[a.type]||99)-(PRIO[b.type]||99) || a.createdAt-b.createdAt);
+  const visible = sorted.slice(0, 3);
+  const hidden = sorted.length - visible.length;
+
+  if (!sorted.length){
+    feed.innerHTML =
+      `<div class="empty">
+         <div class="big">🔔</div>
+         <div class="t">Geen meldingen</div>
+         <div class="s">Speel de service af of forceer een CTA via de demo-bediening onderaan.</div>
+       </div>`;
+    return;
+  }
+
+  feed.innerHTML = visible.map(c => {
+    const def = CARD[c.type];
+    const cls = def.btns.length === 1 ? "b1" : def.btns.length === 3 ? "b3" : "";
+    const btns = def.btns.map(([label, style, act]) =>
+      `<button class="ob ${style||''}" onclick="ctaAction(${c.id},'${act}')">${label}</button>`).join("");
+    return `<div class="cta ${def.v}">
       <div class="head">
-        <span class="ago"><span class="dot"></span> <span id="ago-${c.id}">CTA ${c.type} · ${ago}s geleden</span></span>
+        <span class="tag"><span class="nr">CTA ${c.type}</span></span>
+        <span class="ago" id="ago-${c.id}">${fmtAgo(clock - c.createdAt)}</span>
       </div>
-      <div class="title">${def.title}</div>
-      <div class="btns">${btns}</div>
+      <div class="title">${def.title()}</div>
+      <div class="btns ${cls}">${btns}</div>
     </div>`;
-  }).join("");
+  }).join("")
+  + (hidden > 0 ? `<div class="queue">+ ${hidden} in wachtrij</div>` : "");
 }
 
-function toggleTray(){
-  const tr = document.getElementById("tray"), tg = document.getElementById("trayToggle");
-  tg.textContent = tr.classList.toggle("open") ? "▼ Demo-bediening sluiten" : "▲ Demo-bediening";
-}
-
-function tick(){
-  clock++;
-  if (table.cta5RepushAt && clock >= table.cta5RepushAt && !table.cta5Done && !hasCTA(5)){ table.cta5RepushAt = 0; addCTA(5); }
-  if (table.cta6RepushAt && clock >= table.cta6RepushAt && !table.cta6Done && table.mainFiredAt == null && !hasCTA(6)){ table.cta6RepushAt = 0; table.cta6Pushes++; addCTA(6); }
-  if (table.cta6AutoFireAt && clock >= table.cta6AutoFireAt && table.mainFiredAt == null){ table.cta6AutoFireAt = 0; table.mainFiredAt = clock; toast("Main auto-fired"); }
-  if (table.cta8RepushAt && clock >= table.cta8RepushAt && !table.cta8Done && !hasCTA(8)){ table.cta8RepushAt = 0; table.cta8Pushes++; addCTA(8); }
-  updateAgos();   // alleen de "Xs geleden" bijwerken — kaart niet herbouwen (geen beweging)
-}
-function updateAgos(){
-  for (const c of ctas){
-    const el = document.getElementById("ago-" + c.id);
-    if (el) el.textContent = `CTA ${c.type} · ${clock - c.createdAt}s geleden`;
+/* ---------- auto storyline ---------- */
+function toggleAuto(){
+  autoOn = !autoOn;
+  const b = document.getElementById("autoBtn");
+  b.classList.toggle("on", autoOn);
+  b.querySelector(".k").textContent = autoOn ? "⏸ Verhaallijn loopt…" : "▶ Speel de service af";
+  if (autoOn){
+    resetStory(); ctas = []; render();
+    table.state = "geseat"; table.seatedAt = clock;
+    toast("Tafel 14 geseat");
   }
 }
 
-renderGrid();
-resetTable();
-setInterval(tick, 1000);
+function engine(){
+  clock++;
+  // device clock advances 1 min per 2 sim-sec, cosmetic
+  if (clock % 2 === 0){ mm++; if (mm >= 60){ mm = 0; hh = (hh+1) % 24; } paintClock(); }
+
+  // "Xs geleden" bijwerken zonder de kaart te herbouwen (geen sprong)
+  for (const c of ctas){
+    const el = document.getElementById("ago-" + c.id);
+    if (el) el.textContent = fmtAgo(clock - c.createdAt);
+  }
+
+  if (!autoOn || table.state === "leeg") return;
+  const t = table;
+
+  // CTA 1 — first order
+  if (!t.ordered && clock >= t.seatedAt + T.CTA1_DELAY && clock >= t.cta1PostponeUntil && !hasCTA(1)) addCTA(1);
+
+  // CTA 5 — offer a coffee terug na WAIT
+  if (t.cta5RepushAt && clock >= t.cta5RepushAt && !t.cta5Done && !hasCTA(5)){ t.cta5RepushAt = 0; addCTA(5); }
+
+  // CTA 6 — ready for main na voorgerecht
+  if (t.starterAt != null && !t.cta6Shown && !t.cta6Done && t.mainFiredAt == null && clock >= t.starterAt + T.CTA6_AFTER_STARTER){
+    t.cta6Shown = true; t.cta6Pushes = 1; addCTA(6);
+  }
+  if (t.cta6RepushAt && clock >= t.cta6RepushAt && !t.cta6Done && t.mainFiredAt == null && !hasCTA(6)){ t.cta6RepushAt = 0; t.cta6Pushes++; addCTA(6); }
+  if (t.cta6AutoFireAt && clock >= t.cta6AutoFireAt && t.mainFiredAt == null){ t.cta6AutoFireAt = 0; t.mainFiredAt = clock; toast("Geen reactie — hoofdgerecht auto-gefired"); }
+
+  // CTA 8 — ready for dessert na hoofdgerecht
+  if (t.mainFiredAt != null && !t.cta8Shown && !t.cta8Done && clock >= t.mainFiredAt + T.CTA8_AFTER_MAIN){
+    t.cta8Shown = true; t.cta8Pushes = 1; addCTA(8);
+  }
+  if (t.cta8RepushAt && clock >= t.cta8RepushAt && !t.cta8Done && !hasCTA(8)){ t.cta8RepushAt = 0; t.cta8Pushes++; addCTA(8); }
+}
+
+/* ---------- dock ---------- */
+function toggleDock(){
+  const d = document.getElementById("dock"), t = document.getElementById("dockToggle");
+  d.classList.toggle("open"); t.classList.toggle("open");
+}
+
+/* ---------- boot ---------- */
+paintClock();
+render();
+setInterval(engine, 1000);
 </script>
 </body>
 </html>
