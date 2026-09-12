@@ -94,10 +94,13 @@ Maximaal drie CTA-kaarten tegelijk zichtbaar per handy. Zijn er meer, dan staat 
 rest in de wachtrij. De zichtbare drie worden gekozen op prio, bij gelijke prio op
 volgorde van binnenkomst.
 
-Prio-volgorde: **1, 2, 9, 10, 11, 12, 3, 5, 6, 7, 8**
+Prio-volgorde: **1, 2, 9, 10, 11, 12, 3, 5, 6, 7, 8, 13, 14**
 
 CTA 9 t/m 12 staan vlak achter 1 en 2: dat zijn de mens-CTA's (§2.15), waar iemand
 op staat te wachten die het al gemeld heeft.
+
+CTA 13 en 14 staan achteraan (§5.13, §5.14). Ze helpen de gast die er nu zit niet,
+en mogen dus nooit een operationele kaart uit beeld duwen.
 
 Nummer 4 ontbreekt: dat was de promo-permissie, die geen kaart is en dus geen prio
 heeft. Zie §2.14. Het nummer blijft leeg zodat de rest niet hoeft te schuiven.
@@ -183,6 +186,7 @@ Alle knoppen Engels en over alle CTA's consistent:
 |---|---|
 | Doe het nu | `ORDER` · `GO` · `YES` · `NEW` · `PULL` · `PRINT` |
 | Klaar, opgelost | `FIXED` |
+| Geen oordeel | `MAYBE` |
 | Later | `WAIT` |
 | Weiger | `NO` |
 | Haal er iemand bij | `CALL LG` |
@@ -712,6 +716,83 @@ geldt staat per locatie in `lg_routing` (§7.5).
 **Mens-CTA** (§2.15): delivery-check en fallback volgens §2.16. De escalatietimer
 staat open — TODO (O10): naar wie escaleert een onbeantwoorde oproep aan de LG?
 
+### §5.13 CTA 13 — Uitnodigen? (voorstel)
+
+> **Voorstel, nog niet besloten.** Peter, 12-09-2026. Zie O17.
+
+**Doel** Vastleggen welke gasten je in de toekomst wilt uitnodigen, beoordeeld
+door degene die ze de hele avond heeft bediend.
+
+**Trigger** `cta13_moment` — zie de vraag hieronder.
+
+**Kaart** `Tafel [nr] — uitnodigen in de toekomst?`
+
+| Knop | Actie |
+|---|---|
+| `YES` | Markeren als gast die je terug wilt zien. |
+| `MAYBE` | Geen oordeel. Wordt vastgelegd als "weet niet", niet als "nee". |
+| `NO` | Geen uitnodiging. |
+
+`MAYBE` is een nieuwe knop in §2.12. Hij is er omdat "weet niet" en "zeker niet"
+echt verschillende dingen zijn, en omdat een kelner die moet kiezen tussen ja en
+nee bij twijfel altijd ja kiest — en dan is de vraag zinloos geworden.
+
+**Eén keer per ticket.** Geen herhaling, geen `WAIT`.
+
+**Systeem-CTA** (§2.15): geen escalatie, geen fallback. Komt er geen antwoord, dan
+is er geen oordeel. Dat is een prima uitkomst.
+
+#### Wat hier anders is dan bij alle andere CTA's
+
+Dit is de eerste CTA die de kelner vraagt een **gast** te beoordelen, en die dat
+oordeel bewaart bij een persoon met een naam. Drie dingen volgen daaruit.
+
+**De kaart mag de gastnaam niet tonen.** Bij elke andere CTA staat er
+`Tafel 3 (Sanne)`; hier niet. De kelner staat met die handy áán tafel, en een gast
+die meekijkt leest dat hij beoordeeld wordt. Het tafelnummer is genoeg — de kelner
+weet wie daar zit.
+
+**"Zeker niet" is een blijvend negatief label op een echt persoon.** Leg vast wie
+het gaf en wanneer, laat het verlopen na een afgesproken termijn, en zorg dat het
+nergens opduikt waar het als waarschuwing gelezen kan worden door iemand die de
+context niet kent.
+
+**De gast weet er niets van.** Dit is een verwerking van persoonsgegevens met een
+ander doel dan de reservering. Laat toetsen vóór het aan gaat — O18.
+
+### §5.14 CTA 14 — Wervingskaartje (voorstel)
+
+> **Voorstel, nog niet besloten.** Peter, 12-09-2026. Zie O17.
+
+**Doel** Personeelswerving onder gasten die in de buurt wonen. De CTA is het
+zetje om het wervingskaartje te geven en te vragen of ze nog iemand kennen.
+
+**Trigger** De postcode op de reservering valt binnen `cta14_postcodes`, **en**
+het is niet druk (§4.1), **en** `cta14_moment` is bereikt.
+
+**Kaart** `Tafel [nr] — wervingskaartje meegeven`
+
+| Knop | Actie |
+|---|---|
+| `YES` | Gegeven. |
+| `NO` | Niet gedaan — past niet bij deze tafel. |
+
+**Eén keer per ticket.** Geen herhaling.
+
+**Niet tijdens drukte**, om dezelfde reden als CTA 5 (§5.5): een kelner die het
+druk heeft gaat geen wervingsgesprek voeren, en de vraag stellen kost dan alleen
+maar aandacht.
+
+**Systeem-CTA** (§2.15): geen escalatie.
+
+**Let op bij de postcode.** Die is opgegeven voor een reservering, niet voor
+werving. Een ander doel dan waarvoor het gegeven is verzameld, vraagt om een
+grondslag — O18, samen met CTA 13.
+
+Praktisch: bewaar niet de postcode zelf in de CTA-log, maar alleen dat de tafel
+binnen het bereik viel. Dan staat er geen adresgegeven in een tabel die voor heel
+andere analyses wordt gebruikt.
+
 ---
 
 ## §6 Logging en database
@@ -912,6 +993,20 @@ Deze staan per locatie in, net als §7.1 en §7.2.
 "Stil" (§4.3) gebruikt geen eigen drempel maar `cta7_inactief_drempel` (§7.2) —
 dezelfde grens die bepaalt wanneer CTA 7 vuurt. Eén getal, één betekenis.
 
+### §7.7 Voorgestelde CTA's 13 en 14
+
+Horen bij §5.13 en §5.14, die nog niet besloten zijn (O17).
+
+| Parameter | Default | Wat |
+|---|---|---|
+| `cta13_moment` | TODO (O17) | Wanneer de uitnodigen-vraag komt — tijdens of na het bezoek |
+| `cta13_bewaartermijn` | TODO (O18) | Na hoeveel tijd een `NO` vervalt |
+| `cta14_postcodes` | TODO (O17) | Postcodes of straal die als "uit de buurt" gelden, per locatie |
+| `cta14_moment` | TODO (O17) | Wanneer het wervingskaartje wordt voorgesteld |
+
+Beide starten op `disabled` (§2.10) en in CTA-niveau 3 (§2.11): eerst
+shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
+
 ---
 
 ## §8 Beslislog
@@ -1019,6 +1114,8 @@ verschuiven. Er wordt niet op een open punt gebouwd.
 | O14 | Wie mag welke instellingen wijzigen (§11.3)? Mag een LG aan de triggers komen, of alleen aan het CTA-niveau? Mag hij de wijkindeling aanpassen? | Het beheerscherm | Peter / kantoor |
 | O15 | Het weekrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het weekrapport, niet de rest | Peter / kantoor |
 | O16 | Wie krijgt het weekrapport — alleen de LG van die zaak, of ook kantoor? En krijgt de kelner zijn eigen deel te zien? | Het weekrapport | Peter |
+| O17 | Komen CTA 13 (uitnodigen) en CTA 14 (wervingskaartje) er, en met welke momenten en drempels? | Alleen zichzelf | Peter |
+| O18 | CTA 13 legt een oordeel over een gast vast; CTA 14 gebruikt de postcode voor een ander doel dan de reservering. Grondslag en bewaartermijn laten toetsen vóór invoering. | CTA 13 en 14 | Peter / kantoor |
 
 ### §9.2 Fase 2 — pas nodig bij §4 en §5.5
 
