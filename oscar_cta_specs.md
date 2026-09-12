@@ -538,9 +538,13 @@ automatisch.** De kaart verdwijnt en het blijft aan de kelner.
 
 **Doel** Een bestelverzoek van de gast bij de kelner krijgen.
 
-**Trigger** Een runner — geen kelner — tikt op het vloertablet (Beachalert, §10)
-de tafel aan plus "wil bestellen". De gast heeft het aan de runner gevraagd. Oscar
-pusht naar de eigenaar van de wijk (§3).
+**Trigger** Een medewerker die de tafel niet bedient — meestal een runner — geeft
+de tafel door plus "wil bestellen". De gast heeft het aan hem gevraagd. Oscar pusht
+naar de eigenaar van de wijk (§3).
+
+De ingang is het vloertablet (Beachalert, §10). Later kunnen de seating-app en het
+dashboard hetzelfde signaal afgeven; die kennen wél de ingelogde medewerker, het
+tablet niet. Voor de CTA maakt de ingang niets uit.
 
 **Kaart** `Tafel [nr] ([naam]) — wil bestellen`
 
@@ -925,6 +929,11 @@ Beachalert is een vloer-app op kiosk-tablets waar een runner of andere medewerke
 een tafelnummer intoetst en met één tap een signaal doorgeeft. Het is **geen eigen
 meldingssysteem**: het is een bron van mens-CTA's (§2.15) die door dezelfde poort
 gaat als alle andere.
+
+Het vloertablet is de **eerste** ingang, niet de enige: de seating-app en het
+dashboard kunnen dezelfde signalen later ook afgeven. Die kennen de ingelogde
+medewerker, het tablet niet — dat is een gedeeld device zonder login. Voor de CTA
+maakt het niets uit wie hem afgaf.
 
 **Beachalert beslist niets.** Hij geeft één commando af — tafelnummer plus soort
 actie — en toont wat de poort antwoordt. Routing, dedupe, de remmen, escalatie en
