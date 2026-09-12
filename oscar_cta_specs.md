@@ -143,6 +143,12 @@ Dit is de derde rem, naast §2.3 en §2.7, en hij werkt op een andere as: hij be
 het totaal per dienst, ook als de kelner steeds net rustig was. Een CTA die hierop
 sneuvelt wordt gelogd (§6.3).
 
+**Uitzondering: CTA 12** (§5.12). Het volume van oproepen aan de LG wordt begrensd
+door samen te voegen, niet door te weigeren.
+
+**Uitzondering: CTA 12** (§5.12). Het volume van oproepen aan de LG wordt begrensd
+door samen te voegen, niet door te weigeren.
+
 ### §2.9 Vibratie
 
 Per CTA staat in de backend of de handy trilt bij een push. Dit is niet zichtbaar
@@ -169,8 +175,8 @@ geven.
 
 | Niveau | CTA's aan | `kelner_idle` | `cta_max_per_window` |
 |---|---|---|---|
-| 1 · Introductie | 1, 6, 8, 9, 10 | 60 sec | 1 |
-| 2 · Gemiddeld | 1, 2, 3, 6, 8, 9, 10 | 20 sec | 3 |
+| 1 · Introductie | 1, 6, 8, 9, 10, 11, 12 | 60 sec | 1 |
+| 2 · Gemiddeld | 1, 2, 3, 6, 8, 9, 10, 11, 12 | 20 sec | 3 |
 | 3 · Volledig | alle | TODO (O1) | 6 |
 
 `cta_window` is op elk niveau 600 sec.
@@ -233,7 +239,7 @@ Een CTA kan uit twee soorten bron komen:
 | Soort | Wie merkt iets op | Voorbeelden |
 |---|---|---|
 | **Systeem** | Oscar zelf, op een timer of een gebeurtenis | CTA 1, 2, 3, 5, 6, 7, 8 |
-| **Mens** | Een medewerker meldt iets via een scherm | CTA 9, 10 en alles uit Beachalert |
+| **Mens** | Een medewerker meldt iets | CTA 9, 10, 11, 12 — via een tablet, of via een systeemproduct op de handy (§5.12) |
 
 **Alle bronnen gaan door dezelfde poort.** De backend beslist of er een CTA-record
 wordt weggeschreven; WaiterPro leest dat record en toont het op de handy. Een bron
@@ -699,10 +705,22 @@ niet meteen.
 **Doel** Een medewerker die de leidinggevende nodig heeft, zonder hem te gaan
 zoeken.
 
-**Trigger** De knop "Roep LG" op het vloertablet, met een locatie en optioneel een
-categorie (§10.4).
+**Dit is geen Beachalert-CTA.** De LG wordt door van alles en iedereen gezocht.
+Vier ingangen, allemaal dezelfde CTA:
 
-**Kaart** `LG gevraagd — [locatie]` · met de categorie eronder als die gekozen is.
+| Ingang | Hoe |
+|---|---|
+| Runner, vloertablet | De knop "Roep LG", met locatie en categorie (§10.4) |
+| Bar, pas, seat | Hetzelfde tablet, of een tablet op die plek |
+| Kelner | Een **systeemproduct** op de handy aanslaan: "LG nodig" |
+| Kelner, vanuit een melding | De knop `CALL LG` op CTA 11 (§5.11) |
+
+Het systeemproduct is de ingang voor wie geen tablet in de buurt heeft. Het komt
+binnen via de monitor (§11.1) in plaats van via de poort-API, maar is verder een
+gewone mens-CTA (§2.15).
+
+**Kaart** `LG gevraagd — [locatie]` · met de categorie eronder als die gekozen is,
+en het aantal oproepen als er meer zijn samengevoegd.
 
 | Knop | Actie |
 |---|---|
@@ -712,12 +730,49 @@ categorie (§10.4).
 **Hangt niet aan een tafel.** `tafelnr` blijft leeg in de log (§6.2), net als bij
 CTA 7.
 
+#### Nooit weigeren
+
+Voor deze CTA gelden §2.7 en §2.8 **niet**:
+
+- **Block by busy** beschermt een kelner die aan het bedienen is tegen een melding
+  die kan wachten. Een LG die gestoord wordt, wordt gestoord vóór zijn werk — dat
+  ís zijn werk.
+- **De tempo-limiet** begrenst hoeveel meldingen er op een handy landen. Bij een
+  oproep om ergens naartoe te komen is dat de verkeerde reactie.
+
+"We kunnen nu de LG niet oproepen" is het slechtst denkbare antwoord. De melder
+gaat dan alsnog zoeken, met een omweg erbij, en gebruikt het tablet de volgende
+keer niet meer.
+
+#### Wel samenvoegen
+
+Het volumeprobleem wordt opgelost door bundelen, niet door blokkeren. Meerdere
+oproepen voor dezelfde LG binnen `cta12_samenvoegvenster` worden één kaart die
+meegroeit:
+
+```
+LG gevraagd — 3 oproepen
+bar · seat · pas
+```
+
+Dat kost één van de drie kaartslots in plaats van drie, en de LG ziet in één
+oogopslag waar het vastloopt. Elke oproep blijft apart in de log staan (§6.2), dus
+het aantal is gewoon te meten.
+
+#### Waarom deze CTA vroeg aan moet
+
+De LG wordt nu gezocht: door de bar, door de seater, door de pas, door een kelner.
+Eén por op zijn handy vervangt dat zoeken. Iedereen op de vloer ziet dat het werkt,
+en het tablet krijgt meteen een reden om gebruikt te worden.
+
+Daarom staat CTA 12 in niveau 1 (§2.11) en niet achteraan in de adoptie-ramp.
+
 **Routing** Naar de LG-handy. Wie dat is komt uit de devicedata (de rol van de
 ingelogde medewerker) óf uit een instelling per zaak. Beide paden bestaan; welke
 geldt staat per locatie in `lg_routing` (§7.5).
 
-**Mens-CTA** (§2.15): delivery-check en fallback volgens §2.16. De escalatietimer
-staat open — TODO (O10): naar wie escaleert een onbeantwoorde oproep aan de LG?
+**Mens-CTA** (§2.15): delivery-check en fallback volgens §2.16. Wat er gebeurt als
+de LG niet bereikbaar is of niet reageert, staat open — O10.
 
 ### §5.13 CTA 13 — Uitnodigen? (voorstel)
 
@@ -981,6 +1036,8 @@ defaults; een locatie kan ervan afwijken.
 | 8 · Ready for dessert | enabled | aan | uit |
 | 9 · Gast wil bestellen | enabled | aan | aan |
 | 10 · Gast wil betalen | enabled | aan | aan |
+| 11 · Bestelling klopt niet | enabled | **uit** | aan |
+| 12 · Roep LG | enabled | **n.v.t.** | aan |
 
 De `status`-kolom wordt overschreven zodra er een CTA-niveau is ingesteld (§2.11).
 De promo-permissie (§2.14) staat hier niet in: die kent geen van deze drie
@@ -989,8 +1046,11 @@ schakelaars.
 Herkomst: de demo. TODO (O8) — het vibratiepatroon (alleen 1, 2, 3, 9 en 10) is
 nergens apart besloten; bevestigen of dit de gewenste productiedefaults zijn.
 
-CTA 11 en 12 staan er nog niet in: die komen uit Beachalert en hun defaults liggen
-nog niet vast. TODO (O11).
+`block by busy` staat uit voor CTA 11: daar wacht een gast op, en die tegenhouden
+omdat de kelner net iets deed stelt precies het verkeerde uit. Bij CTA 12 is de
+schakelaar niet van toepassing — die wordt nooit tegengehouden (§5.12).
+
+CTA 13 en 14 staan er nog niet in; die zijn nog een voorstel (§7.7).
 
 ### §7.5 Parameters voor mens-CTA's en Beachalert
 
@@ -1005,6 +1065,7 @@ nog niet vast. TODO (O11).
 | `recente_order_venster` | 120 sec | opdracht Beachalert | "Zojuist besteld — toch doorgeven?" bij CTA 9 (§5.9) |
 | `lookup_cache` | 60 sec | opdracht Beachalert | Maximale leeftijd van de tafel-naar-kelner lookup (§10.2) |
 | `lg_routing` | TODO (O12) | — | Per zaak: LG uit devicedata (rol) of uit een vaste instelling (§5.12) |
+| `cta12_samenvoegvenster` | TODO (O20) | — | Binnen deze tijd worden oproepen aan dezelfde LG één kaart (§5.12) |
 
 Deze staan per locatie in, net als §7.1 en §7.2.
 
@@ -1099,6 +1160,9 @@ shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
 | 12-09-2026 | CTA 11 gaat eerst naar de kelner, niet naar de LG | Die staat er het dichtst bij en lost het meestal zelf op |
 | 12-09-2026 | Beachalert volgt de routing van §3 (wijk), niet een lookup per tafel | Twee routings naast elkaar laten CTA 9 en CTA 1 voor dezelfde tafel bij verschillende kelners landen |
 | 12-09-2026 | `beachalert_events` is de rijkere bron, §6.2 is de projectie ervan | Twee losse logs voor hetzelfde signaal geeft twee waarheden |
+| 12-09-2026 | CTA 12 is geen Beachalert-CTA maar een systeembrede oproep met vier ingangen, waaronder een systeemproduct op de handy (§5.12) | De LG wordt door de bar, de seater, de pas en door kelners gezocht. Eén por vervangt dat zoeken |
+| 12-09-2026 | Een oproep aan de LG wordt nooit tegengehouden; het volume wordt begrensd door samen te voegen (§5.12) | "We kunnen nu de LG niet oproepen" laat de melder alsnog zoeken, met een omweg erbij — dan gebruikt niemand het tablet nog |
+| 12-09-2026 | CTA 11 en 12 staan aan vanaf niveau 1 (§2.11) | Beachalert is de reden dat ze bestaan; twee dode knoppen op het tablet is een halve oplevering. CTA 12 laat bovendien het snelst zien dat het systeem werkt |
 | 12-09-2026 | Het rapport gaat per periode van vier weken, niet per week (§11.6) | Escalaties per kelner per week zijn te kleine getallen om ruis van beweging te onderscheiden. De vier weken staan er los in |
 | 12-09-2026 | De kelner ziet zijn eigen deel op verzoek, via de staff-app (§11.6) | Inzagerecht bestaat sowieso; dit legt vast dat het via een kanaal loopt dat hij al kent |
 | 12-09-2026 | Alle instellingen worden door kantoor beheerd (§11.3) | Eén plek, overal dezelfde getallen. Verschillen tussen zaken komen dan uit de vloer en niet uit de configuratie. Het gevolg — een LG kan in het moment niets — is aanvaard |
@@ -1141,8 +1205,8 @@ verschuiven. Er wordt niet op een open punt gebouwd.
 | O1 | `kelner_idle` op niveau 3 staat in de demo op 3 seconden. Dat lijkt een demo-waarde. Wat is het in productie? | Niveau 3 | Oscar |
 | O8 | Trillen alleen CTA 1, 2, 3, 9 en 10, zoals nu in §7.4? Dat patroon is nooit apart besloten. | Niets — defaults zijn instelbaar | Oscar |
 | O12 | Haalt de LG-routing de leidinggevende uit de devicedata (rol van de ingelogde medewerker) of uit een vaste instelling per zaak? Beide paden worden gebouwd; wat is de default? | CTA 12, en de fallback van §2.16 | Oscar |
-| O10 | Naar wie escaleert een onbeantwoorde "roep LG" (CTA 12)? De LG is al het eindpunt van elke andere escalatie. | CTA 12, escalatiedeel | Oscar |
-| O11 | Wat zijn de defaults voor CTA 11 en 12 in §7.4 — status, block by busy, vibratie? En in welk CTA-niveau horen ze (§2.11)? | Invoering van Beachalert | Oscar |
+| O10 | Wat gebeurt er als de LG niet bereikbaar is of niet reageert op een oproep (§5.12)? De LG is het eindpunt van elke andere escalatie. | CTA 12 | Peter |
+| O20 | Hoe lang is `cta12_samenvoegvenster` — binnen welke tijd worden oproepen aan dezelfde LG één kaart? | CTA 12 | Oscar |
 | O13 | De zes drempels voor de drukte van een kelner (§7.6). Beter te ijken op een paar weken echte data dan nu te schatten. | Het LG-dashboard (§4.2) | Oscar, na meting |
 | O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport, niet de rest | Peter / kantoor |
 | O19 | De staff-app moet het eigen deel van het periodesrapport kunnen tonen. Welke app is dat, en hoe knopen we de ingelogde medewerker aan de kelner in de CTA-log? | Inzage voor de kelner | Peter |
