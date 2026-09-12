@@ -378,6 +378,7 @@ gebruikt.
 | §4.1 Drukte van de zaak | de hele locatie | CTA 5, druktemeter LG |
 | §4.2 Drukte van de kelner | één kelner in zijn wijk | LG-dashboard, escalatie |
 | §4.3 "Doet niets meer" | één kelner, stilte | CTA 7, routing |
+| §4.4 Verwachte drukte | de bezetting van een service | CTA 3 |
 
 Block by busy (§2.7) hoort in geen van drieën thuis: dat kijkt alleen of de kelner
 in de laatste seconden iets deed, en staat los van werkdruk.
@@ -440,6 +441,24 @@ onderscheid moet uit het scherm zelf blijken — zie §11.4. Een wijk kleurt, ge
 persoon.
 
 Parameters: §7.6, alle drempels TODO (O13).
+
+### §4.4 Verwachte drukte (forecast)
+
+De forecast is het aantal couverts dat voor een service verwacht wordt. Hij komt
+uit het reserveringssysteem en zegt iets heel anders dan §4.1: niet hoe hard het
+nú loopt, maar hoeveel er is ingekocht en ingeroosterd.
+
+Daarom wordt hij maar voor één ding gebruikt: bepalen of er een **seater**
+ingeroosterd staat (§5.3). Boven `cta3_forecast_min` couverts is dat altijd zo.
+
+**Dit is geen terugkeer van de geschrapte "verwachte drukte".** Dat besluit
+(§8.2, 14-06-2026) ging over werkdruk: een forecast voorspelt niet hoe hard het op
+dat moment loopt, en daarvoor is de order-rate gebruikt. Hier gaat het niet over
+werkdruk maar over bezetting — een roosterfeit, en dat is precies wat een forecast
+wél voorspelt.
+
+De forecast wordt nergens anders voor gebruikt. Zeker niet voor CTA 5 (§5.5), die
+kijkt naar de actuele order-rate.
 
 ### §4.3 "Doet niets meer"
 
@@ -517,10 +536,15 @@ open staat.
 
 **Doel** Tafels vangen die buiten de seater om geopend worden.
 
-**Trigger** Een kelner opent een niet-geseate tafel terwijl de seater actief is.
+**Trigger** Een kelner opent een niet-geseate tafel terwijl er een seater staat.
 
-**Seater actief** = `cta3_seater_detect_acties` plaatsingen binnen
-`cta3_seater_detect_window`.
+**Er staat een seater** = de forecast voor deze service is ten minste
+`cta3_forecast_min` couverts. Boven die grens wordt er altijd een seater
+ingeroosterd, dus dat is een directer gegeven dan het afleiden uit plaatsingen
+(§4.4).
+
+Dat is meteen de reden dat deze CTA bestaat: juist als het druk is lopen gasten
+langs de seater heen, en juist dan opent een kelner een tafel die niet geseat is.
 
 **Kaart** `Tafel [nr] — Not seated. Previous table?`
 
@@ -1091,8 +1115,7 @@ worden. Die vragen gaan niet weg door te meten.
 | `cta1_postpone_time` | 300 sec | maart 2026 | Wachttijd bij `WAIT` |
 | `cta1_max_levensduur` | 900 sec | maart 2026 | CTA vervalt na 15 min |
 | `cta2_sleep_threshold` | 1800 sec | maart 2026 | Tijd zonder kelner-actie voor trigger |
-| `cta3_seater_detect_acties` | 2 | maart 2026 | Min. plaatsingen om de seater actief te noemen — **let op (O4)** |
-| `cta3_seater_detect_window` | 300 sec | maart 2026 | Detectievenster |
+| `cta3_forecast_min` | 150 couverts | besluit 12-09-2026 | Forecast vanaf waar er altijd een seater staat (§4.4, §5.3) |
 | `cta5_bedrag_pp` | TODO (O5) | — | Besteding per persoon vanaf welke de koffie mag |
 | `cta5_postpone_time` | TODO (O6) | — | Wachttijd bij `WAIT` |
 | `cta5_cooldown_dagen` | 30 | maart 2026 | Min. dagen tussen gifts per herkende gast |
@@ -1123,10 +1146,12 @@ per ongeluk terugbouwt.
 |---|---|
 | `cta2_postpone_time` | `WAIT` reset nu dezelfde sleep-timer; een aparte wachttijd bestaat niet meer |
 | `cta2_max_levensduur` | CTA 2 is terugkerend zonder eigen levensduur |
-| `cta3_piek_lunch_start` / `_eind` | Piekuren geschrapt: CTA 3 kijkt alleen nog naar "seater actief" |
+| `cta3_piek_lunch_start` / `_eind` | Piekuren geschrapt: CTA 3 kijkt naar de forecast, niet naar de klok |
 | `cta3_piek_diner_start` / `_eind` | idem |
-| `cta3_forecast_lunch_min` | Forecast geschrapt (§8.2, 14-06-2026) |
+| `cta3_forecast_lunch_min` | Vervangen door één `cta3_forecast_min` voor beide services |
 | `cta3_forecast_diner_min` | idem |
+| `cta3_seater_detect_acties` | De seater wordt niet meer afgeleid uit plaatsingen maar uit de forecast (§4.4) |
+| `cta3_seater_detect_window` | idem |
 | `cta5_eval_moment` | Vaste evaluatietijd geschrapt |
 | `cta5_drempel_percentiel` | Percentielen vervangen door één vast bedrag |
 | `cta5_tijdvak_bf` / `_lunch` / `_diner` | Benchmarks per tijdvak geschrapt |
@@ -1227,7 +1252,7 @@ shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
 |---|---|---|
 | 1 | Eerste drankje, NL-knoppen | Ongewijzigd van opzet; knoppen Engels, `CLOSE TABLE` beschermd |
 | 2 | Trigger = geen *order* sinds 30 min | Trigger = geen *kelner-actie*; "wil nog wachten" reset ook |
-| 3 | Tafel bij drukte: piekuren + forecast + seater | Alleen "seater actief"; knoppen `NEW`/`PULL` |
+| 3 | Tafel bij drukte: piekuren + forecast + seater-detectie | Alleen de forecast: boven `cta3_forecast_min` staat er een seater. Knoppen `NEW`/`PULL` |
 | 4 | Aanbieden bij escalatie, rol-rechten bij drukte | Geen CTA meer: achtergrond-permissie op een `promo`-tag (§2.14). Nummer 4 is leeg |
 | 5 | Loyalty drankje, percentielen en rolling averages | Loyalty koffie, één vast bedrag per persoon |
 | 6 | Auto kan door: systeem firet zelf | `GO`/`NO`-kaart, autofire pas na de laatste `NO` |
@@ -1279,6 +1304,7 @@ shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
 | 12-09-2026 | CTA 11 gaat eerst naar de kelner, niet naar de LG | Die staat er het dichtst bij en lost het meestal zelf op |
 | 12-09-2026 | Beachalert volgt de routing van §3 (wijk), niet een lookup per tafel | Twee routings naast elkaar laten CTA 9 en CTA 1 voor dezelfde tafel bij verschillende kelners landen |
 | 12-09-2026 | `beachalert_events` is de rijkere bron, §6.2 is de projectie ervan | Twee losse logs voor hetzelfde signaal geeft twee waarheden |
+| 12-09-2026 | "Er staat een seater" volgt uit de forecast, niet uit plaatsingen (§4.4, §5.3) | Boven 150 couverts wordt er altijd een seater ingeroosterd. Een roosterfeit is directer dan het afleiden uit gedrag, en het werkt vanaf de eerste tafel van de service |
 | 12-09-2026 | De log bevat het personeelsnummer, niet de naam (§6.2) | Het rapport telt op over vier weken en moet kloppen bij twee dezelfde voornamen of een naamswijziging; de staff-app heeft een sleutel nodig. Herziet het besluit "recordformaat ongewijzigd" op dit ene punt. Bijvangst: geen namen in de analysetabel |
 | 12-09-2026 | "Uit de buurt" (CTA 14) is een lijst postcodes per locatie in de backend; de gastpostcode komt uit de reservering (§5.14) | Geen geocoding en geen externe dienst. Bij een strandlocatie is een straal voor de helft zee en onbereikbaar gebied; een lijst kun je precies snijden |
 | 12-09-2026 | Eén systeembrede standaard, per locatie te overschrijven; het beheerscherm toont het verschil (§7.0) | Een zaak die niets instelt volgt de standaard en blijft dat doen. Zonder dat onderscheid zichtbaar te maken snapt niemand waarom een wijziging bij vier zaken werkt en bij drie niet |
@@ -1327,9 +1353,9 @@ Geen van deze gaat weg door te meten.
 
 | Code | Vraag | Blokkeert | Wie |
 |---|---|---|---|
-| O4 | De maart-PDF zegt "meer dan 2 plaatsingen in het venster", de juni-uitleg zegt "een seat-actie binnen de laatste X minuten". Eén plaatsing of twee? Dit is een tegenspraak tussen bronnen, geen drempel. | CTA 3 | Oscar |
 | O8 | Trillen alleen CTA 1, 2, 3, 9, 10, 11 en 12, zoals nu in §7.4? Dat patroon is nooit apart besloten. | Niets — instelbaar | Oscar |
 | O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport | Peter / kantoor |
+| O21 | Waar komt de forecast vandaan en is hij voor de monitor beschikbaar op het moment dat een tafel geopend wordt (§4.4)? Zonder die koppeling vuurt CTA 3 niet. | CTA 3 | Oscar |
 | O17 | Komen CTA 13 (uitnodigen) en CTA 14 (wervingskaartje) er? De werking ligt vast; alleen het go/no-go staat nog open. | Alleen zichzelf | Peter |
 | O18 | CTA 13 legt een oordeel over een gast vast; CTA 14 gebruikt de postcode voor een ander doel dan de reservering. Grondslag en bewaartermijn laten toetsen vóór invoering. | CTA 13 en 14 | Peter / kantoor |
 
