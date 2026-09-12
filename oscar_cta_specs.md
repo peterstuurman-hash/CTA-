@@ -991,6 +991,7 @@ iets over de demo, niet per se over het productiesysteem — zie de eerste regel
 - De CTA-backend (§11) in zijn geheel: monitor, triggers, poort, transport, log
 - De poort (§2.15) als één doorgang voor alle bronnen
 - Het LG-dashboard met wijk-kleuren (§4.2, §11.4)
+- Het weekrapport (§11.6)
 - Levering, fallback en escalatie van mens-CTA's (§2.16)
 - CTA 11 en CTA 12 (§5.11, §5.12) — bestaan alleen op papier
 - Beachalert zelf (§10) — nog geen regel code
@@ -1016,7 +1017,8 @@ verschuiven. Er wordt niet op een open punt gebouwd.
 | O11 | Wat zijn de defaults voor CTA 11 en 12 in §7.4 — status, block by busy, vibratie? En in welk CTA-niveau horen ze (§2.11)? | Invoering van Beachalert | Oscar |
 | O13 | De zes drempels voor de drukte van een kelner (§7.6). Beter te ijken op een paar weken echte data dan nu te schatten. | Het LG-dashboard (§4.2) | Oscar, na meting |
 | O14 | Wie mag welke instellingen wijzigen (§11.3)? Mag een LG aan de triggers komen, of alleen aan het CTA-niveau? Mag hij de wijkindeling aanpassen? | Het beheerscherm | Peter / kantoor |
-| O15 | Komt het trainingssignaal (§11.4) er, en zo ja: wie ziet het, over welke periode, en krijgt de kelner het zelf te zien? | Niets — het dashboard werkt er zonder | Peter / kantoor |
+| O15 | Het weekrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het weekrapport, niet de rest | Peter / kantoor |
+| O16 | Wie krijgt het weekrapport — alleen de LG van die zaak, of ook kantoor? En krijgt de kelner zijn eigen deel te zien? | Het weekrapport | Peter |
 
 ### §9.2 Fase 2 — pas nodig bij §4 en §5.5
 
@@ -1194,20 +1196,13 @@ Daarom gelden voor dit scherm de volgende regels:
 - **Wel de reden, in gewone taal.** "Vier tafels wachten op een eerste bestelling"
   zegt wat er te doen is. "Achterstandsscore 0,72" zegt niets en beschadigt.
 
-Ga ervan uit dat er een screenshot van dit scherm rondgaat en dat die verkeerd
-wordt uitgelegd. Alles wat dan niet uit te leggen valt, hoort er niet op.
+Dit scherm beantwoordt één vraag: **waar moet ik nu heen?** Alles wat die vraag
+niet beantwoordt, hoort er niet op — hoe interessant het ook is.
 
-**Het trainingssignaal.** Uit de logs is af te leiden dat een kelner structureel
-tegen hetzelfde aanloopt — bijvoorbeeld altijd te laat bij het eerste drankje. Dat
-is nuttige informatie voor een gesprek, en **geen dashboardkleur**.
-
-Het hoort daarom niet op het vloerscherm van de LG maar in een aparte
-kantooranalyse, over een langere periode, naast andere signalen, en bedoeld als
-vertrekpunt voor een gesprek met de kelner — niet als uitkomst. Een kelner die op
-een scherm ziet dat het systeem hem als trainingsgeval markeert, vertrouwt het
-systeem daarna niet meer, en dan sneuvelt ook de rest.
-
-Open: O15.
+Wat een kelner over langere tijd nodig heeft, staat in het weekrapport (§11.6).
+Dat is een andere vraag, met een ander tempo. Een LG die midden in een service
+"deze kelner heeft training nodig" in beeld krijgt, behandelt het als iets dat nu
+moet, en dat is het niet.
 
 ### §11.5 Als de backend eruit ligt
 
@@ -1226,6 +1221,69 @@ toestand.
 
 Wat er wél gebeurt: de stilte wordt gelogd, zodat achteraf te zien is waarom er
 een gat in de cijfers zit.
+
+### §11.6 Het weekrapport
+
+Eén overzicht per zaak, per week, voor de LG: hoe staat het team ervoor.
+
+**Escalatie is het signaal.** Een kelner die het niet aankan wordt geholpen — dat
+is wat escalatie doet (§2.16), en dat is meteen de belangrijkste waarneming. Dat
+het bij dezelfde kelner blijft gebeuren, is wat je in een week terugziet. Er is
+dus geen apart trainingsmechanisme nodig: het rapport kijkt terug op wat er toch
+al gebeurde.
+
+Het rapport komt volledig uit de log (§6.2, §6.3). Geen extra registratie, geen
+aparte beoordeling, niets wat de kelner niet zelf ook kan navertellen.
+
+#### Wat erin staat
+
+- Hoe vaak er geëscaleerd is, per kelner en per wijk
+- Waar het over ging: welke CTA's het vaakst tot een escalatie leidden
+- Wat er beter of slechter ging dan de week ervoor
+- Waarnemingen in gewone taal, met de omstandigheden erbij
+
+#### Vergelijken met wat
+
+Nooit met collega's op ruwe aantallen. De kelner met de drukste wijk krijgt de
+meeste CTA's; een ranglijst op aantallen zet degene met de zwaarste sectie
+onderaan, en dat is de omgekeerde conclusie.
+
+Wel:
+
+- **met zichzelf over tijd** — is het beter of slechter geworden
+- **met het team bij vergelijkbare drukte** (§4.2) — niet bij vergelijkbare klok
+
+#### Niet elke CTA zegt evenveel
+
+| Signaal | Wat het zegt |
+|---|---|
+| **CTA 11** bestelling klopt niet | Orderaccuratesse. Schaalt nauwelijks met drukte — het scherpste signaal dat we hebben |
+| **CTA 3** tafel buiten de seater om geopend | Procedure. Heeft weinig met drukte te maken |
+| **CTA 6 / 8** tweemaal `NO`, dan autofire | Gangbewaking. Deels vakmanschap, deels keuken |
+| **CTA 1 / 2** verlopen | Schaalt sterk mee met werklast. Alleen betekenisvol na normalisatie |
+| **CTA 9 / 10** geëscaleerd | Responsiviteit — maar een handy in de broekzak ziet er in de data hetzelfde uit als onwil |
+
+De onderste drie rijen zeggen weinig zonder de drukte erbij. Zet ze niet naast
+elkaar alsof ze hetzelfde wegen.
+
+#### Hoe het opgeschreven staat
+
+Niet: *Daan — achterstandsscore 0,72.*
+
+Wel: *Bij Daan verloopt CTA 1 ongeveer tweemaal zo vaak als bij de rest van het
+team bij vergelijkbare drukte, vooral tussen 19:00 en 20:00.*
+
+Het tweede is te bespreken en te weerleggen — misschien kreeg hij drie keer per
+avond een groep van twaalf. Het eerste kun je alleen ondergaan. Dat verschil
+bepaalt of een LG dit gebruikt of na drie weken wegklikt.
+
+#### Wat er niet in staat
+
+Geen ranglijst van slechtste naar beste, geen cijfer achter een naam, geen
+voorspelling over wie gaat uitvallen. Het rapport is een vertrekpunt voor een
+gesprek, niet de uitkomst ervan.
+
+Open: O15 (instemmingsrecht), O16 (wie krijgt het rapport).
 
 ---
 
