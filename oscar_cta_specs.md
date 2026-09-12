@@ -350,7 +350,22 @@ nog geen eigenaar en die ene CTA vervalt. Bewust geaccepteerd.
 
 ---
 
-## §4 Drukte
+## §4 Drukte en stilte
+
+Er zijn drie verschillende dingen die "druk" of "stil" kunnen heten, en ze worden
+makkelijk door elkaar gehaald. Ze meten iets anders en worden voor iets anders
+gebruikt.
+
+| | Gaat over | Gebruikt door |
+|---|---|---|
+| §4.1 Drukte van de zaak | de hele locatie | CTA 5, druktemeter LG |
+| §4.2 Drukte van de kelner | één kelner in zijn wijk | LG-dashboard, escalatie |
+| §4.3 "Doet niets meer" | één kelner, stilte | CTA 7, routing |
+
+Block by busy (§2.7) hoort in geen van drieën thuis: dat kijkt alleen of de kelner
+in de laatste seconden iets deed, en staat los van werkdruk.
+
+### §4.1 Drukte van de zaak
 
 > **Fase 2 — niet bouwen in de eerste oplevering.** De enige functionele afnemer is
 > CTA 5 (§5.5), en die staat pas op niveau 3 aan (§2.11). De druktemeter op het
@@ -370,6 +385,68 @@ een uitgelopen avond "druk" niet kunstmatig hoog houdt.
 CTA 3 gebruikt géén drukte, maar puur "seater actief" (§5.3).
 
 Parameters: `drukte_venster`, `drukte_drempel` (§7.1) — beide TODO (O3).
+
+### §4.2 Drukte van de kelner
+
+De drukte van de zaak zegt niets over of **deze** kelner het aankan. Iemand kan
+verzuipen in een rustige zaak en het prima doen op een volle avond. Voor "de LG
+kan gaan helpen" is dat laatste nodig, niet §4.1.
+
+Twee assen, allebei uit gegevens die er al zijn:
+
+**Werklast** — wat er op zijn bord ligt:
+
+- open tafels in zijn wijk
+- tafels waar een gang onderweg is (voorgerecht gefired, hoofdgerecht nog niet)
+- tafels die nog niets besteld hebben
+
+**Achterstand** — of hij het bijhoudt:
+
+- openstaande CTA's op zijn handy
+- CTA's die hij in het laatste venster liet verlopen
+- mediane responstijd in het laatste venster
+
+**Allebei zijn nodig.** Werklast alleen zegt te weinig: acht tafels is voor de een
+veel en voor de ander niets. Achterstand alleen ook: nul openstaande CTA's kan
+betekenen dat hij het goed doet, of dat er niets gebeurt in zijn wijk.
+
+Kleur per wijk op het LG-dashboard:
+
+| Kleur | Betekenis |
+|---|---|
+| Groen | Werklast normaal, geen achterstand |
+| Oranje | Werklast hoog **óf** achterstand zichtbaar |
+| Rood | Werklast hoog **én** achterstand |
+
+**Rood is een verzoek om te gaan helpen, geen oordeel over de kelner.** Dat
+onderscheid moet uit het scherm zelf blijken — zie §11.4. Een wijk kleurt, geen
+persoon.
+
+Parameters: §7.6, alle drempels TODO (O13).
+
+### §4.3 "Doet niets meer"
+
+Drie toestanden die uit elkaar gehouden moeten worden, omdat ze een ander gevolg
+hebben:
+
+| Toestand | Hoe vastgesteld | Gevolg |
+|---|---|---|
+| **Onbereikbaar** | Handy offline of niemand ingelogd (devicedata) | Mens-CTA's naar de fallback (§2.16). Geen CTA 7 — vragen heeft geen zin |
+| **Stil** | Geen POS-aanslag en geen CTA-respons binnen `cta7_inactief_drempel`, **terwijl er open tafels in zijn wijk staan** | CTA 7 actief-check (§5.7) |
+| **Klaar** | Geen open tafels in zijn wijk | Niets. Niet stil — er is gewoon niets te doen |
+
+**"Doet niets meer" is de toestand Stil.** De derde regel is er om te voorkomen
+dat een kelner met een leeggelopen wijk elk kwartier gevraagd wordt of hij er nog
+is. Stilte is alleen een signaal als er werk ligt.
+
+Twee dingen tellen mee als bezig zijn:
+
+- Een kelner die "wil wachten" aanslaat is bezig. Dat is een POS-handeling en een
+  bewuste beslissing over de tafel (§5.2).
+- Een kelner die een CTA beantwoordt is bezig, ook als hij `NO` of `WAIT` drukt.
+
+De fail-safe van §5.7 blijft gelden: geen antwoord op CTA 7 betekent nooit
+automatisch uit het overzicht.
 
 ---
 
@@ -821,6 +898,20 @@ nog niet vast. TODO (O11).
 
 Deze staan per locatie in, net als §7.1 en §7.2.
 
+### §7.6 Drukte van de kelner en inactiviteit
+
+| Parameter | Default | Wat |
+|---|---|---|
+| `kelner_venster` | TODO (O13) | Venster waarover achterstand wordt gemeten (§4.2) |
+| `kelner_werklast_tafels` | TODO (O13) | Open tafels vanaf waar de werklast "hoog" heet |
+| `kelner_werklast_gangen` | TODO (O13) | Tafels met een gang onderweg, idem |
+| `kelner_achterstand_open` | TODO (O13) | Openstaande CTA's vanaf waar er achterstand is |
+| `kelner_achterstand_vervallen` | TODO (O13) | Vervallen CTA's in het venster, idem |
+| `kelner_achterstand_respons` | TODO (O13) | Mediane responstijd vanaf waar er achterstand is |
+
+"Stil" (§4.3) gebruikt geen eigen drempel maar `cta7_inactief_drempel` (§7.2) —
+dezelfde grens die bepaalt wanneer CTA 7 vuurt. Eén getal, één betekenis.
+
 ---
 
 ## §8 Beslislog
@@ -897,7 +988,9 @@ iets over de demo, niet per se over het productiesysteem — zie de eerste regel
 - Drukte als gemeten order-rate (§4) — in de demo een handmatige schakelaar
 - De statuslus terug naar de runner-iPad (§5.9, §5.10)
 - De promo-permissie als échte achtergrondregel (§2.14) — in de demo een info-kaartje
+- De CTA-backend (§11) in zijn geheel: monitor, triggers, poort, transport, log
 - De poort (§2.15) als één doorgang voor alle bronnen
+- Het LG-dashboard met wijk-kleuren (§4.2, §11.4)
 - Levering, fallback en escalatie van mens-CTA's (§2.16)
 - CTA 11 en CTA 12 (§5.11, §5.12) — bestaan alleen op papier
 - Beachalert zelf (§10) — nog geen regel code
@@ -921,6 +1014,9 @@ verschuiven. Er wordt niet op een open punt gebouwd.
 | O12 | Haalt de LG-routing de leidinggevende uit de devicedata (rol van de ingelogde medewerker) of uit een vaste instelling per zaak? Beide paden worden gebouwd; wat is de default? | CTA 12, en de fallback van §2.16 | Oscar |
 | O10 | Naar wie escaleert een onbeantwoorde "roep LG" (CTA 12)? De LG is al het eindpunt van elke andere escalatie. | CTA 12, escalatiedeel | Oscar |
 | O11 | Wat zijn de defaults voor CTA 11 en 12 in §7.4 — status, block by busy, vibratie? En in welk CTA-niveau horen ze (§2.11)? | Invoering van Beachalert | Oscar |
+| O13 | De zes drempels voor de drukte van een kelner (§7.6). Beter te ijken op een paar weken echte data dan nu te schatten. | Het LG-dashboard (§4.2) | Oscar, na meting |
+| O14 | Wie mag welke instellingen wijzigen (§11.3)? Mag een LG aan de triggers komen, of alleen aan het CTA-niveau? Mag hij de wijkindeling aanpassen? | Het beheerscherm | Peter / kantoor |
+| O15 | Komt het trainingssignaal (§11.4) er, en zo ja: wie ziet het, over welke periode, en krijgt de kelner het zelf te zien? | Niets — het dashboard werkt er zonder | Peter / kantoor |
 
 ### §9.2 Fase 2 — pas nodig bij §4 en §5.5
 
@@ -1016,6 +1112,120 @@ CTA-log van §6.2: ook signalen die nooit een CTA werden, zoals dedupe-hits en
 afgebroken bevestigingen. Het is de rijkere bron; §6.2 gaat alleen over wat er
 daadwerkelijk naar een handy is gestuurd. Wat in beide staat moet uit dezelfde
 schrijfactie komen, anders ontstaan er twee waarheden over hetzelfde signaal.
+
+---
+
+## §11 De CTA-backend
+
+### §11.1 Vijf lagen
+
+De backend is de centrale applicatie die alle CTA's bepaalt. Vijf lagen, elk met
+één taak:
+
+| Laag | Taak |
+|---|---|
+| **Monitor** | Leest continu de POS-database: tafels, tickets, aanslagen, wijken, kelners. Houdt de actuele toestand bij per tafel, per wijk, per kelner |
+| **Triggers** | Bepaalt of er een CTA moet **ontstaan** (§11.2) |
+| **Poort** | Bepaalt of die CTA ook **verstuurd** wordt (§2.15) |
+| **Transport** | Schrijft het CTA-record weg; ontvangt de webhook met de respons |
+| **Log** | §6.2 en §6.3, inclusief wat er is tegengehouden |
+
+**Triggers en poort zijn niet hetzelfde.** Een CTA kan volkomen terecht ontstaan
+en tóch niet verstuurd worden: de kelner deed net iets, het venster zit vol, of
+die CTA staat voor deze zaak uit. Dat zijn andere instellingen, met andere
+beheerders, en ze horen op andere schermen (§11.3).
+
+Externe bronnen — Beachalert (§10), later de seating-app en het dashboard — komen
+**niet** bij de monitor binnen maar rechtstreeks bij de poort. Dat is de reden dat
+die laag apart staat: hij is het enige punt waar alles doorheen gaat.
+
+### §11.2 Triggers: vaste logica, instelbare getallen
+
+Elke trigger is code die doet wat §5 beschrijft. In de database staan alleen de
+tijden en drempels, per locatie (§7).
+
+Een nieuwe CTA is dus een bouwopdracht mét een nieuwe paragraaf in dit document.
+Dat is bewust: zet je de triggers als records in een tabel, dan verhuist de
+waarheid over het gedrag van de spec naar de database, en is er geen document
+meer dat klopt.
+
+Een nieuwe **drempel** is wel één veld en geen deploy.
+
+Overwegen we later alsnog regels uit records, dan is het signaal daarvoor: de
+derde of vierde keer dat er om een CTA gevraagd wordt die niets nieuws doet en
+alleen andere getallen heeft. Tot die tijd is het complexiteit zonder aanleiding.
+
+### §11.3 Instellingen
+
+Drie soorten, en ze horen niet bij elkaar op één scherm:
+
+| Soort | Voorbeelden | Wie |
+|---|---|---|
+| **Wanneer ontstaat een CTA** | `cta1_check_delay`, `cta2_sleep_threshold`, `cta6_after_starter` (§7.2) | TODO (O14) |
+| **Wanneer wordt hij tegengehouden** | `kelner_idle`, `cta_max_per_window`, status per CTA, CTA-niveau (§7.1, §7.4, §2.11) | TODO (O14) |
+| **Vaste inrichting** | Wijken en hun tafelbereik (§3.1), LG-routing (§7.5) | TODO (O14) |
+
+**Twee niveaus.** Een systeembrede standaardwaarde, en per locatie een afwijking.
+Een zaak die niets instelt volgt de standaard; een wijziging aan de standaard
+werkt door bij iedereen die niets eigens heeft gezet.
+
+**Elke wijziging wordt vastgelegd**: wat, van welke waarde naar welke, door wie en
+wanneer. Zonder dat is een verandering in de logs (§2.13) niet te verklaren — je
+ziet dat CTA 2 ineens vaker vuurt en weet niet dat iemand de drempel halveerde.
+
+**De adoptie-ramp is één knop.** Het CTA-niveau (§2.11) zet in één keer de juiste
+CTA's aan en de rem strak. Wie niet per parameter wil sleutelen, hoeft alleen dat
+te bedienen.
+
+### §11.4 Het LG-dashboard
+
+De LG ziet zijn wijken, elk groen, oranje of rood volgens §4.2.
+
+**Een wijk kleurt, geen persoon.** Rood betekent: hier is hulp nodig. Het betekent
+niet dat de kelner tekortschiet — een wijk kan roodlopen omdat er drie tafels
+tegelijk binnenkwamen.
+
+Daarom gelden voor dit scherm de volgende regels:
+
+- **Geen scores of ranglijsten achter namen.** Geen cijfer, geen percentage, geen
+  volgorde van slechtste naar beste kelner.
+- **Geen rekenregels op het scherm.** De LG hoeft niet te zien uit welke zes
+  drempels de kleur volgt; hij moet zien wáár hij heen moet.
+- **Wel de reden, in gewone taal.** "Vier tafels wachten op een eerste bestelling"
+  zegt wat er te doen is. "Achterstandsscore 0,72" zegt niets en beschadigt.
+
+Ga ervan uit dat er een screenshot van dit scherm rondgaat en dat die verkeerd
+wordt uitgelegd. Alles wat dan niet uit te leggen valt, hoort er niet op.
+
+**Het trainingssignaal.** Uit de logs is af te leiden dat een kelner structureel
+tegen hetzelfde aanloopt — bijvoorbeeld altijd te laat bij het eerste drankje. Dat
+is nuttige informatie voor een gesprek, en **geen dashboardkleur**.
+
+Het hoort daarom niet op het vloerscherm van de LG maar in een aparte
+kantooranalyse, over een langere periode, naast andere signalen, en bedoeld als
+vertrekpunt voor een gesprek met de kelner — niet als uitkomst. Een kelner die op
+een scherm ziet dat het systeem hem als trainingsgeval markeert, vertrouwt het
+systeem daarna niet meer, en dan sneuvelt ook de rest.
+
+Open: O15.
+
+### §11.5 Als de backend eruit ligt
+
+| Onderdeel | Gedrag |
+|---|---|
+| Handy's | Blijven tonen wat er al staat. Knoppen blijven werken; responses lopen achter |
+| Monitor en triggers | Stil. Er ontstaan geen nieuwe CTA's |
+| Beachalert | Krijgt `POORT_ONBEREIKBAAR` en toont een handelingsperspectief (§10) |
+| LG-dashboard | Toont wanneer de gegevens voor het laatst zijn bijgewerkt |
+
+**Geen inhaalslag bij herstel.** Komt de backend terug na twintig minuten stilte,
+dan worden de gemiste triggers **niet** alsnog afgevuurd. Dat zou een stapel
+kaarten opleveren over tafels die inmiddels afgerekend zijn, precies op het moment
+dat het toch al een rommeltje is. De triggers beginnen opnieuw vanaf de actuele
+toestand.
+
+Wat er wél gebeurt: de stilte wordt gelogd, zodat achteraf te zien is waarom er
+een gat in de cijfers zit.
 
 ---
 
