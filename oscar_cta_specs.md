@@ -4,7 +4,7 @@
 |---|---|
 | **Document** | `oscar_cta_specs.md` — SPEC |
 | **Project** | Oscar — CTA's op de handy |
-| **Versie** | 2.0 (reconstructie) |
+| **Versie** | 2.1 — Beachalert als bron (§10) |
 | **Datum** | 12-09-2026 |
 | **Status** | Concept — §1.1 treedt in werking zodra dit "Definitief" is |
 | **Bron van waarheid** | Dit document, zodra de status "Definitief" is — zie §1.1 |
@@ -79,18 +79,28 @@ Elke CTA gaat naar precies één kelner (§3). Liever geen melding dan de verkee
 een gemiste melding is geen verslechtering ten opzichte van de nullijn, een
 verkeerd geroute melding wel.
 
+**Dit geldt alleen voor systeem-CTA's** (§2.15). Die ontstaan uit een timer; komt
+er niets, dan heeft niemand iets gemist.
+
+Voor een **mens-CTA** gaat de redenering niet op. Daar heeft een medewerker al
+gezien dat er iets nodig is en er een handeling voor gedaan. Verdwijnt dat signaal,
+dan wacht de gast nog steeds en is er werk gedaan dat nergens heen ging — en de
+melder ziet het niet, want die heeft "verzonden" op zijn scherm gehad. Mens-CTA's
+krijgen daarom wél een fallback en een escalatie (§2.16).
+
 ### §2.3 Maximaal drie kaarten, prio bepaalt welke
 
 Maximaal drie CTA-kaarten tegelijk zichtbaar per handy. Zijn er meer, dan staat de
 rest in de wachtrij. De zichtbare drie worden gekozen op prio, bij gelijke prio op
 volgorde van binnenkomst.
 
-Prio-volgorde: **1, 2, 9, 10, 3, 5, 6, 7, 8**
+Prio-volgorde: **1, 2, 9, 10, 11, 12, 3, 5, 6, 7, 8**
 
-CTA 9 en 10 staan vlak achter 1 en 2 omdat daar een gast op staat te wachten.
+CTA 9 t/m 12 staan vlak achter 1 en 2: dat zijn de mens-CTA's (§2.15), waar iemand
+op staat te wachten die het al gemeld heeft.
 
 Nummer 4 ontbreekt: dat was de promo-permissie, die geen kaart is en dus geen prio
-heeft. Zie §2.14. Het nummer blijft leeg zodat 5 t/m 10 niet hoeven te schuiven.
+heeft. Zie §2.14. Het nummer blijft leeg zodat de rest niet hoeft te schuiven.
 
 ### §2.4 Afhandelen is verplicht
 
@@ -165,6 +175,33 @@ shadow-loggen.
 De promo-permissie (§2.14) staat buiten de niveaus: die is geen melding en valt dus
 niet onder de adoptie-ramp.
 
+### §2.12 Knoptaal
+
+Alle knoppen Engels en over alle CTA's consistent:
+
+| Betekenis | Knoppen |
+|---|---|
+| Doe het nu | `ORDER` · `GO` · `YES` · `NEW` · `PULL` · `PRINT` |
+| Klaar, opgelost | `FIXED` |
+| Later | `WAIT` |
+| Weiger | `NO` |
+| Haal er iemand bij | `CALL LG` |
+
+`CALL LG` is de enige knop die een nieuwe CTA veroorzaakt in plaats van er een af te
+sluiten. Hij staat op CTA 2 (§5.2) en CTA 11 (§5.11).
+
+`CLOSE TABLE` staat apart, is rood en vraagt een bevestiging — beschermd tegen
+mistaps. Elke tik geeft directe feedback op het scherm.
+
+Terugmeldingen noemen **geen tijden** ("extra wait", niet "15 minuten extra"). Dat
+voorkomt discussie op de vloer over wat de handy beloofd zou hebben.
+
+### §2.13 CTA-hygiëne
+
+Per CTA meet Oscar via de log of het gewenste effect volgt. Een CTA die structureel
+genegeerd wordt gaat eruit of wordt vervangen. Liever een paar effectieve CTA's dan
+veel ruis.
+
 ### §2.14 Promo-permissie
 
 Hangt aan het reserveringsticket de tag `promo`, dan mag iedere kelner voor dat
@@ -182,27 +219,67 @@ Het nummer 4 is leeggelaten in plaats van hergebruikt.
 In `index.html` wordt de promo als info-kaartje getoond. Dat is een demo-concessie
 om hem te kunnen laten zien, en **geen gewenst productiegedrag**.
 
-### §2.12 Knoptaal
+### §2.15 Bronnen van CTA's, en de poort
 
-Alle knoppen Engels en over alle CTA's consistent:
+Een CTA kan uit twee soorten bron komen:
 
-| Betekenis | Knoppen |
-|---|---|
-| Doe het nu | `ORDER` · `GO` · `YES` · `NEW` · `PULL` · `PRINT` |
-| Later | `WAIT` |
-| Weiger | `NO` |
+| Soort | Wie merkt iets op | Voorbeelden |
+|---|---|---|
+| **Systeem** | Oscar zelf, op een timer of een gebeurtenis | CTA 1, 2, 3, 5, 6, 7, 8 |
+| **Mens** | Een medewerker meldt iets via een scherm | CTA 9, 10 en alles uit Beachalert |
 
-`CLOSE TABLE` staat apart, is rood en vraagt een bevestiging — beschermd tegen
-mistaps. Elke tik geeft directe feedback op het scherm.
+**Alle bronnen gaan door dezelfde poort.** De backend beslist of er een CTA-record
+wordt weggeschreven; WaiterPro leest dat record en toont het op de handy. Een bron
+schrijft dus nooit rechtstreeks naar een handy.
 
-Terugmeldingen noemen **geen tijden** ("extra wait", niet "15 minuten extra"). Dat
-voorkomt discussie op de vloer over wat de handy beloofd zou hebben.
+In die poort zitten, in deze volgorde:
 
-### §2.13 CTA-hygiëne
+1. Status van de CTA voor deze locatie (§2.10)
+2. Routing: wie is de eigenaar (§3)
+3. Block by busy (§2.7)
+4. Tempo-limiet (§2.8)
+5. Loggen wat er gebeurde, ook bij tegenhouden (§6.3)
 
-Per CTA meet Oscar via de log of het gewenste effect volgt. Een CTA die structureel
-genegeerd wordt gaat eruit of wordt vervangen. Liever een paar effectieve CTA's dan
-veel ruis.
+De begrenzing tot drie zichtbare kaarten (§2.3) gebeurt daarna, bij het tonen.
+
+Een nieuwe bron — een vloertablet, een keukenscherm, wat er ook bij komt — erft
+deze poort automatisch. Wie een bron bouwt die de poort omzeilt, bouwt een tweede
+meldingssysteem naar dezelfde handy zonder gedeelde rem, en dat is precies wat
+§2.13 wil voorkomen.
+
+### §2.16 Levering en escalatie van mens-CTA's
+
+Geldt **alleen voor mens-CTA's** (§2.15): CTA 9, 10, 11 en 12. Systeem-CTA's kennen
+geen van deze stappen — die vervallen stilletjes en dat is de bedoeling (§2.2).
+
+**1 · Delivery-check vooraf.** Vóór het wegschrijven kijkt de poort in de
+devicedata of de handy van de doelkelner online is en of er iemand op ingelogd
+staat. Zo niet, dan gaat de CTA meteen naar de fallback. Er wordt niet blind
+verzonden om vervolgens af te wachten.
+
+**2 · Fallback-volgorde.** Eigenaar → collega in dezelfde zone, indien bekend →
+LG. Elke overgeslagen stap wordt gelogd met de reden (§6.3).
+
+Dit is de uitzondering op §3.5, waar niemand een wijk erft. Daar ging het om
+eigenaarschap, hier alleen om deze ene melding: de collega wordt geen eigenaar van
+de wijk.
+
+**3 · Leveringsbevestiging.** Komt er binnen `mens_delivery_timeout` geen
+bevestiging van WaiterPro én geen respons, dan geldt de CTA als niet afgeleverd en
+volgt alsnog de fallback.
+
+**4 · Escalatietimer.** Niet afgehandeld binnen de timer van zijn actietype
+(§7.5)? Dan gaat er óók een CTA naar de LG. De oorspronkelijke kaart **blijft
+staan** — de escalatie is een extra melding, geen verplaatsing. Anders verdwijnt
+het werk van de handy van degene die er het dichtst bij staat.
+
+**5 · Terugkoppeling.** De uitkomst wordt vastgelegd op het signaal en is zichtbaar
+op het bronscherm zodra iemand dezelfde tafel opnieuw intoetst (§5.11).
+
+Aanvaard gevolg: de melder krijgt **geen** actieve waarschuwing dat zijn signaal
+geëscaleerd is. Hij heeft "verzonden" gezien en loopt door. Dat is aanvaardbaar
+omdat de escalatie bij de LG landt, die kan handelen — maar het betekent dat een
+runner niet weet dat hij er nog een keer langs moet.
 
 ---
 
@@ -243,9 +320,15 @@ wijk verkeerd kan staan.
 
 ### §3.4 Geen eigenaar = CTA vervalt
 
-Heeft niemand in de wijk aangeslagen, dan vervalt een CTA voor die wijk. Bewust
-geaccepteerd, volgens §2.2. Geen seeding, geen fallback naar een willekeurige
-kelner. Het verval wordt gelogd als `geen_wijk` (§6.3).
+Heeft niemand in de wijk aangeslagen, dan hangt het af van het soort CTA (§2.15):
+
+| Soort | Gedrag |
+|---|---|
+| **Systeem-CTA** (1–8) | Vervalt. Geen seeding, geen fallback naar een willekeurige kelner. Gelogd als `geen_wijk` (§6.3) |
+| **Mens-CTA** (9–12) | Gaat naar de LG, met de vermelding "geen tafeleigenaar gevonden". Gelogd als `geen_wijk_naar_lg` |
+
+Het verschil zit in §2.2: bij een systeem-CTA heeft niemand iets gemist, bij een
+mens-CTA staat er iemand te wachten die het al gemeld heeft.
 
 ### §3.5 Het overzicht schoonhouden
 
@@ -455,9 +538,9 @@ automatisch.** De kaart verdwijnt en het blijft aan de kelner.
 
 **Doel** Een bestelverzoek van de gast bij de kelner krijgen.
 
-**Trigger** Een runner — geen kelner — tikt op het externe iPad-scherm de tafel aan
-plus "bestellen". De gast heeft het aan de runner gevraagd. Oscar pusht naar de
-eigenaar van de wijk (§3).
+**Trigger** Een runner — geen kelner — tikt op het vloertablet (Beachalert, §10)
+de tafel aan plus "wil bestellen". De gast heeft het aan de runner gevraagd. Oscar
+pusht naar de eigenaar van de wijk (§3).
 
 **Kaart** `Tafel [nr] ([naam]) — wil bestellen`
 
@@ -466,29 +549,87 @@ eigenaar van de wijk (§3).
 | `ORDER` | Open WaiterPro en neem de bestelling op. Status "opgepakt" terug naar de runner-iPad. |
 | `NO` | Wegklikken. Status "afgewezen" terug naar de runner-iPad. |
 
-**De statusterugkoppeling naar de iPad is verplicht.** Zonder die lus krijg je
+**De statusterugkoppeling naar het tablet is verplicht.** Zonder die lus krijg je
 dubbele kaarten en een gast die blijft wachten.
 
-**Geen levensduur.** CTA 9 en 10 vervallen niet. De kaart blijft staan tot de
-kelner hem afhandelt (§2.4) en de runner-iPad blijft tot dat moment op "gemeld"
-staan. Bewust: ze staan vooraan in de prio (§2.3) en vallen daardoor op.
+**Mens-CTA** (§2.15): delivery-check, fallback en escalatie volgens §2.16, met
+`escalatie_bestellen` als timer (§7.5).
 
-Aanvaard gevolg: reageert de kelner niet, dan is er geen tweede signaal. Geen
-verval, geen escalatie naar de LG, geen terugkoppeling "niet opgepakt". Dit geldt
-voor beide CTA's van de runner-lus.
+**Geen levensduur.** De kaart vervalt niet en blijft staan tot de kelner hem
+afhandelt (§2.4), óók nadat hij geëscaleerd is naar de LG.
+
+**Recente-bestelling-check** Is er minder dan `recente_order_venster` geleden op
+deze tafel aangeslagen, dan vraagt het tablet eerst om bevestiging ("zojuist
+besteld — toch doorgeven?") vóór er iets wordt weggeschreven. Zie §10.3.
 
 ### §5.10 CTA 10 — Gast wil betalen
 
 **Doel** Een betaalverzoek bij de kelner krijgen.
 
-**Trigger** Als CTA 9, maar de runner kiest "betalen".
+**Trigger** Als CTA 9, maar de runner kiest "wil afrekenen".
 
 **Kaart** `Tafel [nr] ([naam]) — wil betalen`
 
 | Knop | Actie |
 |---|---|
-| `PRINT` | Afrekenen / de bon afdrukken. Status "klaar" terug naar de runner-iPad. |
-| `NO` | Wegklikken. Status "afgewezen" terug naar de runner-iPad. |
+| `PRINT` | Afrekenen / de bon afdrukken. Status "klaar" terug naar het tablet. |
+| `NO` | Wegklikken. Status "afgewezen" terug naar het tablet. |
+
+**Mens-CTA** (§2.15): delivery-check, fallback en escalatie volgens §2.16, met
+`escalatie_afrekenen` als timer (§7.5).
+
+**Auto-close.** Laat de orderstatus zien dat de rekening is aangeslagen of het
+ticket gesloten, dan wordt een openstaande CTA 10 automatisch afgehandeld — niemand
+hoeft af te vinken. Gelogd als `auto_close` in de `actie`-kolom (§6.2). Dit is
+naast §2.5, dat alle CTA's van een afgerekende tafel sowieso weghaalt; auto-close
+vuurt ook als de rekening is aangeslagen zonder dat het ticket al dicht is.
+
+### §5.11 CTA 11 — Bestelling klopt niet
+
+**Doel** Een klopt-niet-melding bij de kelner zelf krijgen, niet bij de LG.
+
+**Trigger** Een medewerker tikt op het vloertablet de tafel aan plus "bestelling
+klopt niet" (§10.3).
+
+**Kaart** `Tafel [nr] ([naam]) — check je bestelling` · met, als ze beschikbaar
+zijn, de laatste orderregels van de tafel eronder.
+
+| Knop | Actie |
+|---|---|
+| `FIXED` | Opgelost. CTA afgehandeld, geen escalatie. |
+| `CALL LG` | De kelner komt er niet uit. Push naar de LG met tafel en orderregels. |
+
+**Gaat eerst naar de kelner, niet naar de LG.** Die staat er het dichtst bij en
+lost het meestal zelf op. De LG komt erbij via `CALL LG` of via de escalatietimer,
+niet meteen.
+
+**Mens-CTA** (§2.15): delivery-check, fallback en escalatie volgens §2.16, met
+`escalatie_check` als timer (§7.5).
+
+### §5.12 CTA 12 — Roep LG
+
+**Doel** Een medewerker die de leidinggevende nodig heeft, zonder hem te gaan
+zoeken.
+
+**Trigger** De knop "Roep LG" op het vloertablet, met een locatie en optioneel een
+categorie (§10.4).
+
+**Kaart** `LG gevraagd — [locatie]` · met de categorie eronder als die gekozen is.
+
+| Knop | Actie |
+|---|---|
+| `GO` | De LG komt eraan. CTA afgehandeld. |
+| `NO` | Wegklikken. |
+
+**Hangt niet aan een tafel.** `tafelnr` blijft leeg in de log (§6.2), net als bij
+CTA 7.
+
+**Routing** Naar de LG-handy. Wie dat is komt uit de devicedata (de rol van de
+ingelogde medewerker) óf uit een instelling per zaak. Beide paden bestaan; welke
+geldt staat per locatie in `lg_routing` (§7.5).
+
+**Mens-CTA** (§2.15): delivery-check en fallback volgens §2.16. De escalatietimer
+staat open — TODO (O10): naar wie escaleert een onbeantwoorde oproep aan de LG?
 
 ---
 
@@ -546,7 +687,15 @@ lege `actie`, een lege `response_sec`, en in de `status`-kolom de **reden**.
 | `disabled` | De CTA staat uit voor deze locatie (shadow) | §2.10 |
 | `busy` | De kelner deed net iets | §2.7 |
 | `tempo` | De tempo-limiet van het venster was vol | §2.8 |
-| `geen_wijk` | Er was geen eigenaar voor de wijk | §3.4 |
+| `geen_wijk` | Er was geen eigenaar voor de wijk; systeem-CTA, dus vervallen | §3.4 |
+| `geen_wijk_naar_lg` | Geen eigenaar; mens-CTA, dus doorgestuurd naar de LG | §3.4 |
+| `offline_fallback` | Handy van de eigenaar offline of uitgelogd; naar de volgende in de fallback-volgorde | §2.16 |
+| `niet_afgeleverd` | Geen bevestiging binnen `mens_delivery_timeout`; alsnog fallback | §2.16 |
+
+De laatste drie horen bij mens-CTA's (§2.15); bij die regels is `actie` leeg maar
+staat er wél een doelmedewerker in `kelner` — degene naar wie hij uiteindelijk
+ging. Een escalatie naar de LG (§2.16, stap 4) is een gewone nieuwe CTA en krijgt
+dus een eigen `enabled`-regel, niet een van deze.
 
 `deleted` logt niets — dat is het enige verschil met `disabled`.
 
@@ -642,6 +791,25 @@ schakelaars.
 Herkomst: de demo. TODO (O8) — het vibratiepatroon (alleen 1, 2, 3, 9 en 10) is
 nergens apart besloten; bevestigen of dit de gewenste productiedefaults zijn.
 
+CTA 11 en 12 staan er nog niet in: die komen uit Beachalert en hun defaults liggen
+nog niet vast. TODO (O11).
+
+### §7.5 Parameters voor mens-CTA's en Beachalert
+
+| Parameter | Default | Herkomst | Wat |
+|---|---|---|---|
+| `mens_delivery_timeout` | 30 sec | opdracht Beachalert | Geen bevestiging én geen respons binnen deze tijd = niet afgeleverd (§2.16) |
+| `escalatie_bestellen` | 240 sec | opdracht Beachalert | CTA 9 niet afgehandeld → ook naar LG |
+| `escalatie_afrekenen` | 180 sec | opdracht Beachalert | CTA 10 niet afgehandeld → ook naar LG |
+| `escalatie_check` | 180 sec | opdracht Beachalert | CTA 11 niet afgehandeld → ook naar LG |
+| `escalatie_roep_lg` | TODO (O10) | — | CTA 12 onbeantwoord → naar wie? |
+| `dedupe_venster` | 180 sec | opdracht Beachalert | Zelfde tafel + zelfde actie binnen deze tijd = geen tweede CTA (§10.3) |
+| `recente_order_venster` | 120 sec | opdracht Beachalert | "Zojuist besteld — toch doorgeven?" bij CTA 9 (§5.9) |
+| `lookup_cache` | 60 sec | opdracht Beachalert | Maximale leeftijd van de tafel-naar-kelner lookup (§10.2) |
+| `lg_routing` | TODO (O12) | — | Per zaak: LG uit devicedata (rol) of uit een vaste instelling (§5.12) |
+
+Deze staan per locatie in, net als §7.1 en §7.2.
+
 ---
 
 ## §8 Beslislog
@@ -696,6 +864,14 @@ nergens apart besloten; bevestigen of dit de gewenste productiedefaults zijn.
 | 12-09-2026 | Recordformaat (§6.2) blijft ongewijzigd, zonder locatie, wijk of ticket | Locatie volgt uit de backend die de regel schrijft. De beperkingen staan in §6.2 zodat er geen dashboard wordt beloofd dat er niet uit te halen is |
 | 12-09-2026 | Status blijft "Concept" tot de fase-1-punten uit §9.1 beantwoord zijn | Tot die tijd blijft de juni-uitleg formeel leidend voor gedrag (§1.1) |
 | 12-09-2026 | De juni-uitleg krijgt een waarschuwing bovenaan in plaats van een inhoudelijke correctie | Hij wordt in één keer bijgewerkt zodra §9.1 rond is, in plaats van twee keer |
+| 12-09-2026 | Alle bronnen van CTA's gaan door één poort in onze backend (§2.15) | Een bron die de poort omzeilt is een tweede meldingssysteem naar dezelfde handy zonder gedeelde rem |
+| 12-09-2026 | Onderscheid systeem-CTA (1–8) en mens-CTA (9–12) (§2.15) | Bij een systeem-CTA heeft niemand iets gemist als hij vervalt; bij een mens-CTA staat er iemand te wachten die het al gemeld heeft |
+| 12-09-2026 | Escalatie, delivery-check en fallback gelden alleen voor mens-CTA's (§2.16) | Timers op CTA 1–8 zouden de LG overspoelen met meldingen die niemand had aangevraagd |
+| 12-09-2026 | Geen eigenaar: systeem-CTA vervalt, mens-CTA gaat naar de LG (§3.4) | Zelfde redenering als §2.2; de nullijn verschilt per soort |
+| 12-09-2026 | CTA 11 (bestelling klopt niet) en CTA 12 (roep LG) toegevoegd | Beachalert brengt twee signalen die nog geen CTA hadden |
+| 12-09-2026 | CTA 11 gaat eerst naar de kelner, niet naar de LG | Die staat er het dichtst bij en lost het meestal zelf op |
+| 12-09-2026 | Beachalert volgt de routing van §3 (wijk), niet een lookup per tafel | Twee routings naast elkaar laten CTA 9 en CTA 1 voor dezelfde tafel bij verschillende kelners landen |
+| 12-09-2026 | `beachalert_events` is de rijkere bron, §6.2 is de projectie ervan | Twee losse logs voor hetzelfde signaal geeft twee waarheden |
 
 ### §8.3 Nog niet gebouwd
 
@@ -705,6 +881,10 @@ Beschreven in dit document, niet aanwezig in `index.html`:
 - Drukte als gemeten order-rate (§4) — in de demo een handmatige schakelaar
 - De statuslus terug naar de runner-iPad (§5.9, §5.10)
 - De promo-permissie als échte achtergrondregel (§2.14) — in de demo een info-kaartje
+- De poort (§2.15) als één doorgang voor alle bronnen
+- Levering, fallback en escalatie van mens-CTA's (§2.16)
+- CTA 11 en CTA 12 (§5.11, §5.12) — bestaan alleen op papier
+- Beachalert zelf (§10) — nog geen regel code
 
 ---
 
@@ -722,6 +902,9 @@ verschuiven. Er wordt niet op een open punt gebouwd.
 | O4 | De maart-PDF zegt "meer dan 2 plaatsingen in het venster", de juni-uitleg zegt "een seat-actie binnen de laatste X minuten". Eén plaatsing of twee? | CTA 3 | Oscar |
 | O1 | `kelner_idle` op niveau 3 staat in de demo op 3 seconden. Dat lijkt een demo-waarde. Wat is het in productie? | Niveau 3 | Oscar |
 | O8 | Trillen alleen CTA 1, 2, 3, 9 en 10, zoals nu in §7.4? Dat patroon is nooit apart besloten. | Niets — defaults zijn instelbaar | Oscar |
+| O12 | Haalt de LG-routing de leidinggevende uit de devicedata (rol van de ingelogde medewerker) of uit een vaste instelling per zaak? Beide paden worden gebouwd; wat is de default? | CTA 12, en de fallback van §2.16 | Oscar |
+| O10 | Naar wie escaleert een onbeantwoorde "roep LG" (CTA 12)? De LG is al het eindpunt van elke andere escalatie. | CTA 12, escalatiedeel | Oscar |
+| O11 | Wat zijn de defaults voor CTA 11 en 12 in §7.4 — status, block by busy, vibratie? En in welk CTA-niveau horen ze (§2.11)? | Invoering van Beachalert | Oscar |
 
 ### §9.2 Fase 2 — pas nodig bij §4 en §5.5
 
@@ -730,6 +913,75 @@ verschuiven. Er wordt niet op een open punt gebouwd.
 | O5 | Wat is `cta5_bedrag_pp` — de besteding per persoon vanaf welke de koffie mag? Eén bedrag per locatie. | Oscar / bedrijfsleiding |
 | O3 | Wat is de order-rate-drempel voor "druk", en over welk venster gemeten? | Oscar |
 | O6 | Hoe lang stelt `WAIT` op CTA 5 uit? | Oscar |
+
+---
+
+## §10 Beachalert — het vloertablet als bron
+
+### §10.1 Wat het is
+
+Beachalert is een vloer-app op kiosk-tablets waar een runner of andere medewerker
+een tafelnummer intoetst en met één tap een signaal doorgeeft. Het is **geen eigen
+meldingssysteem**: het is een bron van mens-CTA's (§2.15) die door dezelfde poort
+gaat als alle andere.
+
+| Actie op het tablet | Wordt |
+|---|---|
+| Wil bestellen | CTA 9 (§5.9) |
+| Wil afrekenen | CTA 10 (§5.10) |
+| Bestelling klopt niet | CTA 11 (§5.11) |
+| Roep LG | CTA 12 (§5.12) |
+
+### §10.2 Tafel → kelner
+
+Na het intoetsen toont het tablet direct het tafelnummer plus de naam van de kelner
+die de tafel heeft, zodat de melder ziet waar het heen gaat: "→ verzonden naar
+Rutger". Cache maximaal `lookup_cache` — een wijkwissel moet snel doorkomen.
+
+De lookup gebruikt de routing uit §3: de eigenaar van de wijk waarin de tafel valt.
+
+**Dit wijkt af van de opdracht.** Die beschrijft een lookup per tafel — "wie heeft
+de tafel open of aangeslagen". Dat geeft een andere uitkomst dan §3.2, waar
+eigenaarschap op wijk-niveau ligt en pas verschuift bij een meerderheid. Twee
+routings naast elkaar betekent dat een CTA 9 bij een andere kelner kan landen dan
+een CTA 1 voor dezelfde tafel, op hetzelfde moment. **§3 is leidend.**
+
+Onbekende tafel: melding op het tablet, geen verzending. Geen eigenaar: §3.4.
+
+### §10.3 Dedupe en de recente-bestelling-check
+
+**Dedupe.** Dezelfde tafel plus hetzelfde actietype binnen `dedupe_venster` levert
+geen tweede CTA op. Het tablet toont "al doorgegeven aan [kelner] ([X] min geleden)"
+met een knop "toch opnieuw sturen". Die knop schrijft wél een CTA weg en wordt apart
+geteld.
+
+**Recente-bestelling-check.** Bij "wil bestellen": is er korter dan
+`recente_order_venster` geleden op die tafel aangeslagen, dan eerst "zojuist besteld
+— toch doorgeven?" vóór er iets wordt weggeschreven.
+
+Beide zitten **vóór** de poort (§2.15): ze voorkomen dat er een CTA ontstaat, en
+verschijnen dus niet in de CTA-log van §6.2 — wel in `beachalert_events` (§10.5).
+De remmen ín de poort — block by busy, tempo-limiet — komen daarna en kunnen de CTA
+alsnog tegenhouden, mét logregel (§6.3).
+
+### §10.4 Roep LG
+
+Twee stappen: eerst de locatie (bar/pas, seat, strandbar, eventlocatie), dan
+optioneel een categorie (gast, personeel, technisch, anders) die overgeslagen mag
+worden. Beide komen mee in de kaart van CTA 12.
+
+### §10.5 Wat hier níét in staat
+
+Deze paragraaf beschrijft Beachalert alleen als bron van CTA's. De rest staat in de
+eigen opdracht en hoort niet in deze spec: de launcher met tegels en de configuratie
+per tablet, de team-PIN op de buitentablet, de UI-eisen (touch-doelen, contrast,
+taal, drie taps), en de eigen tabellen.
+
+**Wel geldt dit over de tabellen.** `beachalert_events` legt meer vast dan de
+CTA-log van §6.2: ook signalen die nooit een CTA werden, zoals dedupe-hits en
+afgebroken bevestigingen. Het is de rijkere bron; §6.2 gaat alleen over wat er
+daadwerkelijk naar een handy is gestuurd. Wat in beide staat moet uit dezelfde
+schrijfactie komen, anders ontstaan er twee waarheden over hetzelfde signaal.
 
 ---
 
