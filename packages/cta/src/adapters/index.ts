@@ -1,7 +1,7 @@
-export type { PosMonitor, Tafel, OrderRegel } from './PosMonitor';
-export type { RoutingSource, Wijk } from './RoutingSource';
-export type { DeviceStatusSource, Handy } from './DeviceStatusSource';
-export type { ForecastSource } from './ForecastSource';
+export type { PosMonitor, Tafel, OrderRegel } from './PosMonitor.ts';
+export type { RoutingSource, Wijk } from './RoutingSource.ts';
+export type { DeviceStatusSource, Handy } from './DeviceStatusSource.ts';
+export type { ForecastSource } from './ForecastSource.ts';
 export type {
   CtaTransport,
   CtaVerzoek,
@@ -11,4 +11,4 @@ export type {
   IntrekReden,
   Knop,
   KnopStijl,
-} from './CtaTransport';
+} from './CtaTransport.ts';

@@ -33,6 +33,31 @@ Dit is een **vereenvoudigde simulatie** ter illustratie van de spec. De timers z
 2. Repo → **Settings → Pages** → Source: `main` branch, map `/ (root)` (of de map waarin `index.html` staat).
 3. Na een minuut staat de demo live op `https://<gebruiker>.github.io/<repo>/`.
 
+## Specificatie en backend
+
+Deze repo bevat sinds september 2026 twee dingen:
+
+- **De demo** (`index.html`, `mobile.html`) — losse HTML-bestanden, dubbelklikken
+  en klaar. Ongewijzigd, en dit is wat GitHub Pages serveert.
+- **De specificatie en de backend** — `oscar_cta_specs.md` is het leidende
+  document; `apps/` en `packages/` bevatten de CTA-backend.
+
+Voor de backend:
+
+```
+pnpm install
+pnpm test        # de poortlogica
+pnpm typecheck
+```
+
+De tests draaien op de ingebouwde testrunner van Node (`node --test`), zonder
+externe testrunner. Reden: een Application Control-policy op Windows blokkeert
+het native binary waar vitest via rollup op leunt.
+
+De database is nog niet aangesloten. `packages/db/prisma/schema.prisma` bevat het
+datamodel en zes mock-tabellen die zijn gemarkeerd met
+`// TODO: koppel aan bestaand schema`.
+
 ## Uitleg / documentatie
 
 Een uitleg van de werking van alle CTA's én de kelnerselectie (routing) staat in `docs/`:
