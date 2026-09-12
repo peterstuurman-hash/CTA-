@@ -1,0 +1,10 @@
+{
+  "name": "@oscar/backend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "proefrit": "node proefrit.ts"
+  },
+  "dependencies": { "@oscar/cta": "workspace:*" }
+}

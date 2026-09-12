@@ -10,7 +10,8 @@
     "typecheck": "turbo run typecheck",
     "db:generate": "pnpm --filter @oscar/db exec prisma generate",
     "db:migrate": "pnpm --filter @oscar/db exec prisma migrate dev",
-    "db:studio": "pnpm --filter @oscar/db exec prisma studio"
+    "db:studio": "pnpm --filter @oscar/db exec prisma studio",
+    "proefrit": "pnpm --filter @oscar/backend proefrit"
   },
   "devDependencies": {
     "turbo": "^2.1.3",
