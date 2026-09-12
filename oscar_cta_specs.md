@@ -1099,6 +1099,7 @@ shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
 | 12-09-2026 | CTA 11 gaat eerst naar de kelner, niet naar de LG | Die staat er het dichtst bij en lost het meestal zelf op |
 | 12-09-2026 | Beachalert volgt de routing van §3 (wijk), niet een lookup per tafel | Twee routings naast elkaar laten CTA 9 en CTA 1 voor dezelfde tafel bij verschillende kelners landen |
 | 12-09-2026 | `beachalert_events` is de rijkere bron, §6.2 is de projectie ervan | Twee losse logs voor hetzelfde signaal geeft twee waarheden |
+| 12-09-2026 | Alle instellingen worden door kantoor beheerd (§11.3) | Eén plek, overal dezelfde getallen. Verschillen tussen zaken komen dan uit de vloer en niet uit de configuratie. Het gevolg — een LG kan in het moment niets — is aanvaard |
 | 12-09-2026 | Beachalert geeft alleen een commando af — tafelnummer plus soort actie (§10.1) | Eén centrale applicatie bepaalt alle CTA's. Routing, dedupe, remmen, escalatie en levering horen daar, niet in een tablet-app. Welke applicatie dat wordt, wordt later bepaald |
 
 ### §8.3 Nog niet gebouwd
@@ -1141,7 +1142,6 @@ verschuiven. Er wordt niet op een open punt gebouwd.
 | O10 | Naar wie escaleert een onbeantwoorde "roep LG" (CTA 12)? De LG is al het eindpunt van elke andere escalatie. | CTA 12, escalatiedeel | Oscar |
 | O11 | Wat zijn de defaults voor CTA 11 en 12 in §7.4 — status, block by busy, vibratie? En in welk CTA-niveau horen ze (§2.11)? | Invoering van Beachalert | Oscar |
 | O13 | De zes drempels voor de drukte van een kelner (§7.6). Beter te ijken op een paar weken echte data dan nu te schatten. | Het LG-dashboard (§4.2) | Oscar, na meting |
-| O14 | Wie mag welke instellingen wijzigen (§11.3)? Mag een LG aan de triggers komen, of alleen aan het CTA-niveau? Mag hij de wijkindeling aanpassen? | Het beheerscherm | Peter / kantoor |
 | O15 | Het weekrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het weekrapport, niet de rest | Peter / kantoor |
 | O16 | Wie krijgt het weekrapport — alleen de LG van die zaak, of ook kantoor? En krijgt de kelner zijn eigen deel te zien? | Het weekrapport | Peter |
 | O17 | Komen CTA 13 (uitnodigen) en CTA 14 (wervingskaartje) er, en met welke momenten en drempels? | Alleen zichzelf | Peter |
@@ -1290,9 +1290,23 @@ Drie soorten, en ze horen niet bij elkaar op één scherm:
 
 | Soort | Voorbeelden | Wie |
 |---|---|---|
-| **Wanneer ontstaat een CTA** | `cta1_check_delay`, `cta2_sleep_threshold`, `cta6_after_starter` (§7.2) | TODO (O14) |
-| **Wanneer wordt hij tegengehouden** | `kelner_idle`, `cta_max_per_window`, status per CTA, CTA-niveau (§7.1, §7.4, §2.11) | TODO (O14) |
-| **Vaste inrichting** | Wijken en hun tafelbereik (§3.1), LG-routing (§7.5) | TODO (O14) |
+| **Wanneer ontstaat een CTA** | `cta1_check_delay`, `cta2_sleep_threshold`, `cta6_after_starter` (§7.2) | Kantoor |
+| **Wanneer wordt hij tegengehouden** | `kelner_idle`, `cta_max_per_window`, status per CTA, CTA-niveau (§7.1, §7.4, §2.11) | Kantoor |
+| **Vaste inrichting** | Wijken en hun tafelbereik (§3.1), LG-routing (§7.5) | Kantoor |
+
+**Alles wordt door kantoor ingesteld** (Peter, 12-09-2026). Eén plek, overal
+dezelfde getallen, en verschillen tussen zaken komen dan uit de vloer en niet uit
+de configuratie.
+
+Aanvaard gevolg: een LG die op zaterdagavond merkt dat zijn team overspoeld wordt,
+kan zelf niets. Dat maakt twee dingen belangrijker dan ze anders waren geweest:
+
+- **Begin op niveau 1** (§2.11). Opschalen als het goed gaat is makkelijk;
+  terugschalen nadat kelners zijn afgehaakt is dat niet.
+- **Zorg dat een LG het wél kan melden**, en dat daar snel op gereageerd wordt.
+  Een LG die drie weken op een wijziging wacht, gaat zijn team vertellen dat ze
+  de meldingen mogen negeren — en dan is §2.13 niet meer te meten, want dan meet
+  je alleen nog die afspraak.
 
 **Twee niveaus.** Een systeembrede standaardwaarde, en per locatie een afwijking.
 Een zaak die niets instelt volgt de standaard; een wijziging aan de standaard
@@ -1304,7 +1318,7 @@ ziet dat CTA 2 ineens vaker vuurt en weet niet dat iemand de drempel halveerde.
 
 **De adoptie-ramp is één knop.** Het CTA-niveau (§2.11) zet in één keer de juiste
 CTA's aan en de rem strak. Wie niet per parameter wil sleutelen, hoeft alleen dat
-te bedienen.
+te bedienen — ook bij kantoor is dat de knop waar je in de praktijk aan draait.
 
 ### §11.4 Het LG-dashboard
 
