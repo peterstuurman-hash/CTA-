@@ -45,6 +45,8 @@
   }
   .cta.purple .tag { background: #8a5cff; }
   .cta.info .tag { background: #2b9fd6; }
+  .cta.off { background: #f7f8fa; border-style: dashed; }
+  .cta.off .tag { background: #8190a0; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
   .small { font-size: 10px; color: #6a7888; }
   .pagebreak { page-break-before: always; }
@@ -54,159 +56,312 @@
     border-radius: 5px; padding: 2px 8px; margin: 2px 4px 2px 0; background: #fff; color: #2a3a55;
   }
   .btn.primary { background: #4c8dff; color: #fff; border-color: #4c8dff; }
+  .btn.danger { background: #e7515a; color: #fff; border-color: #e7515a; }
   footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #d8e1ee; color: #8190a0; font-size: 10px; }
 </style>
 </head>
 <body>
 
-<div class="callout warn">
-  <strong>Let op — dit document is van juni 2026 en op veel punten achterhaald.</strong>
-  De specificatie staat sinds 12-09-2026 in <code>oscar_cta_specs.md</code>, en
-  <em>dat</em> document is leidend. Sindsdien zijn er CTA's bijgekomen (11 t/m 14),
-  is CTA 4 geen CTA meer maar een achtergrond-permissie, is de trigger van CTA 3
-  veranderd, en zijn routing, escalatie en logging uitgebreid. De lijst hieronder
-  is dus niet compleet en de details kloppen niet overal meer.
-  <br><br>
-  Lees deze uitleg als achtergrond bij het waaróm, niet als bron voor het hoe.
-  Hij wordt in één keer herschreven zodra de openstaande punten uit SPEC §9.1
-  beantwoord zijn.
-</div>
-
-<div class="meta">Interne documentatie · juni 2026</div>
+<div class="meta">Interne documentatie · bijgewerkt 12-09-2026</div>
 <h1>Oscar — Werking van de CTA's &amp; kelnerselectie</h1>
-<p class="lead">Oscar is de slimme laag boven de werkvloer. Hij kijkt mee met wat er gebeurt — seaten, bestellen, drukte — en stuurt op het juiste moment één concreet zetje (een <strong>CTA</strong>, call-to-action) naar de handy van de juiste kelner. Dit document legt uit hoe de CTA's werken en hoe Oscar bepaalt naar wélke kelner een melding gaat.</p>
+<p class="lead">Oscar is de slimme laag boven de werkvloer. Hij kijkt mee met wat er gebeurt — seaten, bestellen, drukte — en stuurt op het juiste moment één concreet zetje (een <strong>CTA</strong>, call-to-action) naar de handy van de juiste kelner. Sinds september 2026 komen er ook meldingen van de vloer zelf bij: van een runner met een tablet, of van een kelner die er om vraagt.</p>
+
+<div class="callout">
+  <strong>Dit is de leesbare samenvatting.</strong> De volledige specificatie met alle parameters, randgevallen en het beslislogboek staat in <code>oscar_cta_specs.md</code>. Wijkt dit document daarvan af, dan wint de specificatie — dan is er hier iets blijven staan.
+</div>
 
 <h2>1. Hoe een CTA werkt</h2>
 <p>De handy van de kelner is een <strong>"dom" scherm</strong>: hij toont alleen wat Oscar erop pusht. Alle logica zit in de backend, per locatie aan/uit te zetten. Een CTA is een kaartje met een titel en knoppen; de kelner handelt het af, Oscar registreert de respons.</p>
+
 <ul>
-  <li><strong>Eén melding, één handy.</strong> Elke CTA gaat naar precies één kelner (zie §2). Liever geen melding dan de verkeerde.</li>
-  <li><strong>Max. 3 kaarten per handy.</strong> Zijn er meer, dan bepaalt de prioriteit welke 3 zichtbaar zijn; de rest staat in de wachtrij. Volgorde: 1, 2, 9, 10, 3, 4, 5, 6, 7, 8 (CTA 9/10 vlak na 1/2 omdat de gast wacht).</li>
+  <li><strong>Eén melding, één handy.</strong> Elke CTA gaat naar precies één kelner. Liever geen melding dan de verkeerde. Eén uitzondering: een oproep aan de LG gaat naar iedereen die daar op dat moment voor beschikbaar is (CTA 12).</li>
+  <li><strong>Max. 3 kaarten per handy.</strong> Zijn er meer, dan bepaalt de prioriteit welke 3 zichtbaar zijn; de rest staat in de wachtrij. Volgorde: <strong>1, 2, 9, 10, 11, 12, 3, 5, 6, 7, 8, 13, 14</strong>. De meldingen die van een mens komen staan vooraan — daar wacht iemand.</li>
   <li><strong>Afhandelen is verplicht.</strong> Pas na afhandeling of verval schuift de volgende CTA door.</li>
-  <li><strong>Ticket afgerekend = alle CTA's voor die tafel direct weg.</strong></li>
-  <li><strong>Een tafel sluiten is altijd een kelner-beslissing</strong> — geen enkele CTA of melding doet dat automatisch.</li>
-  <li><strong>Geen onderbreking van een drukke kelner.</strong> Zolang de kelner net iets deed (order / betalen / wachten) wacht Oscar even; CTA's komen pas op een rustig moment. Per CTA in/uit te schakelen ("block by busy"); CTA 3 is uitgezonderd. Staat los van de venue-brede drukte.</li>
+  <li><strong>Ticket afgerekend = alle openstaande CTA's voor die tafel direct weg.</strong></li>
+  <li><strong>Een tafel sluiten is altijd een kelner-beslissing</strong> — geen enkele CTA doet dat automatisch.</li>
+  <li><strong>Geen onderbreking van een drukke kelner.</strong> Zolang de kelner net iets deed (order / betalen / wachten) wacht Oscar even. Per CTA in/uit te schakelen ("block by busy"). Uitgezonderd: CTA 3, CTA 11 en CTA 12.</li>
+  <li><strong>Tempolimiet.</strong> Maximaal een afgesproken aantal meldingen per handy per venster, ook als de kelner steeds net rustig was. Begrenst het totaal over een dienst.</li>
   <li><strong>Vibratie</strong> staat per CTA in de backend aan/uit — de handy trilt bij een push als het aanstaat (niet getoond op de kaart).</li>
-  <li><strong>Niet overspoelen + meten of het werkt.</strong> Max. 3 per handy, niets naar een drukke kelner, en per CTA meet Oscar via de log of het gewenste effect volgt. Een CTA die structureel genegeerd wordt, gaat eruit of wordt vervangen — liever een paar effectieve CTA's dan veel ruis.</li>
-  <li><strong>Gefaseerde introductie (CTA-niveau 1–3).</strong> Eén knop per locatie bepaalt hoeveel CTA's aan staan én hoe streng de rem. Start op niveau 1 (alleen kern-CTA's, strenge rem) zodat kelners het accepteren; schaal later op. Nog-uitgeschakelde CTA's worden wél shadow-gelogd, zodat je ziet wanneer opschalen zinvol is.</li>
-  <li><strong>Knoppen: één taal, mistap-proof.</strong> Alle knoppen Engels en consistent (<em>doe nu</em> = ORDER/GO/YES/NEW/PULL/PRINT · <em>later</em> = WAIT · <em>weiger</em> = NO). <strong>CLOSE TABLE</strong> staat apart, rood en met bevestiging. Elke tik geeft directe feedback.</li>
+  <li><strong>Niet overspoelen + meten of het werkt.</strong> Per CTA meet Oscar via de log of het gewenste effect volgt. Een CTA die structureel genegeerd wordt, gaat eruit of wordt vervangen — liever een paar effectieve CTA's dan veel ruis.</li>
+  <li><strong>Gefaseerde introductie (CTA-niveau 1–3).</strong> Eén knop per locatie bepaalt hoeveel CTA's aan staan én hoe streng de rem. Start op niveau 1 zodat kelners het accepteren; schaal later op. Uitgeschakelde CTA's worden wél <em>shadow-gelogd</em>, zodat je ziet wanneer opschalen zinvol is.</li>
+  <li><strong>Knoppen: één taal, mistap-proof.</strong> Alle knoppen Engels en consistent (<em>doe nu</em> = ORDER/GO/YES/NEW/PULL/PRINT · <em>klaar</em> = FIXED · <em>geen oordeel</em> = MAYBE · <em>later</em> = WAIT · <em>weiger</em> = NO · <em>haal er iemand bij</em> = CALL LG). <strong>CLOSE TABLE</strong> staat apart, rood en met bevestiging. Elke tik geeft directe feedback.</li>
 </ul>
 
-<h2>2. Kelnerselectie (routing)</h2>
-<p>De kern: <strong>elke CTA gaat naar precies één handy</strong> — die van de kelner die volgens Oscar de tafel bedient. Hoe weet Oscar dat? Via <strong>wijken</strong> en <strong>POS-activiteit</strong>, volledig automatisch.</p>
+<table>
+  <tr><th>Niveau</th><th>CTA's aan</th><th>Rem</th></tr>
+  <tr><td>1 · Introductie</td><td>1, 6, 8, 9, 10, 11, 12</td><td>streng</td></tr>
+  <tr><td>2 · Gemiddeld</td><td>+ 2, 3</td><td>gemiddeld</td></tr>
+  <tr><td>3 · Volledig</td><td>alles</td><td>ruim</td></tr>
+</table>
 
-<h3>Wijken</h3>
+<h2>2. Waar CTA's vandaan komen</h2>
+<p>Er zijn twee soorten bron, en het verschil bepaalt hoe streng het systeem is.</p>
+
+<table>
+  <tr><th>Soort</th><th>Wie merkt iets op</th><th>Welke</th></tr>
+  <tr><td><strong>Systeem</strong></td><td>Oscar zelf, op een timer of een gebeurtenis</td><td>1, 2, 3, 5, 6, 7, 8, 13, 14</td></tr>
+  <tr><td><strong>Mens</strong></td><td>Een medewerker meldt iets, via een tablet of via de handy</td><td>9, 10, 11, 12</td></tr>
+</table>
+
+<p><strong>Alle bronnen gaan door dezelfde poort.</strong> De backend beslist of er een CTA wordt weggeschreven; WaiterPro leest dat en toont het op de handy. In die poort zitten achter elkaar: staat deze CTA aan voor deze locatie, naar wie moet hij, is de kelner net bezig, zit het venster vol, en het loggen van wat er gebeurde — ook als hij is tegengehouden.</p>
+
+<div class="callout">
+  <strong>Waarom dat onderscheid er is.</strong> Bij een systeem-CTA heeft niemand iets gemist als hij vervalt: zonder Oscar was er ook niets geweest. Bij een mens-CTA staat er iemand te wachten die het al gemeld heeft — daar is verdwijnen wél een verslechtering. Alleen mens-CTA's krijgen daarom een controle vooraf of de handy bereikbaar is, een uitwijk naar de LG, en een escalatietimer.
+</div>
+
+<h2>3. Kelnerselectie (routing)</h2>
+<p>De kern: <strong>elke CTA gaat naar precies één handy</strong> — die van de kelner die volgens Oscar de tafel bedient. Via <strong>wijken</strong> en <strong>POS-activiteit</strong>, volledig automatisch.</p>
+
 <ul>
   <li>Een <strong>wijk</strong> is een vast bereik tafelnummers, vooraf ingesteld per locatie. Voorbeeld: wijk "RES Noord" = tafels 1–19.</li>
-  <li>Eigenaarschap geldt op <strong>wijk-niveau</strong>: de eigenaar van een wijk krijgt de CTA's van álle tafels in dat bereik.</li>
+  <li>Eigenaarschap geldt op <strong>wijk-niveau</strong>: de eigenaar krijgt de CTA's van álle tafels in dat bereik.</li>
+  <li>De <strong>eerste kelner die in een wijk aanslaat</strong> wordt eigenaar van de hele wijk.</li>
+  <li>Het eigenaarschap <strong>verschuift</strong> zodra een andere kelner de meerderheid (±70%) van de recente tickets in die wijk heeft aangeslagen. Eén losse aanslag — een collega die bijspringt — kapt de wijk dus niet over.</li>
+  <li><strong>Eigenaarschap vervalt niet vanzelf.</strong> Niet op tijd, niet bij een servicewissel, niet aan het eind van de dag. Alleen door overname, of doordat CTA 7 de kelner uit het overzicht haalt.</li>
+  <li>Antwoordt een kelner op CTA 7 met <strong>NO</strong> of <strong>BREAK</strong>, dan <strong>komt de wijk vrij</strong>. Niemand erft hem; de eerstvolgende die er aanslaat wordt eigenaar.</li>
 </ul>
 
-<h3>Wie is de eigenaar?</h3>
-<ul>
-  <li>De <strong>eerste kelner die in een wijk aanslaat</strong> (POS) wordt vanaf dat moment eigenaar van de hele wijk.</li>
-  <li>Het eigenaarschap <strong>verschuift</strong> automatisch zodra een andere kelner de meerderheid (±70%) van de recente tickets in die wijk heeft aangeslagen, binnen een tijdvenster. Eén losse aanslag (een collega die bijspringt) kapt de wijk dus niet over.</li>
-  <li>Is er <strong>nog geen eigenaar</strong> (niemand heeft in de wijk aangeslagen), dan vervalt een CTA voor die wijk. Bewust geaccepteerd: de nullijn is nul meldingen, dus een gemiste melding is geen verslechtering — een verkeerd geroute melding wél.</li>
-</ul>
-
-<div class="callout">
-  <strong>Schoon houden — CTA 7.</strong> Om te voorkomen dat CTA's blijven gaan naar een kelner die weg of op pauze is, vraagt Oscar bij langere inactiviteit: <em>"Ben jij nog actief in deze wijk?"</em> Antwoordt de kelner NEE of PAUZE, dan gaat hij uit het kelneroverzicht en routeert Oscar niet meer naar hem.
+<div class="callout warn">
+  <strong>Aanvaard gevolg.</strong> Omdat eigenaarschap alleen door overname vervalt, is CTA 7 de enige schoonmaak van het kelneroverzicht — en die vuurt pas na een periode stilte. Aan het begin van een nieuwe service kan de eigenaar van gisteravond dus nog steeds eigenaar zijn. Dat is bewust zo gekozen; de drempel van CTA 7 bepaalt hoe lang een wijk verkeerd kan staan.
 </div>
 
-<div class="callout">
-  <strong>Randgeval — eerste tafel van de wijk.</strong> CTA 1 (eerste drankje) kan vuren vóór er ook maar iets is aangeslagen in een verse wijk. Dan is er nog geen eigenaar en vervalt die ene CTA. Bewust geaccepteerd; geen seeding.
+<p>Is er <strong>geen eigenaar</strong>, dan hangt het van het soort CTA af: een systeem-CTA vervalt (de nullijn is nul meldingen, dus een gemiste melding is geen verslechtering — een verkeerd geroute wél), een mens-CTA gaat naar de LG met de vermelding dat er geen tafeleigenaar gevonden is.</p>
+
+<h2 class="pagebreak">4. Druk en stil</h2>
+<p>Vier verschillende grootheden die makkelijk door elkaar gehaald worden. Ze meten iets anders en worden voor iets anders gebruikt.</p>
+
+<table>
+  <tr><th>Wat</th><th>Gaat over</th><th>Gebruikt door</th></tr>
+  <tr><td><strong>Drukte van de zaak</strong></td><td>Order-rate over een recent venster: hoe hard loopt het nú</td><td>CTA 5, druktemeter LG</td></tr>
+  <tr><td><strong>Drukte van de kelner</strong></td><td>Werklast én achterstand van één kelner in zijn wijk</td><td>LG-dashboard</td></tr>
+  <tr><td><strong>"Doet niets meer"</strong></td><td>Stilte van één kelner, terwijl er werk ligt</td><td>CTA 7, routing</td></tr>
+  <tr><td><strong>Verwachte drukte</strong></td><td>Forecast couverts: hoeveel er is ingeroosterd</td><td>CTA 3</td></tr>
+</table>
+
+<h3>Drukte van de kelner</h3>
+<p>De drukte van de zaak zegt niets over of <em>deze</em> kelner het aankan. Iemand kan verzuipen in een rustige zaak en het prima doen op een volle avond. Twee assen, allebei nodig:</p>
+<div class="grid2">
+  <div><strong>Werklast</strong> — open tafels in zijn wijk, tafels met een gang onderweg, tafels die nog niets besteld hebben.</div>
+  <div><strong>Achterstand</strong> — openstaande CTA's, CTA's die hij liet verlopen, zijn responstijd.</div>
 </div>
+<p class="small">Werklast alleen zegt te weinig: acht tafels is voor de een veel en voor de ander niets. Achterstand alleen ook: nul openstaande CTA's kan betekenen dat hij het goed doet, of dat er niets gebeurt in zijn wijk.</p>
 
-<h2>3. Druk</h2>
-<p>"Druk" = de <strong>actuele werkdruk nu</strong>: de order-rate (POS-orders per tijdseenheid over een recent venster) ligt boven een drempel. Gebruikt door CTA 5 (geen gift tijdens drukte) en als druktemeter op het LG-dashboard.</p>
-<p class="small">De druktemeter loopt vanzelf terug als de zaak leegloopt — een nalopende tafel op een uitgelopen avond houdt "druk" dus niet kunstmatig hoog. (CTA 3 gebruikt géén drukte, maar puur "seater actief".)</p>
+<h3>"Doet niets meer"</h3>
+<table>
+  <tr><th>Toestand</th><th>Hoe vastgesteld</th><th>Gevolg</th></tr>
+  <tr><td>Onbereikbaar</td><td>Handy offline of niemand ingelogd</td><td>Mens-CTA's wijken uit. Geen CTA 7 — vragen heeft geen zin</td></tr>
+  <tr><td><strong>Stil</strong></td><td>Geen aanslag en geen respons, <strong>terwijl er open tafels in zijn wijk staan</strong></td><td>CTA 7</td></tr>
+  <tr><td>Klaar</td><td>Geen open tafels in zijn wijk</td><td>Niets. Er is gewoon niets te doen</td></tr>
+</table>
+<p class="small">Die laatste regel voorkomt dat een kelner met een leeggelopen wijk elk kwartier gevraagd wordt of hij er nog is. Stilte is alleen een signaal als er werk ligt. "Wil wachten" aanslaan telt als bezig zijn, en een CTA beantwoorden ook — ook met NO.</p>
 
-<div class="pagebreak"></div>
-<h2>4. De CTA's</h2>
+<h2 class="pagebreak">5. De CTA's</h2>
 
 <div class="cta">
-  <h3><span class="tag">CTA 1</span>Eerste drankje</h3>
+  <h3><span class="tag">CTA 1</span> Eerste drankje</h3>
   <p><strong>Doel:</strong> de eerste bestelling binnenhalen. <strong>Trigger:</strong> een ingestelde tijd na seaten zonder POS-order.</p>
-  <p>Sluit automatisch zodra er een POS-order komt (via welke weg dan ook). Zolang er niets besteld is, komt hij meerdere keren terug, tot de eerste order binnen is of de levensduur verloopt. Daarna neemt CTA 2 het over.</p>
-  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">WAIT</span><span class="btn">MOVE</span><span class="btn" style="background:#fdecee;border-color:#e7515a;color:#b0202f;">CLOSE TABLE</span></div>
-  <p class="small">CLOSE TABLE staat apart en rood + vraagt een bevestiging — beschermd tegen mistaps.</p>
+  <p>Sluit automatisch zodra er een POS-order komt. Zolang er niets besteld is komt hij terug, tot de eerste order binnen is of de levensduur verloopt. Daarna neemt CTA 2 het over.</p>
+  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">WAIT</span><span class="btn">MOVE</span><span class="btn danger">CLOSE TABLE</span></div>
+  <p class="small">CLOSE TABLE staat apart en rood, en vraagt een bevestiging — beschermd tegen mistaps.</p>
 </div>
 
 <div class="cta">
-  <h3><span class="tag">CTA 2</span>Sleeping table</h3>
-  <p><strong>Doel:</strong> een tafel die stilligt oppikken. <strong>Trigger:</strong> geen kelner-actie gedurende de ingestelde tijd. <strong>Terugkerend.</strong></p>
-  <p>De timer reset na élke kelner-actie op de tafel: een POS-aanslag óf een "wil nog wachten"-registratie. Meet vanaf de laatste actie, niet vanaf seaten — typisch ná het eten (tijd voor dessert, koffie, rekening).</p>
-  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">WACHT</span><span class="btn">VERPLAATS</span><span class="btn">MELD LG</span></div>
-  <p class="small">MELD LG is puur informatief; de tafel blijft open.</p>
+  <h3><span class="tag">CTA 2</span> Sleeping table</h3>
+  <p><strong>Doel:</strong> een tafel die stilligt oppikken. <strong>Trigger:</strong> geen kelner-actie gedurende de ingestelde tijd. Terugkerend.</p>
+  <p>De timer reset na élke kelner-actie op de tafel: een POS-aanslag óf een "wil nog wachten". Meet vanaf de laatste actie, niet vanaf seaten — typisch ná het eten.</p>
+  <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">WAIT</span><span class="btn">MOVE</span><span class="btn">CALL LG</span></div>
+  <p class="small">CALL LG is puur informatief; de tafel blijft open.</p>
 </div>
 
 <div class="cta">
-  <h3><span class="tag">CTA 3</span>Seater actief (why not seated?)</h3>
-  <p><strong>Doel:</strong> tafels vangen die buiten de seater om geopend worden. <strong>Trigger:</strong> een kelner opent een niet-geseate tafel terwijl de seater actief is (een seat-actie binnen de laatste X minuten).</p>
-  <p>Blokkerende keuzevraag: de tafel gaat pas open ná de keuze.</p>
+  <h3><span class="tag">CTA 3</span> Niet geseat — waar komen deze gasten vandaan?</h3>
+  <p><strong>Doel:</strong> tafels vangen die buiten de seater om geopend worden. <strong>Trigger:</strong> een kelner opent een niet-geseate tafel terwijl er een seater staat.</p>
+  <p><strong>Er staat een seater</strong> wordt afgeleid uit de forecast: boven een ingesteld aantal couverts wordt er altijd een seater ingeroosterd. Dat is directer dan het afleiden uit plaatsingen, en het werkt vanaf de eerste tafel van de service. En het verklaart waarom deze CTA bestaat: juist bij drukte lopen gasten langs de seater heen.</p>
   <div class="btnrow"><span class="btn primary">NEW</span><span class="btn">PULL</span></div>
-  <p class="small">NEW = nieuwe gasten. PULL = gasten komen van een andere tafel → "Pull table: [oude tafel] → deze tafel", Oscar haalt bon + seat over, de oude tafel komt vrij.</p>
+  <p class="small">Blokkerende keuzevraag: de tafel gaat pas open ná de keuze. NEW = nieuwe gasten. PULL = gasten komen van een andere tafel; Oscar haalt bon + seat over en de oude tafel komt vrij.</p>
 </div>
 
-<div class="cta">
-  <h3><span class="tag">CTA 4</span>Aanbieden (promo — achtergrond)</h3>
-  <p><strong>Doel:</strong> offreren toestaan op een ticket met een afgesproken aanbieding. <strong>Trigger:</strong> aan het reserveringsticket hangt de tag <strong>"promo"</strong>.</p>
-  <p>Dit draait <strong>op de achtergrond</strong>: <strong>iedere kelner</strong> mag voor dit ticket gerechten en drank offreren — geen kaart, geen actie nodig; het recht staat automatisch aan zolang de "promo"-tag erop zit. Geen rol-rechten of blokkade: de aanbieding is immers al goedgekeurd op de reservering.</p>
+<div class="cta info">
+  <h3><span class="tag">geen CTA</span> Promo — offreren toestaan</h3>
+  <p>Hangt aan het reserveringsticket de tag "promo", dan mag iedere kelner voor dat ticket offreren. <strong>Geen kaart, geen knoppen, geen rol-rechten</strong> — de aanbieding is al goedgekeurd op de reservering, dus het recht staat automatisch aan.</p>
+  <p class="small">Dit heette tot 12-09-2026 "CTA 4". Het is geen CTA: er komt niets op een handy. Het nummer 4 is leeggelaten in plaats van hergebruikt, zodat oude verwijzingen niet bij een andere CTA uitkomen.</p>
 </div>
 
 <div class="cta purple">
-  <h3><span class="tag">CTA 5</span>Loyalty — bied koffie aan</h3>
-  <p><strong>Doel:</strong> een gulle tafel belonen met een kleine attentie (gratis koffie). <strong>Trigger:</strong> <em>niet druk</em> én <em>besteding per persoon ≥ een instelbaar bedrag</em> (één getal per locatie).</p>
-  <p>Bewust simpel: géén percentielen, rolling averages, tijdvakken of vaste eval-tijd — dat was overbodige complexiteit voor een gratis koffie. Cooldown geldt per herkende gast (reservering/Amigo).</p>
+  <h3><span class="tag">CTA 5</span> Loyalty — bied een koffie aan</h3>
+  <p><strong>Doel:</strong> een gulle tafel belonen met een kleine attentie. <strong>Trigger:</strong> niet druk én besteding per persoon boven een ingesteld bedrag.</p>
+  <p>Bewust simpel: één bedrag per locatie. Geen percentielen, rolling averages of tijdvakken — dat was overbodige complexiteit voor een gratis koffie. Cooldown per herkende gast.</p>
   <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">WAIT</span><span class="btn">NO</span></div>
-  <p class="small">WAIT stelt uit (komt later terug). NO = de kelner vindt het niet nodig → CTA 5 vervalt voor dit ticket.</p>
+  <p class="small">Staat pas op niveau 3 aan, en hoort bij fase 2 van de bouw.</p>
 </div>
 
 <div class="cta info">
-  <h3><span class="tag">CTA 6</span>Ready for next course (hoofdgerecht)</h3>
-  <p><strong>Doel:</strong> het hoofdgerecht op tijd doorzetten. <strong>Trigger:</strong> een ingestelde tijd (default 20 min) ná het voorgerecht. Kaart: <em>"Tafel [nr] — Ready for next course?"</em></p>
+  <h3><span class="tag">CTA 6</span> Ready for next course (hoofdgerecht)</h3>
+  <p><strong>Doel:</strong> het hoofdgerecht op tijd doorzetten. <strong>Trigger:</strong> een ingestelde tijd ná het voorgerecht.</p>
   <div class="btnrow"><span class="btn primary">GO</span><span class="btn">NO</span></div>
-  <p class="small">GO → hoofdgerecht firen ("kan door"). NO → uitstellen; komt terug, <strong>max 2× per ticket</strong> (geen loop). Na de 2e NO firet het hoofdgerecht automatisch na 5 min, zodat de keuken niet blijft hangen.</p>
+  <p class="small">GO firet het hoofdgerecht. NO stelt uit en komt terug, maximaal twee keer per ticket. Na de laatste NO firet het hoofdgerecht automatisch, zodat de keuken niet blijft hangen.</p>
 </div>
 
 <div class="cta">
-  <h3><span class="tag">CTA 7</span>Actief-check kelner</h3>
-  <p><strong>Doel:</strong> het kelneroverzicht en daarmee de routing schoon houden. <strong>Trigger:</strong> een kelner is langere tijd inactief in zijn wijk.</p>
-  <p>Kaart: <em>"Hoi [kelner], ben jij nu nog steeds actief in wijk [wijk]?"</em></p>
+  <h3><span class="tag">CTA 7</span> Actief-check kelner</h3>
+  <p><strong>Doel:</strong> het kelneroverzicht en daarmee de routing schoonhouden. <strong>Trigger:</strong> een kelner is langere tijd stil terwijl er open tafels in zijn wijk staan.</p>
+  <p>Kaart: "Hoi [kelner], ben jij nu nog steeds actief in wijk [wijk]?"</p>
   <div class="btnrow"><span class="btn primary">YES</span><span class="btn">NO</span><span class="btn">BREAK</span></div>
-  <p class="small">YES = blijft eigenaar. NO en BREAK = uit het kelneroverzicht (geen routing meer naar hem). <strong>Geen antwoord → fail-safe:</strong> de kelner blijft behouden; Oscar vraagt later gewoon opnieuw (nooit droppen op een gemist tikje).</p>
+  <p class="small">YES = blijft eigenaar. NO en BREAK = uit het kelneroverzicht, en de wijk komt vrij. Geen antwoord → fail-safe: de kelner blijft behouden en Oscar vraagt het later opnieuw. Nooit iemand droppen op een gemist tikje.</p>
 </div>
 
 <div class="cta info">
-  <h3><span class="tag">CTA 8</span>Ready for dessert</h3>
-  <p><strong>Doel:</strong> het dessert doorzetten. <strong>Trigger:</strong> een ingestelde tijd (default 20 min) ná het firen van het hoofdgerecht. Zelfde principe als CTA 6, maar voor het dessert. Kaart: <em>"Tafel [nr] — Ready for dessert?"</em></p>
+  <h3><span class="tag">CTA 8</span> Ready for dessert</h3>
+  <p><strong>Doel:</strong> het dessert doorzetten. <strong>Trigger:</strong> een ingestelde tijd ná het <em>firen</em> van het hoofdgerecht — niet na het bestellen.</p>
   <div class="btnrow"><span class="btn primary">GO</span><span class="btn">NO</span></div>
-  <p class="small">GO → dessert firen ("kan door"). NO → komt nog één keer terug (max 2× per ticket, geen loop).</p>
+  <p class="small">Zelfde principe als CTA 6, met één verschil: na de laatste NO firet er niets automatisch. Het blijft aan de kelner.</p>
 </div>
 
 <div class="cta">
-  <h3><span class="tag">CTA 9</span>Gast wil bestellen</h3>
-  <p><strong>Doel:</strong> een bestelverzoek van de gast bij de kelner krijgen. <strong>Trigger:</strong> een <strong>runner</strong> (geen kelner) geeft via het externe <strong>iPad-scherm</strong> door dat een tafel wil bestellen — de gast vraagt het aan de runner, die tikt op de iPad de tafel + "bestellen". Oscar pusht naar de kelner van de wijk.</p>
+  <h3><span class="tag">CTA 9</span> Gast wil bestellen</h3>
+  <p><strong>Doel:</strong> een bestelverzoek van de gast bij de kelner krijgen. <strong>Trigger:</strong> een medewerker die de tafel niet bedient — meestal een runner — geeft de tafel door via het vloertablet.</p>
   <div class="btnrow"><span class="btn primary">ORDER</span><span class="btn">NO</span></div>
-  <p class="small">ORDER → open WaiterPro en neem de bestelling op. NO → wegklikken. <strong>Status gaat terug naar de runner-iPad</strong> ("opgepakt"/"afgewezen") — geen dubbele kaarten, geen wachtende gast.</p>
+  <p class="small">De status gaat terug naar het tablet ("opgepakt" / "afgewezen"): geen dubbele kaarten, geen wachtende gast. Is er kort geleden besteld op die tafel, dan vraagt het tablet eerst om bevestiging.</p>
 </div>
 
 <div class="cta">
-  <h3><span class="tag">CTA 10</span>Gast wil betalen</h3>
-  <p><strong>Doel:</strong> een betaalverzoek bij de kelner krijgen. <strong>Trigger:</strong> zoals CTA 9, maar de runner kiest op de iPad "betalen".</p>
+  <h3><span class="tag">CTA 10</span> Gast wil betalen</h3>
+  <p><strong>Doel:</strong> een betaalverzoek bij de kelner krijgen. <strong>Trigger:</strong> zoals CTA 9, maar dan "wil afrekenen".</p>
   <div class="btnrow"><span class="btn primary">PRINT</span><span class="btn">NO</span></div>
-  <p class="small">PRINT → reken af / druk de bon af. NO → wegklikken. Status gaat terug naar de runner-iPad ("klaar"/"afgewezen").</p>
+  <p class="small">Wordt automatisch afgehandeld zodra de orderstatus laat zien dat de rekening is aangeslagen — niemand hoeft af te vinken.</p>
 </div>
 
-<h2>5. Logging &amp; database</h2>
-<p>Elke afgeronde CTA — een kelner-respons (knop) óf een verval — wordt vastgelegd in twee lagen:</p>
+<div class="cta">
+  <h3><span class="tag">CTA 11</span> Bestelling klopt niet</h3>
+  <p><strong>Doel:</strong> een klopt-niet-melding bij de kelner zelf krijgen, niet bij de LG. <strong>Trigger:</strong> een medewerker meldt het via het vloertablet.</p>
+  <p>De kaart toont, als ze beschikbaar zijn, de laatste orderregels van de tafel.</p>
+  <div class="btnrow"><span class="btn primary">FIXED</span><span class="btn">CALL LG</span></div>
+  <p class="small">Gaat eerst naar de kelner: die staat er het dichtst bij en lost het meestal zelf op. De LG komt erbij via CALL LG of via de escalatietimer, niet meteen.</p>
+</div>
+
+<div class="cta">
+  <h3><span class="tag">CTA 12</span> Roep LG</h3>
+  <p><strong>Doel:</strong> een medewerker die de leidinggevende nodig heeft, zonder hem te gaan zoeken.</p>
+  <p><strong>Vier ingangen:</strong> het vloertablet, een tablet op de bar, de pas of bij de seat, een <em>systeemproduct</em> op de handy voor wie geen tablet in de buurt heeft, en de knop CALL LG op CTA 11.</p>
+  <div class="btnrow"><span class="btn primary">GO</span><span class="btn">NO</span></div>
+  <p><strong>Wordt nooit geweigerd.</strong> Block by busy en de tempolimiet gelden hier niet: die beschermen een kelner die aan het bedienen is, en een LG wordt gestoord vóór zijn werk — dat ís zijn werk. "We kunnen nu de LG niet oproepen" laat de melder alsnog zoeken, met een omweg erbij.</p>
+  <p><strong>Het volume wordt opgelost door samen te voegen.</strong> Meerdere oproepen binnen een venster worden één kaart die meegroeit: "LG gevraagd — 3 oproepen: bar · seat · pas". Eén kaartslot in plaats van drie, en de LG ziet in één oogopslag waar het vastloopt.</p>
+  <p class="small">De oproep gaat naar álle ingelogde LG's tegelijk; wie als eerste GO drukt pakt hem, bij de rest verdwijnt de kaart. Reageert er niemand, dan blijft de kaart staan en meldt het tablet bij een volgende oproep dat de vorige niet is opgepakt — zodat de melder weet dat hij er beter zelf op af kan lopen. Er is bewust geen escalatieketen: vijftien jaar lang was de oplossing dat iemand ging lopen, en dat blijft het vangnet.</p>
+</div>
+
+<div class="cta off">
+  <h3><span class="tag">CTA 13</span> Uitnodigen? <span class="small">— gebouwd, staat uit</span></h3>
+  <p><strong>Doel:</strong> vastleggen welke gasten je in de toekomst wilt uitnodigen, beoordeeld door wie ze de hele avond heeft bediend. <strong>Trigger:</strong> kort ná het sluiten van het ticket, en alleen als het niet druk is.</p>
+  <div class="btnrow"><span class="btn primary">YES</span><span class="btn">MAYBE</span><span class="btn">NO</span></div>
+  <p class="small">De kaart komt ná het afrekenen en niet tijdens: bij het afrekenen staat de kelner met zijn handy áán tafel, met de pin in zijn hand. Op de kaart staat de vertrektijd en <strong>niet de gastnaam</strong> — tafel 3 kan alweer opnieuw geseat zijn, en een gast die meekijkt hoeft niet te lezen dat hij beoordeeld wordt.</p>
+</div>
+
+<div class="cta off">
+  <h3><span class="tag">CTA 14</span> Wervingskaartje <span class="small">— gebouwd, staat uit</span></h3>
+  <p><strong>Doel:</strong> personeelswerving onder gasten die in de buurt wonen. <strong>Trigger:</strong> de postcode op de reservering staat in de lijst van deze locatie, het is niet druk, en het juiste moment is bereikt.</p>
+  <div class="btnrow"><span class="btn primary">YES</span><span class="btn">NO</span></div>
+  <p class="small">Geen postcode op de reservering — een walk-in — betekent geen CTA. Hoeveel tafels per avond er overblijven weet nog niemand; dat laat de shadow-log zien.</p>
+</div>
+
+<div class="callout">
+  <strong>CTA 13 en 14 zijn gebouwd maar staan uit.</strong> Ze storen niemand en kosten geen kaartslot, maar de shadow-log loopt wel vol. Over een paar weken is te zien hoe vaak ze zóúden vuren, en pas dán wordt besloten of ze aan gaan. Blijkt CTA 14 één keer per week te vuren, dan gaat hij er weer uit.
+</div>
+
+<h2 class="pagebreak">6. Beachalert — het vloertablet</h2>
+<p>Op elke zaak hangen kiosk-tablets waar een runner of andere medewerker een tafelnummer intoetst en met één tap een signaal doorgeeft. Na het intoetsen toont het tablet direct de naam van de kelner die de tafel heeft: "→ verzonden naar Rutger".</p>
+
+<table>
+  <tr><th>Actie op het tablet</th><th>Wordt</th></tr>
+  <tr><td>Wil bestellen</td><td>CTA 9</td></tr>
+  <tr><td>Wil afrekenen</td><td>CTA 10</td></tr>
+  <tr><td>Bestelling klopt niet</td><td>CTA 11</td></tr>
+  <tr><td>Roep LG</td><td>CTA 12</td></tr>
+</table>
+
+<p><strong>Het tablet beslist niets.</strong> Het geeft één commando af — tafelnummer plus soort actie — en toont wat de backend antwoordt. Routing, ontdubbelen, de remmen, escalatie en levering zitten allemaal in de centrale applicatie. Zo blijft er één plek waar bepaald wordt of er een CTA komt, ook als er straks meer ingangen bij komen: de seating-app en het dashboard kunnen dezelfde signalen later ook afgeven.</p>
+
 <ul>
-  <li><strong>Live log (backend):</strong> rollend overzicht van de laatste ~500 regels, voor snelle monitoring.</li>
-  <li><strong>Database (persistent):</strong> élke regel wordt apart ge-insert. Volledige historie, als basis voor het LG-dashboard en analyses (response-tijden, CTA-volume per kelner/locatie/tijdvak, hoe vaak CTA's vervallen).</li>
+  <li><strong>Ontdubbelen.</strong> Dezelfde tafel en dezelfde actie binnen een venster levert geen tweede CTA op. Het tablet toont "al doorgegeven aan Rutger (2 min geleden)" met de mogelijkheid om toch opnieuw te sturen.</li>
+  <li><strong>Zojuist besteld.</strong> Bij "wil bestellen" op een tafel waar net is aangeslagen, vraagt het tablet eerst om bevestiging.</li>
+  <li><strong>Belooft niets.</strong> Het bevestigingsscherm zegt "doorgegeven aan de LG", niet "de LG komt eraan".</li>
 </ul>
-<p>Record-formaat: <code>cta_nr;datum;tijd;kelner;tafelnr;status;actie;response_sec</code> — bijv. <code>1;2026-06-12;19:42:13;Peter;14;enabled;ORDER;12</code>.</p>
-<p>Elke CTA is per locatie <strong>enabled</strong>, <strong>disabled</strong> of <strong>deleted</strong>. Staat een CTA op <strong>disabled</strong>, dan verschijnt hij niet op de handy maar wordt elke keer dat hij <em>zou</em> afgaan tóch gelogd (zonder respons) — zo zie je hoe vaak hij zou triggeren. Over tijd laat dat zien of <strong>kelners beter worden</strong> (minder zou-fires, of sneller/zelf opgelost na correctie). <strong>deleted</strong> logt niets.</p>
+
+<h2>7. Logging &amp; database</h2>
+<p>Elke CTA wordt vastgelegd in twee lagen: een <strong>live log</strong> in de backend voor snelle monitoring, en een <strong>database</strong> met de volledige historie als basis voor het LG-dashboard en analyses.</p>
+
+<p>Record-formaat: <code>cta_nr;datum;tijd;medewerker_id;tafelnr;status;actie;response_sec</code></p>
+
+<p><code>medewerker_id</code> is het personeelsnummer, niet de naam — de naam wordt erbij opgezocht op het moment van tonen. Zo blijft een optelling over vier weken kloppen bij twee medewerkers met dezelfde voornaam of bij een naamswijziging. Bijvangst: in de tabel waar alle analyses op draaien staat geen enkele naam.</p>
+
+<p><strong>Ook wat de handy niet haalt, wordt gelogd.</strong> De status zegt waarom:</p>
+<table>
+  <tr><th>Status</th><th>Betekenis</th></tr>
+  <tr><td><code>enabled</code></td><td>Getoond, en afgehandeld of vervallen</td></tr>
+  <tr><td><code>disabled</code></td><td>De CTA staat uit voor deze locatie — shadow-log</td></tr>
+  <tr><td><code>busy</code></td><td>De kelner deed net iets</td></tr>
+  <tr><td><code>tempo</code></td><td>De tempolimiet van het venster was vol</td></tr>
+  <tr><td><code>geen_wijk</code></td><td>Geen eigenaar; systeem-CTA, dus vervallen</td></tr>
+  <tr><td><code>geen_wijk_naar_lg</code></td><td>Geen eigenaar; mens-CTA, dus naar de LG</td></tr>
+  <tr><td><code>offline_fallback</code></td><td>Handy offline; naar de volgende in de uitwijkvolgorde</td></tr>
+</table>
+<p class="small">Zonder die regels is niet te zien hoeveel meldingen de remmen tegenhouden, en dus ook niet of het niveau te streng staat om op te schalen. Dan is opschalen een gok in plaats van een beslissing.</p>
+
+<h2 class="pagebreak">8. De backend</h2>
+<p>De centrale applicatie die alle CTA's bepaalt, in vijf lagen:</p>
+<table>
+  <tr><th>Laag</th><th>Taak</th></tr>
+  <tr><td>Monitor</td><td>Leest continu de POS-database: tafels, tickets, aanslagen, wijken, kelners</td></tr>
+  <tr><td>Triggers</td><td>Bepaalt of er een CTA moet <em>ontstaan</em></td></tr>
+  <tr><td>Poort</td><td>Bepaalt of die CTA ook <em>verstuurd</em> wordt</td></tr>
+  <tr><td>Transport</td><td>Schrijft het CTA-record weg; ontvangt de respons</td></tr>
+  <tr><td>Log</td><td>Alles, inclusief wat is tegengehouden</td></tr>
+</table>
+<p class="small">Triggers en poort zijn niet hetzelfde. Een CTA kan volkomen terecht ontstaan en tóch niet verstuurd worden. Dat zijn andere instellingen, met andere schermen.</p>
+
+<h3>Instellingen</h3>
+<p>Er draait één systeembrede standaard; een locatie kan daarvan afwijken. Een zaak die niets instelt volgt de standaard, en blijft die volgen als hij later wordt gewijzigd. <strong>Alles wordt door kantoor ingesteld</strong> — ook het CTA-niveau en de wijkindeling.</p>
+<p class="small">Aanvaard gevolg: een LG die op zaterdagavond merkt dat zijn team overspoeld wordt, kan zelf niets. Dat maakt twee dingen belangrijker: begin op niveau 1, en zorg dat een LG het wél snel kan melden. Een LG die drie weken op een wijziging wacht, vertelt zijn team dat ze de meldingen mogen negeren.</p>
+
+<h3>Het LG-dashboard</h3>
+<p>De LG ziet zijn wijken, elk groen, oranje of rood.</p>
+<table>
+  <tr><th>Kleur</th><th>Betekenis</th></tr>
+  <tr><td>Groen</td><td>Werklast normaal, geen achterstand</td></tr>
+  <tr><td>Oranje</td><td>Werklast hoog <strong>óf</strong> achterstand zichtbaar</td></tr>
+  <tr><td>Rood</td><td>Werklast hoog <strong>én</strong> achterstand</td></tr>
+</table>
+<div class="callout">
+  <strong>Een wijk kleurt, geen persoon.</strong> Rood betekent: hier is hulp nodig. Niet dat de kelner tekortschiet — een wijk kan roodlopen omdat er drie tafels tegelijk binnenkwamen. Daarom: geen scores of ranglijsten achter namen, geen rekenregels op het scherm, wél de reden in gewone taal. "Vier tafels wachten op een eerste bestelling" zegt wat er te doen is; "achterstandsscore 0,72" zegt niets.
+</div>
+<p>Dit scherm beantwoordt één vraag: <strong>waar moet ik nu heen?</strong> Alles wat die vraag niet beantwoordt, hoort er niet op.</p>
+
+<h3>Het periodesrapport</h3>
+<p>Eén overzicht per zaak, per periode van vier weken: hoe staat het team ervoor. De LG krijgt zijn team, kantoor alle zaken, en de kelner kan zijn eigen deel opvragen via de staff-app.</p>
+<p><strong>Escalatie is het signaal.</strong> Een kelner die het niet aankan wordt geholpen — dat is wat escalatie doet. Dát het bij dezelfde kelner blijft gebeuren, is wat je in een periode terugziet. Er is geen apart trainingsmechanisme: het rapport kijkt terug op wat er toch al gebeurde, en komt volledig uit de log.</p>
+<ul>
+  <li><strong>Niet wekelijks.</strong> Escalaties per kelner per week zijn kleine getallen; van drie naar vijf ziet eruit als zeventig procent meer en is vrijwel zeker ruis. De vier weken staan wél apart in het rapport.</li>
+  <li><strong>Nooit vergelijken op ruwe aantallen.</strong> De kelner met de drukste wijk krijgt de meeste CTA's; een ranglijst zet degene met de zwaarste sectie onderaan. Vergelijk met zichzelf over tijd, en met het team bij vergelijkbare drukte.</li>
+  <li><strong>Niet elke CTA weegt even zwaar.</strong> "Bestelling klopt niet" en "niet geseat" schalen nauwelijks met drukte en zeggen dus iets over vakmanschap. CTA 1, 2, 9 en 10 schalen er juist sterk mee en zeggen pas iets ná correctie.</li>
+  <li><strong>Waarnemingen, geen cijfers.</strong> Niet "Daan — achterstandsscore 0,72", maar "bij Daan verloopt CTA 1 ongeveer tweemaal zo vaak als bij de rest van het team bij vergelijkbare drukte, vooral tussen 19:00 en 20:00". Het tweede is te bespreken en te weerleggen. Het eerste kun je alleen ondergaan.</li>
+</ul>
+
+<h2>9. Wat er nog open staat</h2>
+<table>
+  <tr><th>Onderwerp</th><th>Bij wie</th></tr>
+  <tr><td>Toetsen of het periodesrapport instemming van de OR vraagt — het registreert prestaties van individuele medewerkers</td><td>Kantoor</td></tr>
+  <tr><td>Grondslag en bewaartermijn voor CTA 13 (een oordeel over een gast) en CTA 14 (de postcode voor een ander doel dan de reservering)</td><td>Kantoor</td></tr>
+  <tr><td>Waar de forecast vandaan komt, en of die beschikbaar is op het moment dat een tafel geopend wordt</td><td>Oscar</td></tr>
+  <tr><td>Welke CTA's trillen</td><td>Oscar</td></tr>
+  <tr><td>Een reeks drempels — die worden niet aan tafel gekozen maar geijkt op de shadow-log, vóór de eerste zaak live gaat</td><td>Na meting</td></tr>
+</table>
+
+<div class="callout">
+  <strong>De getallen in de specificatie zijn startwaarden, geen besluiten.</strong> Zet de CTA's een paar weken op "uit", laat ze meelopen en kijk hoe vaak ze zóúden vuren. Dat kost niets — er gebeurt in die tijd nog niets op de vloer — en het is een beter fundament dan een schatting.
+</div>
 
 <footer>
-  Oscar CTA-systeem · interne uitleg · juni 2026. Volledige specificatie met parameters en beslislog: <code>oscar_cta_specs.md</code>. Interactieve demo: github.com/peterstuurman-hash/CTA-
+  Oscar CTA-systeem · interne uitleg · bijgewerkt 12-09-2026.<br>
+  Volledige specificatie met parameters, randgevallen en beslislogboek: <code>oscar_cta_specs.md</code>. Interactieve demo: github.com/peterstuurman-hash/CTA-
 </footer>
 
 </body>

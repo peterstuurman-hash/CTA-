@@ -50,12 +50,11 @@ in geïmplementeerd.
 - `docs/oscar_CTA_uitleg.html` verwijst in de voettekst naar `oscar_cta_specs.md`.
   Dat is dit bestand; tot 12-09-2026 bestond het niet.
 - `Oscar_CTAs.pdf` zit niet in de repo. Hij is aangeleverd als los bestand.
-- `docs/oscar_CTA_uitleg.html` en de PDF ernaast zijn van juni 2026 en op veel
-  punten achterhaald: CTA 11 t/m 14 ontbreken, CTA 4 staat er nog als CTA, de
-  trigger van CTA 3 is veranderd, en routing, escalatie en logging zijn
-  uitgebreid. Er staat sinds 12-09-2026 een waarschuwing bovenaan. Ze worden in
-  één keer herschreven zodra §9.1 leeg is. De PDF wordt uit de HTML gegenereerd
-  met headless Chrome (`--print-to-pdf`, zonder header en footer).
+- `docs/oscar_CTA_uitleg.html` is op 12-09-2026 herschreven naar de stand van dit
+  document. Hij loopt dus niet meer achter, maar blijft een **samenvatting**: bij
+  tegenspraak wint deze spec (§1.1). Wijzig je hier iets wat de uitleg ook noemt,
+  werk hem dan mee bij — en genereer de PDF opnieuw:
+  `chrome --headless=new --no-pdf-header-footer --print-to-pdf=docs/oscar_CTA_uitleg.pdf docs/oscar_CTA_uitleg.html`
 
 ### §1.4 Markeringen
 
@@ -1305,6 +1304,7 @@ er over een half jaar aan, dan begint het meten ook pas dan.
 | 12-09-2026 | Recordformaat (§6.2) blijft ongewijzigd, zonder locatie, wijk of ticket | Locatie volgt uit de backend die de regel schrijft. De beperkingen staan in §6.2 zodat er geen dashboard wordt beloofd dat er niet uit te halen is |
 | 12-09-2026 | Status blijft "Concept" tot de beleidspunten uit §9.1 beantwoord zijn | Tot die tijd blijft de juni-uitleg formeel leidend voor gedrag (§1.1) |
 | 12-09-2026 | De juni-uitleg krijgt een waarschuwing bovenaan in plaats van een inhoudelijke correctie | Hij wordt in één keer bijgewerkt zodra §9.1 rond is, in plaats van twee keer |
+| 12-09-2026 | Herzien: de uitleg is diezelfde dag alsnog volledig herschreven | Er was behoefte aan iets leesbaars om de huidige stand door te nemen. Wachten op §9.1 woog daar niet tegenop |
 | 12-09-2026 | Alle bronnen van CTA's gaan door één poort in onze backend (§2.15) | Een bron die de poort omzeilt is een tweede meldingssysteem naar dezelfde handy zonder gedeelde rem |
 | 12-09-2026 | Onderscheid systeem-CTA (1–8) en mens-CTA (9–12) (§2.15) | Bij een systeem-CTA heeft niemand iets gemist als hij vervalt; bij een mens-CTA staat er iemand te wachten die het al gemeld heeft |
 | 12-09-2026 | Escalatie, delivery-check en fallback gelden alleen voor mens-CTA's (§2.16) | Timers op CTA 1–8 zouden de LG overspoelen met meldingen die niemand had aangevraagd |
