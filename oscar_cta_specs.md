@@ -82,6 +82,10 @@ verkeerd geroute melding wel.
 **Dit geldt alleen voor systeem-CTA's** (§2.15). Die ontstaan uit een timer; komt
 er niets, dan heeft niemand iets gemist.
 
+**En er is één uitzondering:** een oproep aan de LG (§5.12) gaat naar álle
+ingelogde LG's tegelijk. Deze regel gaat over een CTA die bij één bepaalde kelner
+hoort; bij een oproep maakt het niet uit wie er komt.
+
 Voor een **mens-CTA** gaat de redenering niet op. Daar heeft een medewerker al
 gezien dat er iets nodig is en er een handeling voor gedaan. Verdwijnt dat signaal,
 dan wacht de gast nog steeds en is er werk gedaan dat nergens heen ging — en de
@@ -767,9 +771,31 @@ en het tablet krijgt meteen een reden om gebruikt te worden.
 
 Daarom staat CTA 12 in niveau 1 (§2.11) en niet achteraan in de adoptie-ramp.
 
-**Routing** Naar de LG-handy. Wie dat is komt uit de devicedata (de rol van de
-ingelogde medewerker) óf uit een instelling per zaak. Beide paden bestaan; welke
-geldt staat per locatie in `lg_routing` (§7.5).
+#### Routing
+
+Wie de LG is komt uit de devicedata: de ingelogde medewerkers met de rol LG. Is er
+niemand met die rol ingelogd, dan valt hij terug op de vaste instelling per zaak
+(`lg_routing`, §7.5).
+
+**Een oproep gaat naar álle ingelogde LG's tegelijk.** Wie als eerste `GO` drukt
+pakt hem; bij de anderen verdwijnt de kaart direct, met de melding dat een collega
+gaat.
+
+```
+LG gevraagd — bar        →  Mark
+                         →  Sanne
+
+Sanne drukt GO           →  bij Mark weg: "Sanne gaat"
+```
+
+Dit is een bewuste uitzondering op §2.2. Die regel gaat over een CTA die bij één
+bepáálde kelner hoort, waar het uitmaakt wie hem krijgt. Bij een oproep maakt dat
+niet uit: als er maar iemand komt. Breed uitzetten maakt bovendien de kans dat een
+oproep blijft liggen een stuk kleiner, en dat is precies het risico uit §5.12.
+
+**In de log** staat één regel per handy waar de kaart op kwam (§6.2): `go` bij
+degene die hem pakte, `ingetrokken` bij de rest. Zo blijft de responstijd te meten
+en is te zien hoeveel LG's er op dat moment beschikbaar waren.
 
 #### Als de LG niet reageert
 
@@ -926,6 +952,10 @@ cta_nr;datum;tijd;kelner;tafelnr;status;actie;response_sec
 
 `response_sec` is de tijd tussen push en kelner-actie. Bij verval en bij
 onderdrukking blijft hij leeg.
+
+Eén CTA kan meer dan één regel opleveren als hij naar meer dan één handy ging —
+dat gebeurt alleen bij CTA 12 (§5.12). De regel van degene die hem pakte krijgt
+`go`, de rest `ingetrokken`.
 
 Vastgelegd wordt elke **afgeronde** CTA — een kelner-respons óf een verval — en
 elke CTA die wél zou afgaan maar de handy niet haalt (§6.3). Een CTA die nog open
@@ -1093,7 +1123,7 @@ CTA 13 en 14 staan er nog niet in; die zijn nog een voorstel (§7.7).
 | `dedupe_venster` | 180 sec | opdracht Beachalert | Zelfde tafel + zelfde actie binnen deze tijd = geen tweede CTA (§10.3) |
 | `recente_order_venster` | 120 sec | opdracht Beachalert | "Zojuist besteld — toch doorgeven?" bij CTA 9 (§5.9) |
 | `lookup_cache` | 60 sec | opdracht Beachalert | Maximale leeftijd van de tafel-naar-kelner lookup (§10.2) |
-| `lg_routing` | TODO (O12) | — | Per zaak: LG uit devicedata (rol) of uit een vaste instelling (§5.12) |
+| `lg_routing` | vaste instelling per zaak | besluit 12-09-2026 | Vangnet voor wanneer er niemand met de rol LG is ingelogd (§5.12) |
 | `cta12_samenvoegvenster` | TODO (O20) | — | Binnen deze tijd worden oproepen aan dezelfde LG één kaart (§5.12) |
 
 Deze staan per locatie in, net als §7.1 en §7.2.
@@ -1189,6 +1219,8 @@ shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
 | 12-09-2026 | CTA 11 gaat eerst naar de kelner, niet naar de LG | Die staat er het dichtst bij en lost het meestal zelf op |
 | 12-09-2026 | Beachalert volgt de routing van §3 (wijk), niet een lookup per tafel | Twee routings naast elkaar laten CTA 9 en CTA 1 voor dezelfde tafel bij verschillende kelners landen |
 | 12-09-2026 | `beachalert_events` is de rijkere bron, §6.2 is de projectie ervan | Twee losse logs voor hetzelfde signaal geeft twee waarheden |
+| 12-09-2026 | Een oproep gaat naar álle ingelogde LG's; de eerste die `GO` drukt pakt hem (§5.12) | Bij een oproep maakt het niet uit wie er komt, als er maar iemand komt. Uitzondering op §2.2, die over tafel-CTA's gaat |
+| 12-09-2026 | De LG komt uit de devicedata, met de vaste instelling per zaak als vangnet (§5.12) | Volgt de dienst vanzelf, en valt niet stil als er niemand is ingelogd |
 | 12-09-2026 | Geen escalatieketen als de LG niet reageert (§5.12) | De nullijn is lopen, en dat werkte vijftien jaar. Het systeem voorkomt alleen dat de melder stopt met zoeken omdat hij denkt dat het geregeld is. Eerst meten hoe vaak het misgaat, dan pas bouwen |
 | 12-09-2026 | CTA 12 is geen Beachalert-CTA maar een systeembrede oproep met vier ingangen, waaronder een systeemproduct op de handy (§5.12) | De LG wordt door de bar, de seater, de pas en door kelners gezocht. Eén por vervangt dat zoeken |
 | 12-09-2026 | Een oproep aan de LG wordt nooit tegengehouden; het volume wordt begrensd door samen te voegen (§5.12) | "We kunnen nu de LG niet oproepen" laat de melder alsnog zoeken, met een omweg erbij — dan gebruikt niemand het tablet nog |
@@ -1234,7 +1266,6 @@ verschuiven. Er wordt niet op een open punt gebouwd.
 | O4 | De maart-PDF zegt "meer dan 2 plaatsingen in het venster", de juni-uitleg zegt "een seat-actie binnen de laatste X minuten". Eén plaatsing of twee? | CTA 3 | Oscar |
 | O1 | `kelner_idle` op niveau 3 staat in de demo op 3 seconden. Dat lijkt een demo-waarde. Wat is het in productie? | Niveau 3 | Oscar |
 | O8 | Trillen alleen CTA 1, 2, 3, 9 en 10, zoals nu in §7.4? Dat patroon is nooit apart besloten. | Niets — defaults zijn instelbaar | Oscar |
-| O12 | Haalt de LG-routing de leidinggevende uit de devicedata (rol van de ingelogde medewerker) of uit een vaste instelling per zaak? Beide paden worden gebouwd; wat is de default? | CTA 12, en de fallback van §2.16 | Oscar |
 | O20 | Hoe lang is `cta12_samenvoegvenster` — binnen welke tijd worden oproepen aan dezelfde LG één kaart? | CTA 12 | Oscar |
 | O13 | De zes drempels voor de drukte van een kelner (§7.6). Beter te ijken op een paar weken echte data dan nu te schatten. | Het LG-dashboard (§4.2) | Oscar, na meting |
 | O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport, niet de rest | Peter / kantoor |
