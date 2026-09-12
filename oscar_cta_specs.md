@@ -906,8 +906,16 @@ ander doel dan de reservering. Laat toetsen vóór het aan gaat — O18.
 **Doel** Personeelswerving onder gasten die in de buurt wonen. De CTA is het
 zetje om het wervingskaartje te geven en te vragen of ze nog iemand kennen.
 
-**Trigger** De postcode op de reservering valt binnen `cta14_postcodes`, **en**
-het is niet druk (§4.1), **en** `cta14_moment` is bereikt.
+**Trigger** De postcode op de reservering staat in `cta14_postcodes` van deze
+locatie, **en** het is niet druk (§4.1), **en** `cta14_moment` is bereikt.
+
+**De postcode komt uit de reservering.** Staat er geen postcode op — een walk-in,
+of een reservering zonder adresgegevens — dan gebeurt er niets. Geen CTA, geen
+gok, geen afleiding uit iets anders.
+
+Hoeveel tafels per avond er dan overblijven weet nu niemand. Dat is precies wat de
+shadow-log (§6.3) laat zien in de weken dat hij op `disabled` staat: hoe vaak hij
+zóú vuren. Blijkt dat één tafel per week, dan is het de moeite niet.
 
 **Kaart** `Tafel [nr] — wervingskaartje meegeven`
 
@@ -1192,7 +1200,7 @@ Horen bij §5.13 en §5.14, die nog niet besloten zijn (O17).
 | `cta13_vertraging` | TODO (O17) | Tijd na het sluiten van het ticket voordat de kaart komt |
 | `cta13_levensduur` | TODO (O17) | Hoe lang de vraag nog zinvol is; daarna vervalt hij |
 | `cta13_bewaartermijn` | TODO (O18) | Na hoeveel tijd een `NO` vervalt |
-| `cta14_postcodes` | TODO (O17) | Postcodes of straal die als "uit de buurt" gelden, per locatie |
+| `cta14_postcodes` | leeg | Lijst 4-cijferige postcodes die als "uit de buurt" gelden. Per locatie in de backend (§11.3). Leeg = CTA 14 vuurt nooit |
 | `cta14_moment` | TODO (O17) | Wanneer het wervingskaartje wordt voorgesteld |
 
 Beide starten op `disabled` (§2.10) en in CTA-niveau 3 (§2.11): eerst
@@ -1260,6 +1268,7 @@ shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
 | 12-09-2026 | CTA 11 gaat eerst naar de kelner, niet naar de LG | Die staat er het dichtst bij en lost het meestal zelf op |
 | 12-09-2026 | Beachalert volgt de routing van §3 (wijk), niet een lookup per tafel | Twee routings naast elkaar laten CTA 9 en CTA 1 voor dezelfde tafel bij verschillende kelners landen |
 | 12-09-2026 | `beachalert_events` is de rijkere bron, §6.2 is de projectie ervan | Twee losse logs voor hetzelfde signaal geeft twee waarheden |
+| 12-09-2026 | "Uit de buurt" (CTA 14) is een lijst postcodes per locatie in de backend; de gastpostcode komt uit de reservering (§5.14) | Geen geocoding en geen externe dienst. Bij een strandlocatie is een straal voor de helft zee en onbereikbaar gebied; een lijst kun je precies snijden |
 | 12-09-2026 | Eén systeembrede standaard, per locatie te overschrijven; het beheerscherm toont het verschil (§7.0) | Een zaak die niets instelt volgt de standaard en blijft dat doen. Zonder dat onderscheid zichtbaar te maken snapt niemand waarom een wijziging bij vier zaken werkt en bij drie niet |
 | 12-09-2026 | Getallen in §7 zijn startwaarden, geen besluiten; ijken gebeurt op de shadow-log (§7.0) | Negen van de vijftien open punten waren "welk getal". Meten met CTA's op `disabled` kost niets en levert een beter fundament dan een schatting aan tafel |
 | 12-09-2026 | Een oproep gaat naar álle ingelogde LG's; de eerste die `GO` drukt pakt hem (§5.12) | Bij een oproep maakt het niet uit wie er komt, als er maar iemand komt. Uitzondering op §2.2, die over tafel-CTA's gaat |
@@ -1309,7 +1318,7 @@ Geen van deze gaat weg door te meten.
 | O4 | De maart-PDF zegt "meer dan 2 plaatsingen in het venster", de juni-uitleg zegt "een seat-actie binnen de laatste X minuten". Eén plaatsing of twee? Dit is een tegenspraak tussen bronnen, geen drempel. | CTA 3 | Oscar |
 | O8 | Trillen alleen CTA 1, 2, 3, 9, 10, 11 en 12, zoals nu in §7.4? Dat patroon is nooit apart besloten. | Niets — instelbaar | Oscar |
 | O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport | Peter / kantoor |
-| O17 | Komen CTA 13 (uitnodigen) en CTA 14 (wervingskaartje) er? En welke postcodes gelden als "uit de buurt"? | Alleen zichzelf | Peter |
+| O17 | Komen CTA 13 (uitnodigen) en CTA 14 (wervingskaartje) er? De werking ligt vast; alleen het go/no-go staat nog open. | Alleen zichzelf | Peter |
 | O18 | CTA 13 legt een oordeel over een gast vast; CTA 14 gebruikt de postcode voor een ander doel dan de reservering. Grondslag en bewaartermijn laten toetsen vóór invoering. | CTA 13 en 14 | Peter / kantoor |
 | O19 | De staff-app moet het eigen deel van het periodesrapport kunnen tonen. Welke app is dat, en hoe knopen we de ingelogde medewerker aan de kelner in de CTA-log? | Inzage voor de kelner | Peter |
 
