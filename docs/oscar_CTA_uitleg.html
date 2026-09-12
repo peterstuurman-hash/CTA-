@@ -59,6 +59,15 @@
 </head>
 <body>
 
+<div class="callout warn">
+  <strong>Let op — dit document loopt achter.</strong> De specificatie staat sinds 12-09-2026 in
+  <code>oscar_cta_specs.md</code>; dat document is leidend. Deze uitleg wijkt op drie punten af:
+  de prio-volgorde bevat hier nog een CTA 4 (die is geen CTA meer maar een promo-permissie, SPEC §2.14),
+  en bij de logging ontbreken de redenen <code>busy</code>, <code>tempo</code> en <code>geen_wijk</code>
+  voor meldingen die de handy niet halen (SPEC §6.3). Wordt bijgewerkt zodra de openstaande
+  punten uit SPEC §9 beantwoord zijn.
+</div>
+
 <div class="meta">Interne documentatie · juni 2026</div>
 <h1>Oscar — Werking van de CTA's &amp; kelnerselectie</h1>
 <p class="lead">Oscar is de slimme laag boven de werkvloer. Hij kijkt mee met wat er gebeurt — seaten, bestellen, drukte — en stuurt op het juiste moment één concreet zetje (een <strong>CTA</strong>, call-to-action) naar de handy van de juiste kelner. Dit document legt uit hoe de CTA's werken en hoe Oscar bepaalt naar wélke kelner een melding gaat.</p>
