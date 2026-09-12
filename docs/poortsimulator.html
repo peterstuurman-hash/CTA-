@@ -138,6 +138,14 @@
   .herkomst.volgt { color: var(--inkt-zacht); background: var(--vlak-2); border: 1px solid var(--lijn); }
   .herkomst.eigen { color: var(--let-op); background: var(--let-op-vlak); border: 1px solid transparent; }
 
+  .omrekening {
+    margin: 0; padding: 11px 13px; border-radius: 8px;
+    background: var(--vlak-2); border: 1px solid var(--lijn);
+    font-size: 13.5px;
+  }
+  .omrekening b { font-variant-numeric: tabular-nums; color: var(--inkt); }
+  .omrekening.fors { background: var(--let-op-vlak); border-color: transparent; color: var(--let-op); }
+  .omrekening.fors b { color: var(--let-op); }
   .voetnoot { margin: 0; font-size: 12.5px; color: var(--inkt-zacht); }
   .voetnoot code { font-family: var(--mono); font-size: 11.5px; }
 
@@ -230,6 +238,8 @@
 
     <div class="knoppen" id="knoppen"></div>
 
+    <p class="omrekening" id="omrekening"></p>
+
     <p class="voetnoot">Een niveau zet de eerste twee waarden. Verander je er een met de hand, dan staat die zaak niet meer op de standaard maar op een eigen waarde — dat verschil moet ook in het echte beheerscherm te zien zijn.</p>
   </section>
 
@@ -307,13 +317,14 @@
   // --- instellingen ----------------------------------------------------------
   var NIVEAUS = {
     1: { aan: [1, 6, 8, 9, 10, 11, 12], kelner_idle: 60, cta_max: 1 },
-    2: { aan: [1, 2, 3, 6, 8, 9, 10, 11, 12], kelner_idle: 20, cta_max: 3 },
-    3: { aan: [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], kelner_idle: 10, cta_max: 6 }
+    2: { aan: [1, 2, 3, 6, 8, 9, 10, 11, 12], kelner_idle: 20, cta_max: 2 },
+    3: { aan: [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], kelner_idle: 10, cta_max: 3 }
   };
 
   var PARAMS = [
     { sleutel: 'kelner_idle', eenheid: 'sec', volgtNiveau: true, min: 0, max: 180, stap: 5 },
     { sleutel: 'cta_max_per_window', eenheid: 'per venster', volgtNiveau: true, min: 0, max: 12, stap: 1 },
+    { sleutel: 'cta_window', eenheid: 'sec', min: 60, max: 1800, stap: 60 },
     { sleutel: 'dedupe_venster', eenheid: 'sec', min: 0, max: 600, stap: 15 },
     { sleutel: 'recente_order_venster', eenheid: 'sec', min: 0, max: 600, stap: 15 }
   ];
@@ -326,6 +337,7 @@
     var cfg = NIVEAUS[n];
     if (!state.eigen.kelner_idle) state.waarden.kelner_idle = cfg.kelner_idle;
     if (!state.eigen.cta_max_per_window) state.waarden.cta_max_per_window = cfg.cta_max;
+    state.waarden.cta_window = state.waarden.cta_window || 900;
     state.waarden.dedupe_venster = state.waarden.dedupe_venster || 180;
     state.waarden.recente_order_venster = state.waarden.recente_order_venster || 120;
   }
@@ -502,9 +514,26 @@
       'CTA ' + aan.join(', ') + ' staan aan.';
   }
 
+  function tekenOmrekening() {
+    var w = state.waarden;
+    var el = document.getElementById('omrekening');
+    if (!w.cta_window || !w.cta_max_per_window) {
+      el.className = 'omrekening';
+      el.innerHTML = 'Geen tempo-limiet ingesteld: het aantal meldingen is dan nergens begrensd.';
+      return;
+    }
+    var perUur = Math.round(w.cta_max_per_window * (3600 / w.cta_window));
+    var perDienst = perUur * 5;
+    el.className = 'omrekening' + (perUur > 12 ? ' fors' : '');
+    el.innerHTML = 'Komt neer op maximaal <b>' + perUur + ' meldingen per uur</b>, ' +
+      'ongeveer <b>' + perDienst + '</b> over een dienst van vijf uur.' +
+      (perUur > 12 ? ' Dat is fors — niemand leest er zoveel.' : '');
+  }
+
   function teken() {
     tekenNiveaus();
     werkKnoppenBij();
+    tekenOmrekening();
 
     var lijst = bouwSituaties();
     var avond = document.getElementById('avond');

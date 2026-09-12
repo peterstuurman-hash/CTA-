@@ -143,9 +143,29 @@ Parameter: `kelner_idle` (§7.1).
 Per handy maximaal `cta_max_per_window` getoonde CTA's binnen `cta_window`. Boven
 dat aantal wordt niet meer gepusht. De limiet hangt aan het CTA-niveau (§2.11).
 
-Dit is de derde rem, naast §2.3 en §2.7, en hij werkt op een andere as: hij begrenst
-het totaal per dienst, ook als de kelner steeds net rustig was. Een CTA die hierop
-sneuvelt wordt gelogd (§6.3).
+Dit is de derde rem, naast §2.3 en §2.7, en hij werkt op een andere as: hij
+begrenst de **dichtheid**, ook als de kelner steeds net rustig was. Een CTA die
+hierop sneuvelt wordt gelogd (§6.3).
+
+**Hij begrenst niet het totaal over een dienst.** Dat stond hier eerder wel, en
+dat was onjuist. Het venster schuift mee, dus over een hele avond telt niemand
+mee. Kies de waarde daarom op wat hij per uur betekent, niet op wat het getal
+suggereert:
+
+| Instelling | Per uur | Over een dienst van 5 uur |
+|---|---|---|
+| 1 per 15 min | 4 | ~20 |
+| 2 per 15 min | 8 | ~40 |
+| 3 per 15 min | 12 | ~60 |
+| *6 per 10 min (oude demo-waarde)* | *36* | *~180* |
+
+**Geen hard maximum per dienst.** Dat klinkt als de oplossing, maar dan valt het
+systeem halverwege de avond stil — inclusief de meldingen die er wél toe doen.
+Een gast die wil afrekenen krijgt dan niets omdat er 's middags te veel timers
+zijn afgegaan. Stilte op het verkeerde moment is erger dan een melding te veel.
+
+Een beheerscherm hoort de omrekening te tonen naast de instelling: wie alleen
+`3` en `900` ziet, kan niet beoordelen of dat veel is.
 
 **Uitzondering: CTA 12** (§5.12). Het volume van oproepen aan de LG wordt begrensd
 door samen te voegen, niet door te weigeren.
@@ -180,10 +200,10 @@ geven.
 | Niveau | CTA's aan | `kelner_idle` | `cta_max_per_window` |
 |---|---|---|---|
 | 1 · Introductie | 1, 6, 8, 9, 10, 11, 12 | 60 sec | 1 |
-| 2 · Gemiddeld | 1, 2, 3, 6, 8, 9, 10, 11, 12 | 20 sec | 3 |
-| 3 · Volledig | alle | TODO (O1) | 6 |
+| 2 · Gemiddeld | 1, 2, 3, 6, 8, 9, 10, 11, 12 | 20 sec | 2 |
+| 3 · Volledig | alle | 10 sec | 3 |
 
-`cta_window` is op elk niveau 600 sec.
+`cta_window` is op elk niveau 900 sec. Wat dat per uur betekent, staat in §2.8.
 
 Uitgeschakelde CTA's staan op `disabled`, niet op `deleted` — ze blijven
 shadow-loggen.
@@ -1180,8 +1200,8 @@ worden. Die vragen gaan niet weg door te meten.
 | `max_kaarten_zichtbaar` | 3 | uitleg | Kaarten tegelijk op een handy (§2.3). **Vast** — niet per locatie instelbaar |
 | `log_live_regels` | 500 | uitleg | Lengte van het rollende live log (§6.1) |
 | `kelner_idle` | 60 / 20 / 10 sec | niveau 1 en 2 uit de demo, niveau 3 startwaarde | Geen CTA binnen X sec na de laatste kelner-actie (§2.7) |
-| `cta_max_per_window` | 1 / 3 / 6 | demo, per niveau | Tempo-limiet per handy (§2.8) |
-| `cta_window` | 600 sec | demo | Venster voor de tempo-limiet |
+| `cta_max_per_window` | 1 / 2 / 3 | besluit 12-09-2026, per niveau | Tempo-limiet per handy (§2.8) |
+| `cta_window` | 900 sec | besluit 12-09-2026 | Venster voor de tempo-limiet |
 | `routing_meerderheid_pct` | TODO (O2) | uitleg noemt "±70%" | Drempel voor verschuiving eigenaarschap (§3.3) |
 | `routing_venster` | TODO (O2) | — | Tijdvenster waarover de tickets geteld worden |
 | `drukte_venster` | TODO (O3) | — | Venster waarover de order-rate wordt gemeten (§4) |
@@ -1395,6 +1415,7 @@ er over een half jaar aan, dan begint het meten ook pas dan.
 | 12-09-2026 | Afgeleverd, gelezen en beantwoord worden apart vastgelegd (§6.4) | De handy koppelt dat terug (Peter, 12-09-2026). Zonder dat onderscheid meet het periodesrapport voor een deel de wifi-dekking en presenteert dat als het functioneren van een medewerker |
 | 12-09-2026 | De log bevat het personeelsnummer, niet de naam (§6.2) | Het rapport telt op over vier weken en moet kloppen bij twee dezelfde voornamen of een naamswijziging; de staff-app heeft een sleutel nodig. Herziet het besluit "recordformaat ongewijzigd" op dit ene punt. Bijvangst: geen namen in de analysetabel |
 | 12-09-2026 | "Uit de buurt" (CTA 14) is een lijst postcodes per locatie in de backend; de gastpostcode komt uit de reservering (§5.14) | Geen geocoding en geen externe dienst. Bij een strandlocatie is een straal voor de helft zee en onbereikbaar gebied; een lijst kun je precies snijden |
+| 12-09-2026 | Tempo-limiet naar 1 / 2 / 3 per 900 sec, en §2.8 gecorrigeerd | De oude waarden (1/3/6 per 600 sec) kwamen uit de demo en waren nooit gekozen: niveau 3 stond op ~180 meldingen per dienst. §2.8 beweerde bovendien dat de limiet het totaal per dienst begrenst, en dat doet hij niet |
 | 12-09-2026 | Eén systeembrede standaard, per locatie te overschrijven; het beheerscherm toont het verschil (§7.0) | Een zaak die niets instelt volgt de standaard en blijft dat doen. Zonder dat onderscheid zichtbaar te maken snapt niemand waarom een wijziging bij vier zaken werkt en bij drie niet |
 | 12-09-2026 | Getallen in §7 zijn startwaarden, geen besluiten; ijken gebeurt op de shadow-log (§7.0) | Negen van de vijftien open punten waren "welk getal". Meten met CTA's op `disabled` kost niets en levert een beter fundament dan een schatting aan tafel |
 | 12-09-2026 | Een oproep gaat naar álle ingelogde LG's; de eerste die `GO` drukt pakt hem (§5.12) | Bij een oproep maakt het niet uit wie er komt, als er maar iemand komt. Uitzondering op §2.2, die over tafel-CTA's gaat |
