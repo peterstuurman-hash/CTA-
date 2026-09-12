@@ -281,9 +281,13 @@ Dit is de uitzondering op §3.5, waar niemand een wijk erft. Daar ging het om
 eigenaarschap, hier alleen om deze ene melding: de collega wordt geen eigenaar van
 de wijk.
 
-**3 · Leveringsbevestiging.** Komt er binnen `mens_delivery_timeout` geen
-bevestiging van WaiterPro én geen respons, dan geldt de CTA als niet afgeleverd en
-volgt alsnog de fallback.
+**3 · Leveringsbevestiging.** De handy koppelt terug aan Oscar: afgeleverd,
+gelezen, en de knop die is ingedrukt. Komt er binnen `mens_delivery_timeout` geen
+bevestiging, dan geldt de CTA als niet afgeleverd en volgt alsnog de fallback.
+
+Dat is een **bevestiging en geen gok**: een kelner die de kaart wél heeft gezien
+maar even bezig is, krijgt dus géén uitwijk over zich heen. Alleen een melding die
+de handy echt niet haalt, wijkt uit.
 
 **4 · Escalatietimer.** Niet afgehandeld binnen de timer van zijn actietype
 (§7.5)? Dan gaat er óók een CTA naar de LG. De oorspronkelijke kaart **blijft
@@ -982,8 +986,8 @@ andere analyses wordt gebruikt.
 ### §6.2 Recordformaat
 
 ```
-cta_nr;datum;tijd;medewerker_id;tafelnr;status;actie;response_sec
-1;2026-06-12;19:42:13;M-0412;14;enabled;ORDER;12
+cta_nr;datum;tijd;medewerker_id;tafelnr;status;actie;gelezen_sec;response_sec
+1;2026-06-12;19:42:13;M-0412;14;enabled;ORDER;4;12
 ```
 
 **`medewerker_id` is het personeelsnummer**, hetzelfde nummer dat WaiterPro, de
@@ -998,8 +1002,12 @@ halen; een naam is daar geen sleutel voor.
 Bijvangst: in de tabel waar alle analyses op draaien staat daarmee geen enkele
 naam.
 
-`response_sec` is de tijd tussen push en kelner-actie. Bij verval en bij
-onderdrukking blijft hij leeg.
+Twee tijden, en dat onderscheid is belangrijk (§6.4):
+
+- `gelezen_sec` — tijd tussen push en het moment dat de kaart op de handy stond
+- `response_sec` — tijd tussen push en de knopdruk
+
+Bij verval en bij onderdrukking blijven ze allebei leeg.
 
 Eén CTA kan meer dan één regel opleveren als hij naar meer dan één handy ging —
 dat gebeurt alleen bij CTA 12 (§5.12). De regel van degene die hem pakte krijgt
@@ -1054,6 +1062,25 @@ dus een eigen `enabled`-regel, niet een van deze.
 Zonder deze regels is niet te zien hoeveel meldingen de remmen tegenhouden, en dus
 ook niet of niveau 1 te streng staat om naar niveau 2 te gaan (§2.11). Dat maakt
 opschalen een gok in plaats van een beslissing.
+
+### §6.4 Afgeleverd, gelezen, beantwoord
+
+De handy stuurt terug wat er met een kaart gebeurt: dat hij is afgeleverd, dat hij
+is gelezen, en welke knop er is ingedrukt. Dat geeft drie momenten in plaats van
+één, en het verschil ertussen meet iets anders.
+
+| Van → naar | Wat het meet |
+|---|---|
+| Push → afgeleverd | Of het transport werkt: netwerk, handy aan, iemand ingelogd |
+| Afgeleverd → gelezen | Of de kelner zijn handy in zicht heeft. Een lange tijd hier is een broekzak, geen onwil |
+| Gelezen → knop | De beslissing van de kelner. Dít is zijn responstijd |
+
+**Reken een kelner alleen af op de derde.** De eerste twee gaan over apparatuur en
+omstandigheden. Zonder dat onderscheid meet je in het periodesrapport (§11.6) voor
+een deel de dekking van het wifi, en presenteer je dat als het functioneren van een
+medewerker.
+
+Wat precies wordt teruggekoppeld staat nog niet vast — O22.
 
 ---
 
@@ -1316,6 +1343,7 @@ er over een half jaar aan, dan begint het meten ook pas dan.
 | 12-09-2026 | Fooi vastgelegd als idee zonder CTA-nummer (§12.1) | Nog niets over besloten. Een genummerde lege paragraaf leest als een gat in de spec, en niet elk idee wordt een CTA |
 | 12-09-2026 | CTA 13 en 14 worden in fase 1 gebouwd, allebei op `disabled` (§5.13, §5.14) | Op `disabled` storen ze niemand en kosten ze geen kaartslot, maar de shadow-log loopt wel vol. Later beginnen betekent later kunnen beslissen |
 | 12-09-2026 | "Er staat een seater" volgt uit de forecast, niet uit plaatsingen (§4.4, §5.3) | Boven 150 couverts wordt er altijd een seater ingeroosterd. Een roosterfeit is directer dan het afleiden uit gedrag, en het werkt vanaf de eerste tafel van de service |
+| 12-09-2026 | Afgeleverd, gelezen en beantwoord worden apart vastgelegd (§6.4) | De handy koppelt dat terug (Peter, 12-09-2026). Zonder dat onderscheid meet het periodesrapport voor een deel de wifi-dekking en presenteert dat als het functioneren van een medewerker |
 | 12-09-2026 | De log bevat het personeelsnummer, niet de naam (§6.2) | Het rapport telt op over vier weken en moet kloppen bij twee dezelfde voornamen of een naamswijziging; de staff-app heeft een sleutel nodig. Herziet het besluit "recordformaat ongewijzigd" op dit ene punt. Bijvangst: geen namen in de analysetabel |
 | 12-09-2026 | "Uit de buurt" (CTA 14) is een lijst postcodes per locatie in de backend; de gastpostcode komt uit de reservering (§5.14) | Geen geocoding en geen externe dienst. Bij een strandlocatie is een straal voor de helft zee en onbereikbaar gebied; een lijst kun je precies snijden |
 | 12-09-2026 | Eén systeembrede standaard, per locatie te overschrijven; het beheerscherm toont het verschil (§7.0) | Een zaak die niets instelt volgt de standaard en blijft dat doen. Zonder dat onderscheid zichtbaar te maken snapt niemand waarom een wijziging bij vier zaken werkt en bij drie niet |
@@ -1366,6 +1394,7 @@ Geen van deze gaat weg door te meten.
 |---|---|---|---|
 | O8 | Trillen alleen CTA 1, 2, 3, 9, 10, 11 en 12, zoals nu in §7.4? Dat patroon is nooit apart besloten. | Niets — instelbaar | Oscar |
 | O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport | Peter / kantoor |
+| O22 | Wat koppelt de handy precies terug — afgeleverd, gelezen, knop, iets anders (§6.4)? Daar hangt aan of `gelezen_sec` te vullen is, en daarmee of het periodesrapport eerlijk kan meten. | §6.4, en de eerlijkheid van §11.6 | Oscar |
 | O21 | Waar komt de forecast vandaan en is hij voor de monitor beschikbaar op het moment dat een tafel geopend wordt (§4.4)? Zonder die koppeling vuurt CTA 3 niet. | CTA 3 | Oscar |
 | O18 | CTA 13 legt een oordeel over een gast vast; CTA 14 gebruikt de postcode voor een ander doel dan de reservering. Grondslag en bewaartermijn laten toetsen vóór invoering. | CTA 13 en 14 | Peter / kantoor |
 
@@ -1655,7 +1684,7 @@ Wel:
 | **CTA 3** tafel buiten de seater om geopend | Procedure. Heeft weinig met drukte te maken |
 | **CTA 6 / 8** tweemaal `NO`, dan autofire | Gangbewaking. Deels vakmanschap, deels keuken |
 | **CTA 1 / 2** verlopen | Schaalt sterk mee met werklast. Alleen betekenisvol na normalisatie |
-| **CTA 9 / 10** geëscaleerd | Responsiviteit — maar een handy in de broekzak ziet er in de data hetzelfde uit als onwil |
+| **CTA 9 / 10** geëscaleerd | Responsiviteit. Dankzij `gelezen_sec` (§6.4) is een handy in de broekzak te onderscheiden van een kaart die wél gelezen is en bleef liggen |
 
 De onderste drie rijen zeggen weinig zonder de drukte erbij. Zet ze niet naast
 elkaar alsof ze hetzelfde wegen.
