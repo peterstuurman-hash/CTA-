@@ -91,22 +91,29 @@ describe('magVerzenden — tempo-limiet (SPEC §2.8)', () => {
   });
 });
 
-describe('magVerzenden — CTA 12 wordt nooit geweigerd (SPEC §5.12)', () => {
-  it('slaat block by busy over', () => {
-    assert.deepEqual(
-      magVerzenden({ ...basis, ctaNr: 12, secSindsKelnerActie: 0 }),
-      { verstuur: true },
-    );
+describe("magVerzenden — mens-CTA's worden nooit geweigerd (SPEC §2.7, §2.8)", () => {
+  for (const nr of [9, 10, 11, 12]) {
+    it('CTA ' + nr + ' slaat block by busy over', () => {
+      assert.deepEqual(
+        magVerzenden({ ...basis, ctaNr: nr, secSindsKelnerActie: 0 }),
+        { verstuur: true },
+      );
+    });
+
+    it('CTA ' + nr + ' slaat de tempo-limiet over', () => {
+      assert.deepEqual(
+        magVerzenden({ ...basis, ctaNr: nr, getoondInVenster: 99 }),
+        { verstuur: true },
+      );
+    });
+  }
+
+  it('een systeem-CTA wordt wél tegengehouden door hetzelfde volle venster', () => {
+    const besluit = magVerzenden({ ...basis, ctaNr: 6, getoondInVenster: 99 });
+    assert.equal(besluit.verstuur, false);
   });
 
-  it('slaat de tempo-limiet over', () => {
-    assert.deepEqual(
-      magVerzenden({ ...basis, ctaNr: 12, getoondInVenster: 99 }),
-      { verstuur: true },
-    );
-  });
-
-  it('respecteert wél de status: een uitgezette CTA 12 gaat niet', () => {
+  it('respecteert wél de status: een uitgezette mens-CTA gaat niet', () => {
     const besluit = magVerzenden({ ...basis, ctaNr: 12, status: 'DISABLED' });
     assert.equal(besluit.verstuur, false);
   });

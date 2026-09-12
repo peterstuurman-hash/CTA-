@@ -36,14 +36,25 @@ export type PoortBesluit =
   | { verstuur: true }
   | { verstuur: false; reden: Tegenhouding; loggen: boolean };
 
-/**
- * CTA 12 (roep LG) wordt nooit tegengehouden door de remmen (SPEC §5.12).
- *
- * Block by busy beschermt een kelner die aan het bedienen is; een LG wordt
- * gestoord vóór zijn werk, dat ís zijn werk. En het volume van oproepen wordt
- * begrensd door ze samen te voegen, niet door ze te weigeren.
- */
 export const ROEP_LG = 12;
+
+/**
+ * De mens-CTA's (SPEC §2.15): een medewerker heeft gemeld dat er iets nodig is.
+ *
+ * Deze worden **nooit tegengehouden** door block by busy (§2.7) of de
+ * tempo-limiet (§2.8). Die remmen beschermen een kelner tegen een melding die
+ * kan wachten; hier staat er iemand voor hem die dat niet kan.
+ *
+ * Ze **tellen wel mee** voor het venster van §2.8 — dat is de taak van de
+ * aanroeper, die elke getoonde CTA in het venster bijschrijft, van welk soort
+ * dan ook. Zo treden Oscars eigen timer-CTA's terug als de vloer aan het melden
+ * is, en blijft het maximum betekenen wat het zegt.
+ */
+export const MENS_CTA: readonly number[] = [9, 10, 11, 12];
+
+export function isMensCta(ctaNr: number): boolean {
+  return MENS_CTA.indexOf(ctaNr) !== -1;
+}
 
 export function magVerzenden(invoer: PoortInvoer): PoortBesluit {
   // 1 · Status voor deze locatie. SPEC §2.10.
@@ -55,8 +66,8 @@ export function magVerzenden(invoer: PoortInvoer): PoortBesluit {
     return { verstuur: false, reden: 'DISABLED', loggen: true };
   }
 
-  // Een oproep aan de LG slaat de remmen over. SPEC §5.12.
-  if (invoer.ctaNr === ROEP_LG) {
+  // Mens-CTA's slaan de remmen over. SPEC §2.7, §2.8.
+  if (isMensCta(invoer.ctaNr)) {
     return { verstuur: true };
   }
 

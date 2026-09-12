@@ -376,7 +376,9 @@ function addCTA(type, nr, opts={}){
   // Kelner-druk: geen (niet-geforceerde) CTA als de kelner net iets deed — per CTA instelbaar (block by busy)
   if (!opts.forced && blockByBusy[type] && lastKelnerAction != null && (clock - lastKelnerAction) < T.KELNER_IDLE) return;
   // Tempo-limiet: max X CTA's per venster per handy (CTA-niveau)
-  if (!opts.forced && T.CTA_MAX_PER_WINDOW){
+  // Tempo-limiet: mens-CTA's worden niet tegengehouden, maar tellen hieronder
+  // wél mee voor het venster — zo treden de timer-CTA's terug als de vloer meldt.
+  if (!opts.forced && T.CTA_MAX_PER_WINDOW && !MENS_CTA.includes(type)){
     const recent = shownTimes.filter(ts => clock - ts < T.CTA_WINDOW).length;
     if (recent >= T.CTA_MAX_PER_WINDOW) return;
   }
@@ -477,7 +479,9 @@ function toggleAuto(){
 function setT(key, val){ T[key] = Math.max(0, parseInt(val) || 0); }
 function numInput(key){ return `<input type="number" min="0" value="${T[key]}" onchange="setT('${key}',this.value)">`; }
 // per CTA: geldt de kelner-druk-gate? (CTA 3 standaard uit — die wordt dóór een kelner-actie getriggerd)
-const blockByBusy = { 1:true, 2:true, 3:false, 5:true, 6:true, 7:true, 8:true, 9:true, 10:true, 11:false, 12:false };
+// Mens-CTA's (9 t/m 12) worden nooit tegengehouden: daar wacht iemand op. SPEC §2.7.
+const MENS_CTA = [9,10,11,12];
+const blockByBusy = { 1:true, 2:true, 3:false, 5:true, 6:true, 7:true, 8:true, 9:false, 10:false, 11:false, 12:false };
 // per CTA: mag de handy trillen bij push? (backend-instelling)
 const vibrate = { 1:true, 2:true, 3:true, 5:false, 6:false, 7:false, 8:false, 9:true, 10:true, 11:true, 12:true };
 // per CTA status: enabled / disabled (telt wel mee, toont niet) / deleted (weg)

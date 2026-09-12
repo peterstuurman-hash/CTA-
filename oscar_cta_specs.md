@@ -167,11 +167,27 @@ zijn afgegaan. Stilte op het verkeerde moment is erger dan een melding te veel.
 Een beheerscherm hoort de omrekening te tonen naast de instelling: wie alleen
 `3` en `900` ziet, kan niet beoordelen of dat veel is.
 
-**Uitzondering: CTA 12** (§5.12). Het volume van oproepen aan de LG wordt begrensd
-door samen te voegen, niet door te weigeren.
+**Uitzondering: de mens-CTA's** (9 t/m 12, §2.15). Die worden nooit tegengehouden
+— maar ze **tellen wel mee** voor het venster.
 
-**Uitzondering: CTA 12** (§5.12). Het volume van oproepen aan de LG wordt begrensd
-door samen te voegen, niet door te weigeren.
+Dat verschil is het hele punt. Kreeg een kelner net drie meldingen van de vloer,
+dan houdt Oscar zijn eigen timer-CTA's even in. Menselijke signalen verdringen dus
+de systeemmeldingen, en niet andersom: er staat iemand te wachten, en dat weegt
+zwaarder dan een timer.
+
+Zou je ze helemaal buiten de telling laten, dan begrenst niets hun aantal meer en
+zegt het maximum niets meer over wat er binnenkomt.
+
+**Uitzondering: de mens-CTA's** (9 t/m 12, §2.15). Die worden nooit tegengehouden
+— maar ze **tellen wel mee** voor het venster.
+
+Dat verschil is het hele punt. Kreeg een kelner net drie meldingen van de vloer,
+dan houdt Oscar zijn eigen timer-CTA's even in. Menselijke signalen verdringen dus
+de systeemmeldingen, en niet andersom: er staat iemand te wachten, en dat weegt
+zwaarder dan een timer.
+
+Zou je ze helemaal buiten de telling laten, dan begrenst niets hun aantal meer en
+zegt het maximum niets meer over wat er binnenkomt.
 
 ### §2.9 Vibratie
 
@@ -833,7 +849,8 @@ CTA 7.
 
 #### Nooit weigeren
 
-Voor deze CTA gelden §2.7 en §2.8 **niet**:
+Zoals voor elke mens-CTA gelden §2.7 en §2.8 hier niet — en bij een oproep aan de
+LG is de reden het duidelijkst:
 
 - **Block by busy** beschermt een kelner die aan het bedienen is tegen een melding
   die kan wachten. Een LG die gestoord wordt, wordt gestoord vóór zijn werk — dat
@@ -1272,8 +1289,8 @@ defaults; een locatie kan ervan afwijken.
 | 6 · Ready for main | enabled | aan | uit |
 | 7 · Actief-check | enabled | aan | uit |
 | 8 · Ready for dessert | enabled | aan | uit |
-| 9 · Gast wil bestellen | enabled | aan | aan |
-| 10 · Gast wil betalen | enabled | aan | aan |
+| 9 · Gast wil bestellen | enabled | **uit** | aan |
+| 10 · Gast wil betalen | enabled | **uit** | aan |
 | 11 · Bestelling klopt niet | enabled | **uit** | aan |
 | 12 · Roep LG | enabled | **n.v.t.** | aan |
 
@@ -1284,9 +1301,9 @@ schakelaars.
 Herkomst: de demo. TODO (O8) — het vibratiepatroon (alleen 1, 2, 3, 9 en 10) is
 nergens apart besloten; bevestigen of dit de gewenste productiedefaults zijn.
 
-`block by busy` staat uit voor CTA 11: daar wacht een gast op, en die tegenhouden
-omdat de kelner net iets deed stelt precies het verkeerde uit. Bij CTA 12 is de
-schakelaar niet van toepassing — die wordt nooit tegengehouden (§5.12).
+`block by busy` staat uit voor alle mens-CTA's (9 t/m 12): daar wacht iemand op,
+en die tegenhouden omdat de kelner net iets deed stelt precies het verkeerde uit
+(§2.7). Bij CTA 12 is de schakelaar helemaal niet van toepassing.
 
 CTA 13 en 14 staan er nog niet in; die zijn nog een voorstel (§7.7).
 
@@ -1415,6 +1432,7 @@ er over een half jaar aan, dan begint het meten ook pas dan.
 | 12-09-2026 | Afgeleverd, gelezen en beantwoord worden apart vastgelegd (§6.4) | De handy koppelt dat terug (Peter, 12-09-2026). Zonder dat onderscheid meet het periodesrapport voor een deel de wifi-dekking en presenteert dat als het functioneren van een medewerker |
 | 12-09-2026 | De log bevat het personeelsnummer, niet de naam (§6.2) | Het rapport telt op over vier weken en moet kloppen bij twee dezelfde voornamen of een naamswijziging; de staff-app heeft een sleutel nodig. Herziet het besluit "recordformaat ongewijzigd" op dit ene punt. Bijvangst: geen namen in de analysetabel |
 | 12-09-2026 | "Uit de buurt" (CTA 14) is een lijst postcodes per locatie in de backend; de gastpostcode komt uit de reservering (§5.14) | Geen geocoding en geen externe dienst. Bij een strandlocatie is een straal voor de helft zee en onbereikbaar gebied; een lijst kun je precies snijden |
+| 12-09-2026 | De remmen (§2.7, §2.8) gelden alleen voor systeem-CTA's; mens-CTA's gaan altijd door maar tellen wél mee voor het venster | Er staat iemand te wachten die het al gemeld heeft. Door ze te laten meetellen treden Oscars eigen timers terug als de vloer aan het melden is — en blijft het maximum betekenen wat het zegt |
 | 12-09-2026 | Tempo-limiet naar 1 / 2 / 3 per 900 sec, en §2.8 gecorrigeerd | De oude waarden (1/3/6 per 600 sec) kwamen uit de demo en waren nooit gekozen: niveau 3 stond op ~180 meldingen per dienst. §2.8 beweerde bovendien dat de limiet het totaal per dienst begrenst, en dat doet hij niet |
 | 12-09-2026 | Eén systeembrede standaard, per locatie te overschrijven; het beheerscherm toont het verschil (§7.0) | Een zaak die niets instelt volgt de standaard en blijft dat doen. Zonder dat onderscheid zichtbaar te maken snapt niemand waarom een wijziging bij vier zaken werkt en bij drie niet |
 | 12-09-2026 | Getallen in §7 zijn startwaarden, geen besluiten; ijken gebeurt op de shadow-log (§7.0) | Negen van de vijftien open punten waren "welk getal". Meten met CTA's op `disabled` kost niets en levert een beter fundament dan een schatting aan tafel |
