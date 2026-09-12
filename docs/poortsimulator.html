@@ -117,14 +117,18 @@
     color: var(--inkt-zacht); margin-bottom: 5px;
     word-break: break-all;
   }
-  .knop .rij { display: flex; align-items: baseline; gap: 7px; }
-  .knop input {
-    width: 84px; font: 500 15px/1 var(--mono);
+  .knop .rij { display: flex; align-items: center; gap: 7px; }
+  .knop input[type="number"] {
+    width: 76px; font: 500 15px/1 var(--mono);
     color: var(--inkt); background: var(--vlak-2);
     border: 1px solid var(--lijn); border-radius: 6px;
     padding: 7px 8px; font-variant-numeric: tabular-nums;
   }
   .knop input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .knop input[type="range"] {
+    width: 100%; margin: 9px 0 0; accent-color: var(--accent);
+    background: transparent; cursor: pointer; display: block;
+  }
   .knop .eenheid { font-size: 12px; color: var(--inkt-zacht); }
   .herkomst {
     display: inline-block; margin-top: 5px;
@@ -308,10 +312,10 @@
   };
 
   var PARAMS = [
-    { sleutel: 'kelner_idle', eenheid: 'sec', par: '§7.1', volgtNiveau: true },
-    { sleutel: 'cta_max_per_window', eenheid: 'per venster', par: '§7.1', volgtNiveau: true },
-    { sleutel: 'dedupe_venster', eenheid: 'sec', par: '§7.5', vast: 180 },
-    { sleutel: 'recente_order_venster', eenheid: 'sec', par: '§7.5', vast: 120 }
+    { sleutel: 'kelner_idle', eenheid: 'sec', volgtNiveau: true, min: 0, max: 180, stap: 5 },
+    { sleutel: 'cta_max_per_window', eenheid: 'per venster', volgtNiveau: true, min: 0, max: 12, stap: 1 },
+    { sleutel: 'dedupe_venster', eenheid: 'sec', min: 0, max: 600, stap: 15 },
+    { sleutel: 'recente_order_venster', eenheid: 'sec', min: 0, max: 600, stap: 15 }
   ];
 
   var state = { niveau: 1, waarden: {}, eigen: {} };
@@ -433,28 +437,58 @@
   }
 
   // --- tekenen ---------------------------------------------------------------
-  function tekenKnoppen() {
+  // De knoppen worden één keer opgebouwd en daarna alleen bijgewerkt. Ze elke
+  // keer opnieuw maken kost je de focus na één toetsaanslag.
+  var knopElementen = {};
+
+  function bouwKnoppen() {
     var el = document.getElementById('knoppen');
     el.innerHTML = '';
     PARAMS.forEach(function (p) {
-      var eigen = !!state.eigen[p.sleutel];
       var d = document.createElement('div');
       d.className = 'knop';
       d.innerHTML =
         '<label for="p-' + p.sleutel + '">' + p.sleutel + '</label>' +
-        '<div class="rij"><input id="p-' + p.sleutel + '" type="number" min="0" max="9999" value="' +
-        state.waarden[p.sleutel] + '"><span class="eenheid">' + p.eenheid + '</span></div>' +
-        '<span class="herkomst ' + (eigen ? 'eigen' : 'volgt') + '">' +
-        (eigen ? 'eigen waarde' : (p.volgtNiveau ? 'volgt het niveau' : 'standaard')) + '</span>';
+        '<div class="rij">' +
+        '<input id="p-' + p.sleutel + '" type="number" min="' + p.min + '" max="' + p.max + '" step="' + p.stap + '">' +
+        '<span class="eenheid">' + p.eenheid + '</span></div>' +
+        '<input id="s-' + p.sleutel + '" type="range" min="' + p.min + '" max="' + p.max + '" step="' + p.stap +
+        '" aria-label="' + p.sleutel + '">' +
+        '<span class="herkomst volgt" id="h-' + p.sleutel + '"></span>';
       el.appendChild(d);
-      d.querySelector('input').addEventListener('input', function (ev) {
-        var n = parseInt(ev.target.value, 10);
-        if (isNaN(n) || n < 0) n = 0;
-        if (n > 9999) n = 9999;
+
+      var getal = d.querySelector('input[type="number"]');
+      var schuif = d.querySelector('input[type="range"]');
+
+      function zet(ruw) {
+        var n = parseInt(ruw, 10);
+        if (isNaN(n)) return;
+        if (n < p.min) n = p.min;
+        if (n > p.max) n = p.max;
         state.waarden[p.sleutel] = n;
         state.eigen[p.sleutel] = true;
         teken();
-      });
+      }
+      getal.addEventListener('input', function (ev) { zet(ev.target.value); });
+      schuif.addEventListener('input', function (ev) { zet(ev.target.value); });
+
+      knopElementen[p.sleutel] = { getal: getal, schuif: schuif, herkomst: d.querySelector('.herkomst') };
+    });
+  }
+
+  function werkKnoppenBij() {
+    PARAMS.forEach(function (p) {
+      var k = knopElementen[p.sleutel];
+      if (!k) return;
+      var waarde = String(state.waarden[p.sleutel]);
+      // Niet overschrijven terwijl iemand in het veld staat te typen.
+      if (document.activeElement !== k.getal) k.getal.value = waarde;
+      if (document.activeElement !== k.schuif) k.schuif.value = waarde;
+      var eigen = !!state.eigen[p.sleutel];
+      k.herkomst.className = 'herkomst ' + (eigen ? 'eigen' : 'volgt');
+      k.herkomst.textContent = eigen
+        ? 'eigen waarde'
+        : (p.volgtNiveau ? 'volgt het niveau' : 'standaard');
     });
   }
 
@@ -470,7 +504,7 @@
 
   function teken() {
     tekenNiveaus();
-    tekenKnoppen();
+    werkKnoppenBij();
 
     var lijst = bouwSituaties();
     var avond = document.getElementById('avond');
@@ -547,5 +581,6 @@
   });
 
   zetNiveau(1, true);
+  bouwKnoppen();
   teken();
 </script>
