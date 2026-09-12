@@ -1,0 +1,551 @@
+<title>Oscar poortsimulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --ground: #f2f5f9;
+    --vlak: #ffffff;
+    --vlak-2: #f7f9fc;
+    --lijn: #d8e1ee;
+    --lijn-zacht: #e8eef6;
+    --inkt: #1c2530;
+    --inkt-zacht: #63728a;
+    --navy: #14315e;
+    --accent: #4c8dff;
+    --goed: #17724f;
+    --goed-vlak: #e4f2ec;
+    --stop: #b23a45;
+    --stop-vlak: #fbeaec;
+    --let-op: #8a5c12;
+    --let-op-vlak: #fbf1de;
+    --sans: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0c141f;
+      --vlak: #141f2e;
+      --vlak-2: #101a27;
+      --lijn: #26364b;
+      --lijn-zacht: #1d2b3d;
+      --inkt: #e4ecf6;
+      --inkt-zacht: #8ea0b8;
+      --navy: #9dc0ff;
+      --accent: #6ba2ff;
+      --goed: #6edeb1;
+      --goed-vlak: #102c22;
+      --stop: #ff8b95;
+      --stop-vlak: #2e1418;
+      --let-op: #e8bd6d;
+      --let-op-vlak: #2b2213;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0c141f;
+    --vlak: #141f2e;
+    --vlak-2: #101a27;
+    --lijn: #26364b;
+    --lijn-zacht: #1d2b3d;
+    --inkt: #e4ecf6;
+    --inkt-zacht: #8ea0b8;
+    --navy: #9dc0ff;
+    --accent: #6ba2ff;
+    --goed: #6edeb1;
+    --goed-vlak: #102c22;
+    --stop: #ff8b95;
+    --stop-vlak: #2e1418;
+    --let-op: #e8bd6d;
+    --let-op-vlak: #2b2213;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--inkt);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    padding: 0 20px;
+    padding-block: 0 48px;
+  }
+  .wrap { max-width: 1140px; margin: 0 auto; }
+
+  header { padding-block: 32px 22px; border-bottom: 1px solid var(--lijn); }
+  h1 {
+    font-size: clamp(24px, 3.2vw, 33px);
+    line-height: 1.15; margin: 0 0 6px;
+    letter-spacing: -0.02em; color: var(--navy);
+    text-wrap: balance;
+  }
+  .intro { margin: 0; max-width: 64ch; color: var(--inkt-zacht); }
+  .intro strong { color: var(--inkt); font-weight: 600; }
+
+  h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.09em;
+    color: var(--inkt-zacht); font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  .paneel {
+    background: var(--vlak); border: 1px solid var(--lijn);
+    border-radius: 10px; padding: 18px 20px;
+  }
+
+  /* ---------- bediening ---------- */
+  .bediening { margin-block: 26px; display: grid; gap: 18px; }
+  .niveaus { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .niveaus button {
+    font: 600 13px/1 var(--sans); color: var(--inkt);
+    background: var(--vlak-2); border: 1px solid var(--lijn);
+    border-radius: 7px; padding: 9px 14px; cursor: pointer;
+  }
+  .niveaus button[aria-pressed="true"] {
+    background: var(--navy); border-color: var(--navy); color: var(--vlak);
+  }
+  :root[data-theme="dark"] .niveaus button[aria-pressed="true"],
+  :root:not([data-theme="light"]) .niveaus button[aria-pressed="true"] { color: #0c141f; }
+  .niveaus button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .knoppen {
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  }
+  .knop label {
+    display: block; font: 500 11px/1.3 var(--mono);
+    color: var(--inkt-zacht); margin-bottom: 5px;
+    word-break: break-all;
+  }
+  .knop .rij { display: flex; align-items: baseline; gap: 7px; }
+  .knop input {
+    width: 84px; font: 500 15px/1 var(--mono);
+    color: var(--inkt); background: var(--vlak-2);
+    border: 1px solid var(--lijn); border-radius: 6px;
+    padding: 7px 8px; font-variant-numeric: tabular-nums;
+  }
+  .knop input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .knop .eenheid { font-size: 12px; color: var(--inkt-zacht); }
+  .herkomst {
+    display: inline-block; margin-top: 5px;
+    font: 500 10px/1 var(--sans); letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 3px 6px; border-radius: 4px;
+  }
+  .herkomst.volgt { color: var(--inkt-zacht); background: var(--vlak-2); border: 1px solid var(--lijn); }
+  .herkomst.eigen { color: var(--let-op); background: var(--let-op-vlak); border: 1px solid transparent; }
+
+  .voetnoot { margin: 0; font-size: 12.5px; color: var(--inkt-zacht); }
+  .voetnoot code { font-family: var(--mono); font-size: 11.5px; }
+
+  /* ---------- hoofdkolommen ---------- */
+  .kolommen {
+    display: grid; gap: 22px; align-items: start;
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  }
+  @media (max-width: 860px) { .kolommen { grid-template-columns: 1fr; } }
+
+  .avond { display: grid; gap: 0; }
+  .situatie {
+    display: grid; gap: 4px;
+    padding: 15px 0; border-bottom: 1px solid var(--lijn-zacht);
+  }
+  .situatie:last-child { border-bottom: 0; }
+  .situatie .wat { display: flex; gap: 10px; align-items: baseline; }
+  .situatie .nr {
+    font: 500 12px/1.5 var(--mono); color: var(--inkt-zacht);
+    font-variant-numeric: tabular-nums; flex: 0 0 auto;
+  }
+  .situatie .tekst { margin: 0; }
+  .oordeel { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-left: 30px; }
+  .pil {
+    font: 600 12px/1 var(--sans); padding: 5px 9px; border-radius: 5px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pil.door { background: var(--goed-vlak); color: var(--goed); }
+  .pil.stop { background: var(--stop-vlak); color: var(--stop); }
+  .pil.vraag { background: var(--let-op-vlak); color: var(--let-op); }
+  .par {
+    font: 500 11px/1 var(--mono); color: var(--inkt-zacht);
+  }
+  .uitleg { margin: 2px 0 0 30px; font-size: 13px; color: var(--inkt-zacht); }
+
+  /* ---------- handy ---------- */
+  .handy { position: sticky; top: 18px; display: grid; gap: 14px; }
+  .kaartjes { display: grid; gap: 7px; }
+  .kaartje {
+    border: 1px solid var(--lijn); border-radius: 8px;
+    padding: 9px 11px; background: var(--vlak-2);
+    display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
+  }
+  .kaartje .naam { font-weight: 600; font-size: 13.5px; }
+  .kaartje .prio { font: 500 11px/1 var(--mono); color: var(--inkt-zacht); }
+  .kaartje.wacht { opacity: 0.5; border-style: dashed; background: transparent; }
+  .telling {
+    display: flex; gap: 16px; padding-top: 12px; border-top: 1px solid var(--lijn-zacht);
+  }
+  .telling div { display: grid; gap: 1px; }
+  .telling .getal {
+    font: 600 22px/1 var(--sans); font-variant-numeric: tabular-nums;
+  }
+  .telling .wat { font-size: 11.5px; color: var(--inkt-zacht); }
+
+  /* ---------- log ---------- */
+  .log { margin-top: 22px; }
+  .logregels {
+    font-family: var(--mono); font-size: 11.5px; line-height: 1.85;
+    overflow-x: auto; white-space: pre;
+  }
+  .logregels div { color: var(--inkt-zacht); }
+  .logregels .enabled { color: var(--inkt); }
+  .logkop { color: var(--inkt-zacht); border-bottom: 1px solid var(--lijn-zacht); padding-bottom: 4px; margin-bottom: 4px; }
+
+  footer {
+    margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--lijn);
+    font-size: 12.5px; color: var(--inkt-zacht);
+  }
+  footer code { font-family: var(--mono); font-size: 11.5px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Oscar poortsimulator</h1>
+    <p class="intro">Elke melding aan een kelner gaat door één poort. Die kijkt achter elkaar naar: staat deze CTA aan, naar wie moet hij, is de kelner net bezig, en zit het venster al vol. <strong>Draai aan de knoppen en kijk wat er verandert.</strong> Dit is dezelfde logica die in productie de beslissing neemt — alleen met verzonnen situaties.</p>
+  </header>
+
+  <section class="bediening paneel" aria-label="Instellingen">
+    <div>
+      <h2>CTA-niveau</h2>
+      <div class="niveaus" id="niveaus" role="group" aria-label="CTA-niveau">
+        <button type="button" id="niveau-1" data-niveau="1">1 · Introductie</button>
+        <button type="button" id="niveau-2" data-niveau="2">2 · Gemiddeld</button>
+        <button type="button" id="niveau-3" data-niveau="3">3 · Volledig</button>
+        <span class="voetnoot" id="niveau-uitleg"></span>
+      </div>
+    </div>
+
+    <div class="knoppen" id="knoppen"></div>
+
+    <p class="voetnoot">Een niveau zet de eerste twee waarden. Verander je er een met de hand, dan staat die zaak niet meer op de standaard maar op een eigen waarde — dat verschil moet ook in het echte beheerscherm te zien zijn.</p>
+  </section>
+
+  <div class="kolommen">
+    <section aria-label="De avond">
+      <h2>Zaterdagavond · RES Noord</h2>
+      <div class="avond paneel" id="avond"></div>
+    </section>
+
+    <aside>
+      <h2>Handy van Rutger</h2>
+      <div class="handy">
+        <div class="paneel">
+          <div class="kaartjes" id="kaartjes"></div>
+          <div class="telling">
+            <div><span class="getal" id="telDoor">0</span><span class="wat">verstuurd</span></div>
+            <div><span class="getal" id="telStop">0</span><span class="wat">tegengehouden</span></div>
+            <div><span class="getal" id="telVraag">0</span><span class="wat">bevestiging</span></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="log paneel" aria-label="Logregels">
+    <h2>Wat er in de log komt</h2>
+    <div class="logregels" id="log"></div>
+    <p class="voetnoot" style="margin-top:12px">Ook wat de handy niet haalt, krijgt een regel. Zonder die regels is niet te zien hoeveel de remmen tegenhouden — en dan is opschalen naar een hoger niveau een gok in plaats van een beslissing.</p>
+  </section>
+
+  <footer>
+    Oscar CTA-systeem · de logica komt uit <code>packages/cta</code>, de regels uit <code>oscar_cta_specs.md</code>. Paragraafnummers verwijzen naar die specificatie.
+  </footer>
+</div>
+
+<script>
+  // --- de logica, gelijk aan packages/cta/src/poort ---------------------------
+  var ROEP_LG = 12;
+  var PRIO = [1, 2, 9, 10, 11, 12, 3, 5, 6, 7, 8, 13, 14];
+  function prioVan(nr) { var i = PRIO.indexOf(nr); return i === -1 ? 9999 : i; }
+
+  function magVerzenden(v) {
+    if (v.status === 'DELETED') return { verstuur: false, reden: 'deleted', loggen: false };
+    if (v.status === 'DISABLED') return { verstuur: false, reden: 'disabled', loggen: true };
+    if (v.ctaNr === ROEP_LG) return { verstuur: true };
+    if (v.blockByBusy && v.secSindsKelnerActie !== null && v.secSindsKelnerActie < v.kelnerIdleSec)
+      return { verstuur: false, reden: 'busy', loggen: true };
+    if (v.ctaMaxPerVenster > 0 && v.getoondInVenster >= v.ctaMaxPerVenster)
+      return { verstuur: false, reden: 'tempo', loggen: true };
+    return { verstuur: true };
+  }
+
+  function isDubbel(v) {
+    if (v.doorgedrukt || v.actie === 'ROEP_LG' || v.tafelnr === null) return null;
+    var grens = v.nu - v.dedupeVensterSec * 1000;
+    var t = v.eerdere.filter(function (e) {
+      return e.actie === v.actie && e.tafelnr === v.tafelnr && e.op > grens;
+    }).sort(function (a, b) { return b.op - a.op; });
+    return t.length ? t[0] : null;
+  }
+
+  function isRecentBesteld(v) {
+    if (v.doorgedrukt || v.actie !== 'WIL_BESTELLEN' || v.laatsteOrderOp === null) return false;
+    return v.laatsteOrderOp > v.nu - v.recenteOrderVensterSec * 1000;
+  }
+
+  function kiesOntvanger(v) {
+    if (v.eigenaar && v.eigenaarBereikbaar) return { verstuur: true, reden: 'eigenaar' };
+    if (v.soort === 'SYSTEEM') return { verstuur: false, reden: 'geen_wijk' };
+    if (v.zoneCollega) return { verstuur: true, reden: 'zone_collega' };
+    if (v.lgs.length) return { verstuur: true, reden: 'geen_wijk_naar_lg' };
+    return { verstuur: false, reden: 'geen_ontvanger' };
+  }
+
+  // --- instellingen ----------------------------------------------------------
+  var NIVEAUS = {
+    1: { aan: [1, 6, 8, 9, 10, 11, 12], kelner_idle: 60, cta_max: 1 },
+    2: { aan: [1, 2, 3, 6, 8, 9, 10, 11, 12], kelner_idle: 20, cta_max: 3 },
+    3: { aan: [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], kelner_idle: 10, cta_max: 6 }
+  };
+
+  var PARAMS = [
+    { sleutel: 'kelner_idle', eenheid: 'sec', par: '§7.1', volgtNiveau: true },
+    { sleutel: 'cta_max_per_window', eenheid: 'per venster', par: '§7.1', volgtNiveau: true },
+    { sleutel: 'dedupe_venster', eenheid: 'sec', par: '§7.5', vast: 180 },
+    { sleutel: 'recente_order_venster', eenheid: 'sec', par: '§7.5', vast: 120 }
+  ];
+
+  var state = { niveau: 1, waarden: {}, eigen: {} };
+
+  function zetNiveau(n, resetEigen) {
+    state.niveau = n;
+    if (resetEigen) state.eigen = {};
+    var cfg = NIVEAUS[n];
+    if (!state.eigen.kelner_idle) state.waarden.kelner_idle = cfg.kelner_idle;
+    if (!state.eigen.cta_max_per_window) state.waarden.cta_max_per_window = cfg.cta_max;
+    state.waarden.dedupe_venster = state.waarden.dedupe_venster || 180;
+    state.waarden.recente_order_venster = state.waarden.recente_order_venster || 120;
+  }
+
+  function staatAan(nr) { return NIVEAUS[state.niveau].aan.indexOf(nr) !== -1; }
+  function statusVan(nr) { return staatAan(nr) ? 'ENABLED' : 'DISABLED'; }
+
+  // --- de avond --------------------------------------------------------------
+  var NU = new Date(2026, 8, 12, 19, 40, 0).getTime();
+  var geleden = function (sec) { return NU - sec * 1000; };
+
+  function bouwSituaties() {
+    var w = state.waarden;
+    var lijst = [];
+
+    // 1
+    var a = magVerzenden({ ctaNr: 1, status: statusVan(1), blockByBusy: true,
+      secSindsKelnerActie: 10, kelnerIdleSec: w.kelner_idle, getoondInVenster: 0,
+      ctaMaxPerVenster: w.cta_max_per_window });
+    lijst.push({
+      tekst: 'CTA 1 wil vuren op tafel 3. Rutger sloeg 10 seconden geleden iets aan.',
+      besluit: a, par: '§2.7 block by busy', ctaNr: 1, tafel: 3,
+      uitleg: a.verstuur
+        ? 'De drempel staat op ' + w.kelner_idle + ' sec, dus hij wordt niet als bezig gezien.'
+        : 'Hij deed net iets. De melding wacht op een rustig moment.'
+    });
+
+    // 2
+    var b = magVerzenden({ ctaNr: 1, status: statusVan(1), blockByBusy: true,
+      secSindsKelnerActie: 70, kelnerIdleSec: w.kelner_idle, getoondInVenster: 0,
+      ctaMaxPerVenster: w.cta_max_per_window });
+    lijst.push({
+      tekst: 'Zeventig seconden later is Rutger rustig.',
+      besluit: b, par: '§2.7', ctaNr: 1, tafel: 3,
+      uitleg: b.verstuur ? 'Verstuurd naar Rutger.' : 'Nog steeds tegengehouden — de drempel staat hoger dan 70 sec.'
+    });
+
+    // 3
+    var eerdere = [{ actie: 'WIL_BESTELLEN', tafelnr: 3, ontvanger: 'Rutger', op: geleden(120) }];
+    var d = isDubbel({ actie: 'WIL_BESTELLEN', tafelnr: 3, nu: NU,
+      dedupeVensterSec: w.dedupe_venster, eerdere: eerdere, doorgedrukt: false });
+    lijst.push({
+      tekst: 'Een runner meldt "wil bestellen" op tafel 3 — twee minuten na de vorige melding.',
+      besluit: d ? { verstuur: false, reden: 'al gemeld', vraag: true, loggen: false } : { verstuur: true },
+      par: '§10.3 ontdubbelen', ctaNr: 9, tafel: 3,
+      uitleg: d
+        ? 'Het tablet toont "al doorgegeven aan Rutger (2 min geleden)" met de knop om toch te sturen. Drukt hij door, dan gaat hij alsnog.'
+        : 'Het venster staat op ' + w.dedupe_venster + ' sec, dus dit telt als een nieuwe melding.'
+    });
+
+    // 4
+    var r = isRecentBesteld({ actie: 'WIL_BESTELLEN', laatsteOrderOp: geleden(30),
+      nu: NU, recenteOrderVensterSec: w.recente_order_venster, doorgedrukt: false });
+    lijst.push({
+      tekst: 'Runner meldt "wil bestellen" op tafel 8, waar dertig seconden geleden is aangeslagen.',
+      besluit: r ? { verstuur: false, reden: 'net besteld', vraag: true, loggen: false } : { verstuur: true },
+      par: '§5.9', ctaNr: 9, tafel: 8,
+      uitleg: r
+        ? 'Het tablet vraagt "zojuist besteld — toch doorgeven?" voordat er iets wordt weggeschreven.'
+        : 'Buiten het venster van ' + w.recente_order_venster + ' sec, dus geen tussenvraag.'
+    });
+
+    // 5
+    var e = magVerzenden({ ctaNr: 6, status: statusVan(6), blockByBusy: true,
+      secSindsKelnerActie: 600, kelnerIdleSec: w.kelner_idle,
+      getoondInVenster: w.cta_max_per_window, ctaMaxPerVenster: w.cta_max_per_window });
+    lijst.push({
+      tekst: 'CTA 6 wil vuren, maar Rutger kreeg er al ' + w.cta_max_per_window + ' in dit venster.',
+      besluit: e, par: '§2.8 tempo-limiet', ctaNr: 6, tafel: 3,
+      uitleg: e.verstuur ? 'Er is nog ruimte in het venster.' : 'Het venster zit vol. Dit begrenst het totaal over een dienst.'
+    });
+
+    // 6
+    var f = magVerzenden({ ctaNr: 12, status: statusVan(12), blockByBusy: true,
+      secSindsKelnerActie: 0, kelnerIdleSec: w.kelner_idle,
+      getoondInVenster: 99, ctaMaxPerVenster: w.cta_max_per_window });
+    lijst.push({
+      tekst: 'De bar roept de LG — terwijl datzelfde venster nog steeds vol zit.',
+      besluit: f, par: '§5.12 nooit weigeren', ctaNr: 12, tafel: null,
+      uitleg: f.verstuur
+        ? 'Gaat naar alle ingelogde leidinggevenden tegelijk; wie als eerste GO drukt, pakt hem. "We kunnen nu de LG niet oproepen" zou de melder alsnog laten zoeken.'
+        : 'Deze CTA staat uit voor deze locatie.'
+    });
+
+    // 7a + 7b
+    var s1 = kiesOntvanger({ soort: 'SYSTEEM', eigenaar: null, eigenaarBereikbaar: false, zoneCollega: null, lgs: ['M-0001'] });
+    var st2 = magVerzenden({ ctaNr: 2, status: statusVan(2), blockByBusy: true,
+      secSindsKelnerActie: 600, kelnerIdleSec: w.kelner_idle, getoondInVenster: 0,
+      ctaMaxPerVenster: w.cta_max_per_window });
+    var uit2 = st2.verstuur ? s1 : { verstuur: false, reden: st2.reden };
+    lijst.push({
+      tekst: 'Wijk Zuid heeft geen eigenaar. CTA 2 wil vuren op tafel 14.',
+      besluit: { verstuur: uit2.verstuur, reden: uit2.reden, loggen: true },
+      par: '§3.4 systeem-CTA', ctaNr: 2, tafel: 14,
+      uitleg: uit2.reden === 'disabled'
+        ? 'CTA 2 staat op dit niveau uit. Hij wordt wél gelogd, zodat je ziet hoe vaak hij zou afgaan.'
+        : 'Vervalt. Zonder Oscar was er ook niets geweest, dus niemand mist iets.'
+    });
+
+    var s2 = kiesOntvanger({ soort: 'MENS', eigenaar: null, eigenaarBereikbaar: false, zoneCollega: null, lgs: ['M-0001'] });
+    lijst.push({
+      tekst: 'Op diezelfde tafel meldt een runner dat de gast wil bestellen.',
+      besluit: { verstuur: s2.verstuur, reden: s2.reden, loggen: true },
+      par: '§3.4 mens-CTA', ctaNr: 9, tafel: 14, lg: true,
+      uitleg: 'Gaat naar de LG. Hier heeft een mens al gezien dat er iets nodig is — dan is verdwijnen wél een verslechtering.'
+    });
+
+    return lijst;
+  }
+
+  // --- tekenen ---------------------------------------------------------------
+  function tekenKnoppen() {
+    var el = document.getElementById('knoppen');
+    el.innerHTML = '';
+    PARAMS.forEach(function (p) {
+      var eigen = !!state.eigen[p.sleutel];
+      var d = document.createElement('div');
+      d.className = 'knop';
+      d.innerHTML =
+        '<label for="p-' + p.sleutel + '">' + p.sleutel + '</label>' +
+        '<div class="rij"><input id="p-' + p.sleutel + '" type="number" min="0" max="9999" value="' +
+        state.waarden[p.sleutel] + '"><span class="eenheid">' + p.eenheid + '</span></div>' +
+        '<span class="herkomst ' + (eigen ? 'eigen' : 'volgt') + '">' +
+        (eigen ? 'eigen waarde' : (p.volgtNiveau ? 'volgt het niveau' : 'standaard')) + '</span>';
+      el.appendChild(d);
+      d.querySelector('input').addEventListener('input', function (ev) {
+        var n = parseInt(ev.target.value, 10);
+        if (isNaN(n) || n < 0) n = 0;
+        if (n > 9999) n = 9999;
+        state.waarden[p.sleutel] = n;
+        state.eigen[p.sleutel] = true;
+        teken();
+      });
+    });
+  }
+
+  function tekenNiveaus() {
+    [1, 2, 3].forEach(function (n) {
+      var b = document.getElementById('niveau-' + n);
+      b.setAttribute('aria-pressed', String(state.niveau === n));
+    });
+    var aan = NIVEAUS[state.niveau].aan;
+    document.getElementById('niveau-uitleg').textContent =
+      'CTA ' + aan.join(', ') + ' staan aan.';
+  }
+
+  function teken() {
+    tekenNiveaus();
+    tekenKnoppen();
+
+    var lijst = bouwSituaties();
+    var avond = document.getElementById('avond');
+    avond.innerHTML = '';
+    var door = 0, stop = 0, vraag = 0;
+    var log = [];
+
+    lijst.forEach(function (s, i) {
+      var klasse = s.besluit.verstuur ? 'door' : (s.besluit.vraag ? 'vraag' : 'stop');
+      if (s.besluit.verstuur) door++; else if (s.besluit.vraag) vraag++; else stop++;
+
+      var woord = s.besluit.verstuur
+        ? (s.lg ? 'naar de LG' : 'verstuurd')
+        : (s.besluit.vraag ? s.besluit.reden : 'tegengehouden — ' + s.besluit.reden);
+
+      var d = document.createElement('div');
+      d.className = 'situatie';
+      d.innerHTML =
+        '<div class="wat"><span class="nr">' + (i + 1) + '</span><p class="tekst">' + s.tekst + '</p></div>' +
+        '<div class="oordeel"><span class="pil ' + klasse + '">' + woord + '</span>' +
+        '<span class="par">' + s.par + '</span></div>' +
+        '<p class="uitleg">' + s.uitleg + '</p>';
+      avond.appendChild(d);
+
+      if (s.besluit.loggen !== false) {
+        var status = s.besluit.verstuur ? (s.lg ? 'geen_wijk_naar_lg' : 'enabled') : s.besluit.reden;
+        var wie = s.besluit.verstuur ? (s.lg ? 'M-0001' : 'M-0412') : (s.besluit.reden === 'geen_wijk' ? '' : 'M-0412');
+        log.push({
+          enabled: status === 'enabled',
+          regel: s.ctaNr + ';2026-09-12;19:40:0' + i + ';' + wie + ';' +
+                 (s.tafel === null ? '' : s.tafel) + ';' + status + ';;;'
+        });
+      }
+    });
+
+    document.getElementById('telDoor').textContent = door;
+    document.getElementById('telStop').textContent = stop;
+    document.getElementById('telVraag').textContent = vraag;
+
+    // handy
+    var open = [
+      { nr: 8, naam: 'Ready for dessert', op: 10 },
+      { nr: 1, naam: 'First order', op: 25 },
+      { nr: 6, naam: 'Ready for main', op: 15 },
+      { nr: 10, naam: 'Gast wil betalen', op: 30 }
+    ].filter(function (k) { return staatAan(k.nr); })
+     .sort(function (a, b) { return prioVan(a.nr) - prioVan(b.nr) || a.op - b.op; });
+
+    var kj = document.getElementById('kaartjes');
+    kj.innerHTML = '';
+    open.forEach(function (k, i) {
+      var d = document.createElement('div');
+      d.className = 'kaartje' + (i >= 3 ? ' wacht' : '');
+      d.innerHTML = '<span class="naam">CTA ' + k.nr + ' · ' + k.naam + '</span>' +
+        '<span class="prio">' + (i >= 3 ? 'wachtrij' : 'zichtbaar') + '</span>';
+      kj.appendChild(d);
+    });
+
+    var lg = document.getElementById('log');
+    lg.innerHTML = '<div class="logkop">cta_nr;datum;tijd;medewerker_id;tafelnr;status;actie;gelezen_sec;response_sec</div>';
+    log.forEach(function (r) {
+      var d = document.createElement('div');
+      if (r.enabled) d.className = 'enabled';
+      d.textContent = r.regel;
+      lg.appendChild(d);
+    });
+  }
+
+  document.getElementById('niveaus').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-niveau]');
+    if (!b) return;
+    zetNiveau(parseInt(b.dataset.niveau, 10), true);
+    teken();
+  });
+
+  zetNiveau(1, true);
+  teken();
+</script>
