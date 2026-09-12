@@ -855,7 +855,9 @@ loopt.
 
 ### §5.13 CTA 13 — Uitnodigen? (voorstel)
 
-> **Voorstel, nog niet besloten.** Peter, 12-09-2026. Zie O17.
+> **Fase 1, maar `disabled`.** Besloten 12-09-2026. De trigger wordt gebouwd en
+> shadow-logt vanaf dag één (§6.3), zodat er cijfers zijn tegen de tijd dat je wilt
+> beslissen of hij aan gaat. Aanzetten kan pas als O18 rond is.
 
 **Doel** Vastleggen welke gasten je in de toekomst wilt uitnodigen, beoordeeld
 door degene die ze de hele avond heeft bediend.
@@ -925,7 +927,9 @@ ander doel dan de reservering. Laat toetsen vóór het aan gaat — O18.
 
 ### §5.14 CTA 14 — Wervingskaartje (voorstel)
 
-> **Voorstel, nog niet besloten.** Peter, 12-09-2026. Zie O17.
+> **Fase 1, maar `disabled`.** Besloten 12-09-2026. De trigger wordt gebouwd en
+> shadow-logt vanaf dag één (§6.3). Blijkt hij één keer per week te vuren, dan
+> gaat hij er weer uit (§2.13).
 
 **Doel** Personeelswerving onder gasten die in de buurt wonen. De CTA is het
 zetje om het wervingskaartje te geven en te vragen of ze nog iemand kennen.
@@ -1227,9 +1231,9 @@ misging.
 "Stil" (§4.3) gebruikt geen eigen drempel maar `cta7_inactief_drempel` (§7.2) —
 dezelfde grens die bepaalt wanneer CTA 7 vuurt. Eén getal, één betekenis.
 
-### §7.7 Voorgestelde CTA's 13 en 14
+### §7.7 CTA's 13 en 14
 
-Horen bij §5.13 en §5.14, die nog niet besloten zijn (O17).
+Horen bij §5.13 en §5.14. Beide gebouwd in fase 1, beide op `disabled`.
 
 | Parameter | Default | Wat |
 |---|---|---|
@@ -1239,8 +1243,12 @@ Horen bij §5.13 en §5.14, die nog niet besloten zijn (O17).
 | `cta14_postcodes` | leeg | Lijst 4-cijferige postcodes die als "uit de buurt" gelden. Per locatie in de backend (§11.3). Leeg = CTA 14 vuurt nooit |
 | `cta14_moment` | TODO (O17) | Wanneer het wervingskaartje wordt voorgesteld |
 
-Beide starten op `disabled` (§2.10) en in CTA-niveau 3 (§2.11): eerst
-shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
+Beide staan op `disabled` (§2.10) en in CTA-niveau 3 (§2.11): eerst shadow-loggen
+hoe vaak ze zouden vuren, dan pas beslissen of ze aan gaan.
+
+De shadow-log is de reden dat ze nú gebouwd worden en niet later. Op `disabled`
+storen ze niemand en kosten ze geen kaartslot, maar de teller loopt wel. Begin je
+er over een half jaar aan, dan begint het meten ook pas dan.
 
 ---
 
@@ -1304,6 +1312,7 @@ shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
 | 12-09-2026 | CTA 11 gaat eerst naar de kelner, niet naar de LG | Die staat er het dichtst bij en lost het meestal zelf op |
 | 12-09-2026 | Beachalert volgt de routing van §3 (wijk), niet een lookup per tafel | Twee routings naast elkaar laten CTA 9 en CTA 1 voor dezelfde tafel bij verschillende kelners landen |
 | 12-09-2026 | `beachalert_events` is de rijkere bron, §6.2 is de projectie ervan | Twee losse logs voor hetzelfde signaal geeft twee waarheden |
+| 12-09-2026 | CTA 13 en 14 worden in fase 1 gebouwd, allebei op `disabled` (§5.13, §5.14) | Op `disabled` storen ze niemand en kosten ze geen kaartslot, maar de shadow-log loopt wel vol. Later beginnen betekent later kunnen beslissen |
 | 12-09-2026 | "Er staat een seater" volgt uit de forecast, niet uit plaatsingen (§4.4, §5.3) | Boven 150 couverts wordt er altijd een seater ingeroosterd. Een roosterfeit is directer dan het afleiden uit gedrag, en het werkt vanaf de eerste tafel van de service |
 | 12-09-2026 | De log bevat het personeelsnummer, niet de naam (§6.2) | Het rapport telt op over vier weken en moet kloppen bij twee dezelfde voornamen of een naamswijziging; de staff-app heeft een sleutel nodig. Herziet het besluit "recordformaat ongewijzigd" op dit ene punt. Bijvangst: geen namen in de analysetabel |
 | 12-09-2026 | "Uit de buurt" (CTA 14) is een lijst postcodes per locatie in de backend; de gastpostcode komt uit de reservering (§5.14) | Geen geocoding en geen externe dienst. Bij een strandlocatie is een straal voor de helft zee en onbereikbaar gebied; een lijst kun je precies snijden |
@@ -1356,7 +1365,6 @@ Geen van deze gaat weg door te meten.
 | O8 | Trillen alleen CTA 1, 2, 3, 9, 10, 11 en 12, zoals nu in §7.4? Dat patroon is nooit apart besloten. | Niets — instelbaar | Oscar |
 | O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport | Peter / kantoor |
 | O21 | Waar komt de forecast vandaan en is hij voor de monitor beschikbaar op het moment dat een tafel geopend wordt (§4.4)? Zonder die koppeling vuurt CTA 3 niet. | CTA 3 | Oscar |
-| O17 | Komen CTA 13 (uitnodigen) en CTA 14 (wervingskaartje) er? De werking ligt vast; alleen het go/no-go staat nog open. | Alleen zichzelf | Peter |
 | O18 | CTA 13 legt een oordeel over een gast vast; CTA 14 gebruikt de postcode voor een ander doel dan de reservering. Grondslag en bewaartermijn laten toetsen vóór invoering. | CTA 13 en 14 | Peter / kantoor |
 
 ### §9.2 IJken — met de shadow-log, niet aan tafel
