@@ -771,8 +771,37 @@ Daarom staat CTA 12 in niveau 1 (§2.11) en niet achteraan in de adoptie-ramp.
 ingelogde medewerker) óf uit een instelling per zaak. Beide paden bestaan; welke
 geldt staat per locatie in `lg_routing` (§7.5).
 
-**Mens-CTA** (§2.15): delivery-check en fallback volgens §2.16. Wat er gebeurt als
-de LG niet bereikbaar is of niet reageert, staat open — O10.
+#### Als de LG niet reageert
+
+**Geen escalatieketen.** Geen tweede LG, geen kantoor, geen doorschuiven. Vijftien
+jaar lang was de oplossing dat iemand ging lopen en hem opzocht. Dat blijft het
+vangnet, en het werkt.
+
+Het systeem doet drie dingen, en die zijn alle drie klein:
+
+1. **De kaart blijft staan.** Hij vervalt niet en staat vooraan op de handy.
+2. **Het tablet meldt het bij een volgende oproep** voor dezelfde plek: "vorige
+   oproep (21:14) is niet opgepakt".
+3. **Het bevestigingsscherm belooft niets.** "Doorgegeven aan de LG", niet "de LG
+   komt eraan".
+
+Punt 2 en 3 zijn er voor het enige dat door dit systeem echt slechter kan worden:
+een melder die stopt met zoeken omdat hij denkt dat het geregeld is. Zonder tablet
+bleef hij kijken. Dat gedrag moeten we niet afleren voor iets dat misschien niet
+aankomt.
+
+**Geen prioriteitsknop.** We kunnen niet weten of een oproep dringend is of onzin,
+en de melder het zelf laten aangeven werkt niet — binnen een week is alles urgent.
+De categorie (§10.4) geeft de LG een hint, verder is het aan hem. Hij kent zijn
+zaak; het systeem niet.
+
+**Eerst meten.** Hoe vaak een oproep niet wordt opgepakt staat in de log (§6.2).
+Blijkt dat vaak te gebeuren, dán is er aanleiding voor een tweede ontvanger — met
+cijfers erbij in plaats van vooraf bedacht (§2.13).
+
+**Mens-CTA** (§2.15): delivery-check en fallback volgens §2.16. Is de handy van de
+LG offline, dan geldt hetzelfde: de melder ziet het bij een volgende oproep, en
+loopt.
 
 ### §5.13 CTA 13 — Uitnodigen? (voorstel)
 
@@ -1160,6 +1189,7 @@ shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
 | 12-09-2026 | CTA 11 gaat eerst naar de kelner, niet naar de LG | Die staat er het dichtst bij en lost het meestal zelf op |
 | 12-09-2026 | Beachalert volgt de routing van §3 (wijk), niet een lookup per tafel | Twee routings naast elkaar laten CTA 9 en CTA 1 voor dezelfde tafel bij verschillende kelners landen |
 | 12-09-2026 | `beachalert_events` is de rijkere bron, §6.2 is de projectie ervan | Twee losse logs voor hetzelfde signaal geeft twee waarheden |
+| 12-09-2026 | Geen escalatieketen als de LG niet reageert (§5.12) | De nullijn is lopen, en dat werkte vijftien jaar. Het systeem voorkomt alleen dat de melder stopt met zoeken omdat hij denkt dat het geregeld is. Eerst meten hoe vaak het misgaat, dan pas bouwen |
 | 12-09-2026 | CTA 12 is geen Beachalert-CTA maar een systeembrede oproep met vier ingangen, waaronder een systeemproduct op de handy (§5.12) | De LG wordt door de bar, de seater, de pas en door kelners gezocht. Eén por vervangt dat zoeken |
 | 12-09-2026 | Een oproep aan de LG wordt nooit tegengehouden; het volume wordt begrensd door samen te voegen (§5.12) | "We kunnen nu de LG niet oproepen" laat de melder alsnog zoeken, met een omweg erbij — dan gebruikt niemand het tablet nog |
 | 12-09-2026 | CTA 11 en 12 staan aan vanaf niveau 1 (§2.11) | Beachalert is de reden dat ze bestaan; twee dode knoppen op het tablet is een halve oplevering. CTA 12 laat bovendien het snelst zien dat het systeem werkt |
@@ -1205,7 +1235,6 @@ verschuiven. Er wordt niet op een open punt gebouwd.
 | O1 | `kelner_idle` op niveau 3 staat in de demo op 3 seconden. Dat lijkt een demo-waarde. Wat is het in productie? | Niveau 3 | Oscar |
 | O8 | Trillen alleen CTA 1, 2, 3, 9 en 10, zoals nu in §7.4? Dat patroon is nooit apart besloten. | Niets — defaults zijn instelbaar | Oscar |
 | O12 | Haalt de LG-routing de leidinggevende uit de devicedata (rol van de ingelogde medewerker) of uit een vaste instelling per zaak? Beide paden worden gebouwd; wat is de default? | CTA 12, en de fallback van §2.16 | Oscar |
-| O10 | Wat gebeurt er als de LG niet bereikbaar is of niet reageert op een oproep (§5.12)? De LG is het eindpunt van elke andere escalatie. | CTA 12 | Peter |
 | O20 | Hoe lang is `cta12_samenvoegvenster` — binnen welke tijd worden oproepen aan dezelfde LG één kaart? | CTA 12 | Oscar |
 | O13 | De zes drempels voor de drukte van een kelner (§7.6). Beter te ijken op een paar weken echte data dan nu te schatten. | Het LG-dashboard (§4.2) | Oscar, na meting |
 | O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport, niet de rest | Peter / kantoor |
@@ -1294,6 +1323,13 @@ de tempo-limiet komen daarna en kunnen de CTA alsnog tegenhouden, mét logregel
 Twee stappen: eerst de locatie (bar/pas, seat, strandbar, eventlocatie), dan
 optioneel een categorie (gast, personeel, technisch, anders) die overgeslagen mag
 worden. Beide komen mee in de kaart van CTA 12.
+
+Is een eerdere oproep voor dezelfde plek niet opgepakt, dan staat dat erbij vóór
+het versturen: *"Vorige oproep (21:14) is niet opgepakt."* Zo weet de melder dat
+hij er beter zelf op af kan lopen (§5.12).
+
+Het bevestigingsscherm zegt **"doorgegeven aan de LG"** en niet "de LG komt
+eraan". Beloof niets wat je niet waarmaakt.
 
 ### §10.5 Wat hier níét in staat
 
