@@ -442,24 +442,6 @@ persoon.
 
 Parameters: §7.6, alle drempels TODO (O13).
 
-### §4.4 Verwachte drukte (forecast)
-
-De forecast is het aantal couverts dat voor een service verwacht wordt. Hij komt
-uit het reserveringssysteem en zegt iets heel anders dan §4.1: niet hoe hard het
-nú loopt, maar hoeveel er is ingekocht en ingeroosterd.
-
-Daarom wordt hij maar voor één ding gebruikt: bepalen of er een **seater**
-ingeroosterd staat (§5.3). Boven `cta3_forecast_min` couverts is dat altijd zo.
-
-**Dit is geen terugkeer van de geschrapte "verwachte drukte".** Dat besluit
-(§8.2, 14-06-2026) ging over werkdruk: een forecast voorspelt niet hoe hard het op
-dat moment loopt, en daarvoor is de order-rate gebruikt. Hier gaat het niet over
-werkdruk maar over bezetting — een roosterfeit, en dat is precies wat een forecast
-wél voorspelt.
-
-De forecast wordt nergens anders voor gebruikt. Zeker niet voor CTA 5 (§5.5), die
-kijkt naar de actuele order-rate.
-
 ### §4.3 "Doet niets meer"
 
 Drie toestanden die uit elkaar gehouden moeten worden, omdat ze een ander gevolg
@@ -483,6 +465,24 @@ Twee dingen tellen mee als bezig zijn:
 
 De fail-safe van §5.7 blijft gelden: geen antwoord op CTA 7 betekent nooit
 automatisch uit het overzicht.
+
+### §4.4 Verwachte drukte (forecast)
+
+De forecast is het aantal couverts dat voor een service verwacht wordt. Hij komt
+uit het reserveringssysteem en zegt iets heel anders dan §4.1: niet hoe hard het
+nú loopt, maar hoeveel er is ingekocht en ingeroosterd.
+
+Daarom wordt hij maar voor één ding gebruikt: bepalen of er een **seater**
+ingeroosterd staat (§5.3). Boven `cta3_forecast_min` couverts is dat altijd zo.
+
+**Dit is geen terugkeer van de geschrapte "verwachte drukte".** Dat besluit
+(§8.2, 14-06-2026) ging over werkdruk: een forecast voorspelt niet hoe hard het op
+dat moment loopt, en daarvoor is de order-rate gebruikt. Hier gaat het niet over
+werkdruk maar over bezetting — een roosterfeit, en dat is precies wat een forecast
+wél voorspelt.
+
+De forecast wordt nergens anders voor gebruikt. Zeker niet voor CTA 5 (§5.5), die
+kijkt naar de actuele order-rate.
 
 ---
 
