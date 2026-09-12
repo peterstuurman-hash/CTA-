@@ -1021,6 +1021,17 @@ Elk getal hieronder is **per locatie instelbaar** en wordt beheerd door kantoor
 (§11.3). Wat er staat is de waarde waarmee een zaak begint als er niets is
 ingesteld — een startwaarde, geen vastgesteld beleid.
 
+**Twee niveaus, en dat is een mechanisme en geen formaliteit.** In de backend
+draait één systeembrede standaard; een locatie kan daarvan afwijken. Een zaak die
+niets instelt volgt de standaard, en blijft die volgen: wordt de standaard later
+gewijzigd, dan werkt dat bij haar door. Een zaak die wél een eigen waarde heeft
+gezet, blijft daarbij tot iemand hem terugzet.
+
+Het beheerscherm moet dat verschil tonen. "Volgt de standaard (1800)" is iets
+anders dan "eigen waarde: 1800", ook al staat er hetzelfde getal. Zonder dat
+onderscheid weet niemand waarom een wijziging aan de standaard bij vier zaken
+werkte en bij drie niet.
+
 Daarom staat er bij elk getal een **herkomst**. Drie soorten:
 
 | Herkomst | Betekenis |
@@ -1239,7 +1250,7 @@ shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
 | 12-09-2026 | CTA 9 en 10 krijgen geen levensduur (§5.9) | Ze staan vooraan in de prio en vallen daardoor op. Het gevolg — geen tweede signaal als de kelner niet reageert — is aanvaard |
 | 12-09-2026 | Bevestigd: `cta2_postpone_time` en `cta2_max_levensduur` zijn vervallen (§7.3) | `WAIT` reset dezelfde sleep-timer en CTA 2 is terugkerend zonder eigen levensduur |
 | 12-09-2026 | Recordformaat (§6.2) blijft ongewijzigd, zonder locatie, wijk of ticket | Locatie volgt uit de backend die de regel schrijft. De beperkingen staan in §6.2 zodat er geen dashboard wordt beloofd dat er niet uit te halen is |
-| 12-09-2026 | Status blijft "Concept" tot de fase-1-punten uit §9.1 beantwoord zijn | Tot die tijd blijft de juni-uitleg formeel leidend voor gedrag (§1.1) |
+| 12-09-2026 | Status blijft "Concept" tot de beleidspunten uit §9.1 beantwoord zijn | Tot die tijd blijft de juni-uitleg formeel leidend voor gedrag (§1.1) |
 | 12-09-2026 | De juni-uitleg krijgt een waarschuwing bovenaan in plaats van een inhoudelijke correctie | Hij wordt in één keer bijgewerkt zodra §9.1 rond is, in plaats van twee keer |
 | 12-09-2026 | Alle bronnen van CTA's gaan door één poort in onze backend (§2.15) | Een bron die de poort omzeilt is een tweede meldingssysteem naar dezelfde handy zonder gedeelde rem |
 | 12-09-2026 | Onderscheid systeem-CTA (1–8) en mens-CTA (9–12) (§2.15) | Bij een systeem-CTA heeft niemand iets gemist als hij vervalt; bij een mens-CTA staat er iemand te wachten die het al gemeld heeft |
@@ -1249,6 +1260,7 @@ shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
 | 12-09-2026 | CTA 11 gaat eerst naar de kelner, niet naar de LG | Die staat er het dichtst bij en lost het meestal zelf op |
 | 12-09-2026 | Beachalert volgt de routing van §3 (wijk), niet een lookup per tafel | Twee routings naast elkaar laten CTA 9 en CTA 1 voor dezelfde tafel bij verschillende kelners landen |
 | 12-09-2026 | `beachalert_events` is de rijkere bron, §6.2 is de projectie ervan | Twee losse logs voor hetzelfde signaal geeft twee waarheden |
+| 12-09-2026 | Eén systeembrede standaard, per locatie te overschrijven; het beheerscherm toont het verschil (§7.0) | Een zaak die niets instelt volgt de standaard en blijft dat doen. Zonder dat onderscheid zichtbaar te maken snapt niemand waarom een wijziging bij vier zaken werkt en bij drie niet |
 | 12-09-2026 | Getallen in §7 zijn startwaarden, geen besluiten; ijken gebeurt op de shadow-log (§7.0) | Negen van de vijftien open punten waren "welk getal". Meten met CTA's op `disabled` kost niets en levert een beter fundament dan een schatting aan tafel |
 | 12-09-2026 | Een oproep gaat naar álle ingelogde LG's; de eerste die `GO` drukt pakt hem (§5.12) | Bij een oproep maakt het niet uit wie er komt, als er maar iemand komt. Uitzondering op §2.2, die over tafel-CTA's gaat |
 | 12-09-2026 | De LG komt uit de devicedata, met de vaste instelling per zaak als vangnet (§5.12) | Volgt de dienst vanzelf, en valt niet stil als er niemand is ingelogd |
