@@ -50,11 +50,12 @@ in geïmplementeerd.
 - `docs/oscar_CTA_uitleg.html` verwijst in de voettekst naar `oscar_cta_specs.md`.
   Dat is dit bestand; tot 12-09-2026 bestond het niet.
 - `Oscar_CTAs.pdf` zit niet in de repo. Hij is aangeleverd als los bestand.
-- `docs/oscar_CTA_uitleg.html` **loopt achter** op §2.3 (prio-volgorde met een
-  CTA 4 erin), §2.14 (promo als CTA genummerd) en §6.3 (kent alleen `disabled`).
-  Er staat sinds 12-09-2026 een waarschuwing bovenaan dat document. De inhoud
-  wordt bijgewerkt zodra de punten uit §9.1 beantwoord zijn; `oscar_CTA_uitleg.pdf`
-  moet dan opnieuw gegenereerd worden uit de HTML.
+- `docs/oscar_CTA_uitleg.html` en de PDF ernaast zijn van juni 2026 en op veel
+  punten achterhaald: CTA 11 t/m 14 ontbreken, CTA 4 staat er nog als CTA, de
+  trigger van CTA 3 is veranderd, en routing, escalatie en logging zijn
+  uitgebreid. Er staat sinds 12-09-2026 een waarschuwing bovenaan. Ze worden in
+  één keer herschreven zodra §9.1 leeg is. De PDF wordt uit de HTML gegenereerd
+  met headless Chrome (`--print-to-pdf`, zonder header en footer).
 
 ### §1.4 Markeringen
 
