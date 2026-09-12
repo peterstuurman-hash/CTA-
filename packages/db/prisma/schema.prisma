@@ -1,0 +1,418 @@
+// Oscar CTA-backend — datamodel
+//
+// Leidend: oscar_cta_specs.md in de root van deze repo. Verwijzingen als
+// "SPEC §x.y" wijzen daarheen. Wat hier staat en daar niet, hoort daar eerst
+// te worden opgeschreven (SPEC §11.2).
+//
+// Wat hier NIET in staat, en bewust niet:
+//   - tafels, tickets, orderregels    → van de POS, via PosMonitor
+//   - wijken en eigenaarschap         → draait al bij Oscar, via RoutingSource
+//   - handy's en ingelogde mensen     → devicedata, via DeviceStatusSource
+//   - het tablet zelf                 → eigen repo (Beachalert)
+//
+// De mock-tabellen onderaan bestaan alleen om de adapters tegen te draaien tot
+// de echte schema's er zijn.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// 1. Locaties
+// ---------------------------------------------------------------------------
+
+model Locatie {
+  id     String  @id @default(cuid())
+  slug   String  @unique
+  naam   String
+  actief Boolean @default(true)
+
+  /// Adoptie-ramp. SPEC §2.11.
+  ctaNiveau Int @default(1)
+
+  overrides  ParameterOverride[]
+  ctaStatus  CtaStatus[]
+  signalen   Signaal[]
+  ctaRegels  CtaLog[]
+
+  aangemaaktOp DateTime @default(now())
+  gewijzigdOp  DateTime @updatedAt
+
+  @@map("locaties")
+}
+
+// ---------------------------------------------------------------------------
+// 2. Instellingen — één standaard, per locatie te overschrijven (SPEC §7.0)
+// ---------------------------------------------------------------------------
+
+/// De catalogus van alle instelbare waarden. Eén rij per parameter uit SPEC §7.
+///
+/// `standaardwaarde` is wat er systeembreed draait. Een locatie zonder
+/// override volgt die, en blijft die volgen als hij hier wordt gewijzigd.
+model ParameterDefinitie {
+  sleutel String @id
+
+  type            ParameterType
+  /// De systeembrede standaard, als tekst opgeslagen en gelezen volgens `type`.
+  standaardwaarde String
+  eenheid         String?
+  omschrijving    String
+  /// Waar hij in de spec staat, bijv. "§7.2". Zodat een beheerscherm kan
+  /// doorverwijzen naar het waarom in plaats van alleen het getal te tonen.
+  specParagraaf   String
+  /// SPEC §7.0: maart 2026 / besluit / startwaarde.
+  herkomst        ParameterHerkomst
+
+  overrides   ParameterOverride[]
+  wijzigingen ParameterWijziging[]
+
+  gewijzigdOp DateTime @updatedAt
+
+  @@map("parameter_definities")
+}
+
+enum ParameterType {
+  GEHEEL_GETAL
+  TEKST
+  JA_NEE
+  /// Lijst van tekstwaarden, bijv. de postcodes van CTA 14.
+  LIJST
+}
+
+enum ParameterHerkomst {
+  MAART_2026
+  BESLUIT
+  STARTWAARDE
+}
+
+/// Een locatie die afwijkt van de standaard.
+///
+/// **Het bestaan van deze rij is het verschil.** Geen rij = "volgt de standaard";
+/// wél een rij = "eigen waarde", ook als het getal toevallig gelijk is. Het
+/// beheerscherm moet dat onderscheid tonen (SPEC §7.0), anders snapt niemand
+/// waarom een wijziging aan de standaard bij vier zaken doorwerkt en bij drie
+/// niet.
+model ParameterOverride {
+  locatieId String
+  locatie   Locatie            @relation(fields: [locatieId], references: [id], onDelete: Cascade)
+  sleutel   String
+  definitie ParameterDefinitie @relation(fields: [sleutel], references: [sleutel], onDelete: Cascade)
+
+  waarde String
+
+  aangemaaktOp DateTime @default(now())
+  gewijzigdOp  DateTime @updatedAt
+
+  @@id([locatieId, sleutel])
+  @@map("parameter_overrides")
+}
+
+/// Elke wijziging aan een instelling: wat, van welke waarde naar welke, door wie
+/// en wanneer. SPEC §11.3.
+///
+/// Zonder dit is een verandering in de logs niet te verklaren — je ziet dat
+/// CTA 2 ineens vaker vuurt en weet niet dat iemand de drempel halveerde.
+model ParameterWijziging {
+  id        String             @id @default(cuid())
+  sleutel   String
+  definitie ParameterDefinitie @relation(fields: [sleutel], references: [sleutel])
+  /// Leeg = de systeembrede standaard is gewijzigd.
+  locatieId String?
+
+  vanWaarde  String?
+  naarWaarde String?
+  /// Personeelsnummer, net als in de log. SPEC §6.2.
+  doorMedewerkerId String
+  toelichting      String?
+
+  op DateTime @default(now())
+
+  @@index([sleutel, op])
+  @@index([locatieId, op])
+  @@map("parameter_wijzigingen")
+}
+
+/// Status van één CTA voor één locatie. SPEC §2.10.
+/// Wordt overschreven zodra er een CTA-niveau wordt ingesteld (SPEC §2.11).
+model CtaStatus {
+  locatieId String
+  locatie   Locatie @relation(fields: [locatieId], references: [id], onDelete: Cascade)
+  ctaNr     Int
+
+  status       CtaStatusWaarde @default(ENABLED)
+  blockByBusy  Boolean         @default(true)
+  vibratie     Boolean         @default(false)
+
+  gewijzigdOp DateTime @updatedAt
+
+  @@id([locatieId, ctaNr])
+  @@map("cta_status")
+}
+
+enum CtaStatusWaarde {
+  /// Pushen, tonen, loggen.
+  ENABLED
+  /// Niet tonen, wél loggen bij elke keer dat hij zou afgaan (shadow).
+  DISABLED
+  /// Niets: niet tonen, niet loggen.
+  DELETED
+}
+
+// ---------------------------------------------------------------------------
+// 3. Signalen van buiten (mens-CTA's) — SPEC §2.15
+// ---------------------------------------------------------------------------
+
+/// Een commando van een externe bron: het vloertablet, straks de seating-app of
+/// het dashboard. De poort beslist wat ermee gebeurt.
+///
+/// `id` is wat de bron terugkrijgt als `poortSignaalId`, zodat beide kanten
+/// later aan elkaar te knopen zijn.
+model Signaal {
+  id        String  @id @default(cuid())
+  locatieId String
+  locatie   Locatie @relation(fields: [locatieId], references: [id])
+
+  bron      SignaalBron
+  /// Alleen bij bron TABLET.
+  deviceKey String?
+  /// Alleen als de ingang de ingelogde medewerker kent. Personeelsnummer.
+  melderMedewerkerId String?
+
+  actie   SignaalActie
+  /// Leeg bij ROEP_LG.
+  tafelnr Int?
+
+  lgLocatie   String?
+  lgCategorie String?
+
+  /// De melder had een waarschuwing gezien en koos toch te versturen.
+  doorgedrukt Boolean @default(false)
+
+  uitkomst    PoortUitkomst
+  weigerReden String?
+  /// Tegen welk eerder signaal ontdubbeld is. SPEC §10.3.
+  dedupeVanId String?
+  dedupeVan   Signaal?  @relation("Dedupe", fields: [dedupeVanId], references: [id])
+  dedupeHits  Signaal[] @relation("Dedupe")
+
+  ctas CtaLog[]
+
+  op DateTime @default(now())
+
+  @@index([locatieId, tafelnr, actie, op])
+  @@index([locatieId, op])
+  @@map("signalen")
+}
+
+enum SignaalBron {
+  TABLET
+  SEATING_APP
+  DASHBOARD
+  /// Systeemproduct op de handy, binnengekomen via de POS. SPEC §5.12.
+  HANDY_POS
+}
+
+enum SignaalActie {
+  WIL_BESTELLEN
+  WIL_AFREKENEN
+  CHECK_BESTELLING
+  ROEP_LG
+}
+
+enum PoortUitkomst {
+  AANGENOMEN
+  AANGENOMEN_NAAR_LG
+  ONBEKENDE_TAFEL
+  TAFEL_NIET_OPEN
+  AL_GEMELD
+  RECENT_BESTELD
+  GEWEIGERD
+}
+
+// ---------------------------------------------------------------------------
+// 4. De log — SPEC §6
+// ---------------------------------------------------------------------------
+
+/// Eén regel per keer dat een CTA naar een handy ging, óf zou zijn gegaan.
+///
+/// Recordformaat SPEC §6.2:
+///   cta_nr;datum;tijd;medewerker_id;tafelnr;status;actie;gelezen_sec;response_sec
+///
+/// Let op: geen namen. `medewerkerId` is het personeelsnummer; de naam wordt
+/// erbij opgezocht op het moment van tonen.
+model CtaLog {
+  id        String  @id @default(cuid())
+  locatieId String
+  locatie   Locatie @relation(fields: [locatieId], references: [id])
+
+  ctaNr Int
+  /// Leeg bij CTA 7 en CTA 12 — die hangen niet aan een tafel.
+  tafelnr Int?
+  /// Leeg bij GEEN_WIJK: er was niemand om naar te routeren.
+  medewerkerId String?
+
+  /// Waarom deze regel bestaat: getoond, of tegengehouden en waarom. SPEC §6.3.
+  status LogStatus
+  /// De ingedrukte knop, of "vervallen" / "auto_close" / "ingetrokken".
+  actie  String?
+
+  /// Alleen bij een mens-CTA uit een extern signaal. SPEC §2.15.
+  signaalId String?
+  signaal   Signaal? @relation(fields: [signaalId], references: [id])
+
+  /// Hoeveelste poging in de fallback-volgorde. 1 = de eigenaar. SPEC §2.16.
+  poging Int        @default(1)
+  reden  RouteReden @default(EIGENAAR)
+
+  // Vier momenten. SPEC §6.4.
+  gepushtOp     DateTime  @default(now())
+  afgeleverdOp  DateTime?
+  gelezenOp     DateTime?
+  beantwoordOp  DateTime?
+
+  /// Afgeleid uit de momenten hierboven, voor eenvoudige rapportage.
+  gelezenSec  Int?
+  responseSec Int?
+
+  /// Het record aan de WaiterPro-kant, als het zover kwam.
+  /// TODO: koppel aan bestaand schema.
+  transportId String?
+
+  @@index([locatieId, gepushtOp])
+  @@index([locatieId, ctaNr, gepushtOp])
+  @@index([medewerkerId, gepushtOp])
+  @@index([locatieId, tafelnr, gepushtOp])
+  @@map("cta_log")
+}
+
+enum LogStatus {
+  /// Getoond, en afgehandeld of vervallen.
+  ENABLED
+  /// De CTA staat uit voor deze locatie — shadow-log.
+  DISABLED
+  /// De kelner deed net iets. SPEC §2.7.
+  BUSY
+  /// De tempo-limiet van het venster was vol. SPEC §2.8.
+  TEMPO
+  /// Geen eigenaar; systeem-CTA, dus vervallen. SPEC §3.4.
+  GEEN_WIJK
+  /// Geen eigenaar; mens-CTA, dus doorgestuurd naar de LG.
+  GEEN_WIJK_NAAR_LG
+  /// Handy offline of uitgelogd; naar de volgende in de fallback. SPEC §2.16.
+  OFFLINE_FALLBACK
+  /// Geen bevestiging binnen de timeout. SPEC §2.16 stap 3.
+  NIET_AFGELEVERD
+}
+
+enum RouteReden {
+  EIGENAAR
+  ZONE_COLLEGA
+  LG_GEEN_EIGENAAR
+  LG_ESCALATIE
+  LG_VIA_KNOP
+  LG_DIRECT
+}
+
+// ===========================================================================
+// MOCK-TABELLEN
+//
+// TODO: koppel aan bestaand schema.
+//
+// Alleen om de adapters tegen te draaien tot de echte schema's van de POS-,
+// device- en CTA-tabellen bekend zijn. Geen applicatiecode raakt ze
+// rechtstreeks aan: dat gaat altijd via de interfaces in packages/cta.
+// ===========================================================================
+
+/// TODO: koppel aan bestaand schema.
+model MockTafel {
+  id        String @id @default(cuid())
+  locatieId String
+  tafelnr   Int
+
+  geseat        Boolean   @default(false)
+  geseatOp      DateTime?
+  reserveringId String?
+  /// Alleen om te tonen; nooit opslaan in cta_log. SPEC §6.2.
+  reserveringNaam String?
+  couverts      Int?
+
+  ticketId              String?
+  laatsteOrderOp        DateTime?
+  laatsteKelnerActieOp  DateTime?
+  voorgerechtOp         DateTime?
+  hoofdgerechtGefiredOp DateTime?
+  rekeningAangeslagenOp DateTime?
+  geslotenOp            DateTime?
+
+  gewijzigdOp DateTime @updatedAt
+
+  @@unique([locatieId, tafelnr])
+  @@map("mock_tafels")
+}
+
+/// TODO: koppel aan bestaand schema.
+model MockOrderRegel {
+  id            String   @id @default(cuid())
+  locatieId     String
+  tafelnr       Int
+  ticketId      String?
+  omschrijving  String
+  aantal        Int      @default(1)
+  bedragCent    Int      @default(0)
+  medewerkerId  String?
+  aangeslagenOp DateTime @default(now())
+
+  @@index([locatieId, tafelnr, aangeslagenOp])
+  @@map("mock_order_regels")
+}
+
+/// TODO: koppel aan bestaand schema.
+model MockHandy {
+  id           String    @id @default(cuid())
+  locatieId    String
+  handyId      String    @unique
+  medewerkerId String?
+  /// "kelner", "lg", "seater", "runner".
+  rol          String?
+  online       Boolean   @default(false)
+  batterijPct  Int?
+  laatstGezienOp DateTime?
+
+  @@index([locatieId, medewerkerId])
+  @@map("mock_handys")
+}
+
+/// TODO: koppel aan bestaand schema.
+/// Wie welke wijk bezit — draait in werkelijkheid al bij Oscar. SPEC §3.
+model MockWijkEigenaar {
+  id           String @id @default(cuid())
+  locatieId    String
+  wijk         String
+  tafelVan     Int
+  tafelTot     Int
+  medewerkerId String?
+
+  gewijzigdOp DateTime @updatedAt
+
+  @@unique([locatieId, wijk])
+  @@index([locatieId, tafelVan, tafelTot])
+  @@map("mock_wijk_eigenaren")
+}
+
+/// TODO: koppel aan bestaand schema.
+/// Verwachte couverts per service. SPEC §4.4.
+model MockForecast {
+  id        String   @id @default(cuid())
+  locatieId String
+  datum     DateTime @db.Date
+  service   String
+  couverts  Int
+
+  @@unique([locatieId, datum, service])
+  @@map("mock_forecast")
+}

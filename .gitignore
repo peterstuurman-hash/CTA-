@@ -11,3 +11,12 @@ desktop.ini
 
 # archieven
 *.zip
+
+# backend (apps/ en packages/) — de demo aan de root blijft door GitHub Pages geserveerd
+node_modules/
+.next/
+dist/
+.turbo/
+*.tsbuildinfo
+.env
+.env.local

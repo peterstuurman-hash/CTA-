@@ -302,6 +302,55 @@ geëscaleerd is. Hij heeft "verzonden" gezien en loopt door. Dat is aanvaardbaar
 omdat de escalatie bij de LG landt, die kan handelen — maar het betekent dat een
 runner niet weet dat hij er nog een keer langs moet.
 
+### §2.17 Het contract met een bron
+
+Een bron praat op precies drie manieren met de poort. Deze paragraaf is de
+**normatieve** definitie: de backend en het vloertablet staan in verschillende
+repo's, en beide implementaties zijn hiervan afgeleid — niet van elkaar. Wijkt
+code hiervan af, dan is dat een fout in die code (§1.1).
+
+**1 · Welke acties staan aan?** Antwoord: de lijst signaal-acties die voor deze
+locatie `enabled` zijn (§2.10). Een bron toont alleen die knoppen.
+
+**2 · Wie heeft deze tafel?** Antwoord: bestaat de tafel, en de naam van de
+huidige ontvanger. Alleen om te tonen; bij het versturen bepaalt de poort
+opnieuw wie het wordt (§10.2).
+
+**3 · Neem dit signaal aan.**
+
+| Veld | Wat |
+|---|---|
+| `locatie` | Welke zaak |
+| `bron` | `tablet` · `seating_app` · `dashboard` · `handy_pos` |
+| `device` | Alleen bij een tablet |
+| `melder` | Personeelsnummer, als de ingang de ingelogde medewerker kent |
+| `actie` | `wil_bestellen` · `wil_afrekenen` · `check_bestelling` · `roep_lg` |
+| `tafelnr` | Leeg bij `roep_lg` |
+| `lg_locatie`, `lg_categorie` | Alleen bij `roep_lg` (§10.4) |
+| `doorgedrukt` | De melder zag een waarschuwing en koos toch te versturen |
+
+Het antwoord bevat de **uitkomst**, de naam van de ontvanger als er een is, het
+**signaal-id** waarmee de bron zijn eigen registratie aan de onze kan knopen, en
+bij `al_gemeld` het tijdstip van de vorige melding.
+
+| Uitkomst | Wat de bron toont |
+|---|---|
+| `aangenomen` | "Verzonden naar Rutger" |
+| `aangenomen_naar_lg` | "Geen kelner op deze tafel — doorgegeven aan de LG" |
+| `onbekende_tafel` | Tafelnummer bestaat niet in deze zaak |
+| `tafel_niet_open` | Nummer klopt, tafel is niet geseat |
+| `al_gemeld` | "Al doorgegeven aan Rutger (2 min geleden)" + toch doorgeven |
+| `recent_besteld` | "Zojuist besteld — toch doorgeven?" |
+| `geweigerd` | Eigen tekst bij de meegestuurde reden |
+
+Bij `geweigerd` stuurt de poort een **code** en geen zin: `cta_uit`, `te_druk`,
+`tempo_vol` of `anders`. De bron schrijft zelf de tekst, zodat er nooit iets over
+de motor op een scherm komt dat een gast kan zien (§11.4). Een code die de bron
+niet kent, valt terug op een neutrale zin.
+
+Is de poort onbereikbaar, dan is dat geen uitkomst maar een storing: de bron toont
+een handelingsperspectief en belooft niets.
+
 ---
 
 ## §3 Kelnerselectie (routing)
