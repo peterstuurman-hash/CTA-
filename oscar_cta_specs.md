@@ -872,6 +872,7 @@ Deze staan per locatie in, net als §7.1 en §7.2.
 | 12-09-2026 | CTA 11 gaat eerst naar de kelner, niet naar de LG | Die staat er het dichtst bij en lost het meestal zelf op |
 | 12-09-2026 | Beachalert volgt de routing van §3 (wijk), niet een lookup per tafel | Twee routings naast elkaar laten CTA 9 en CTA 1 voor dezelfde tafel bij verschillende kelners landen |
 | 12-09-2026 | `beachalert_events` is de rijkere bron, §6.2 is de projectie ervan | Twee losse logs voor hetzelfde signaal geeft twee waarheden |
+| 12-09-2026 | Beachalert geeft alleen een commando af — tafelnummer plus soort actie (§10.1) | Eén centrale applicatie bepaalt alle CTA's. Routing, dedupe, remmen, escalatie en levering horen daar, niet in een tablet-app. Welke applicatie dat wordt, wordt later bepaald |
 
 ### §8.3 Nog niet gebouwd
 
@@ -925,6 +926,11 @@ een tafelnummer intoetst en met één tap een signaal doorgeeft. Het is **geen e
 meldingssysteem**: het is een bron van mens-CTA's (§2.15) die door dezelfde poort
 gaat als alle andere.
 
+**Beachalert beslist niets.** Hij geeft één commando af — tafelnummer plus soort
+actie — en toont wat de poort antwoordt. Routing, dedupe, de remmen, escalatie en
+levering zitten allemaal in de poort, niet in het tablet. Zo blijft er één plek
+waar bepaald wordt of er een CTA komt, ook als er straks meer bronnen bij komen.
+
 | Actie op het tablet | Wordt |
 |---|---|
 | Wil bestellen | CTA 9 (§5.9) |
@@ -938,7 +944,10 @@ Na het intoetsen toont het tablet direct het tafelnummer plus de naam van de kel
 die de tafel heeft, zodat de melder ziet waar het heen gaat: "→ verzonden naar
 Rutger". Cache maximaal `lookup_cache` — een wijkwissel moet snel doorkomen.
 
-De lookup gebruikt de routing uit §3: de eigenaar van de wijk waarin de tafel valt.
+Het tablet **vraagt** die naam op bij de poort en leidt hem nergens uit af. De
+lookup zelf gebruikt de routing uit §3: de eigenaar van de wijk waarin de tafel
+valt. Bij het daadwerkelijk versturen bepaalt de poort opnieuw wie het wordt — de
+getoonde naam is een weergave, geen afspraak.
 
 **Dit wijkt af van de opdracht.** Die beschrijft een lookup per tafel — "wie heeft
 de tafel open of aangeslagen". Dat geeft een andere uitkomst dan §3.2, waar
@@ -959,10 +968,15 @@ geteld.
 `recente_order_venster` geleden op die tafel aangeslagen, dan eerst "zojuist besteld
 — toch doorgeven?" vóór er iets wordt weggeschreven.
 
-Beide zitten **vóór** de poort (§2.15): ze voorkomen dat er een CTA ontstaat, en
-verschijnen dus niet in de CTA-log van §6.2 — wel in `beachalert_events` (§10.5).
-De remmen ín de poort — block by busy, tempo-limiet — komen daarna en kunnen de CTA
-alsnog tegenhouden, mét logregel (§6.3).
+**Beide beslissingen zitten in de poort, niet in het tablet** (§10.1). Het tablet
+stuurt zijn commando, krijgt terug dat er al gemeld is of dat er net besteld is,
+toont dat, en stuurt bij "toch doorgeven" hetzelfde commando opnieuw met een vlag
+dat de melder de waarschuwing heeft gezien.
+
+Ze komen vóór de remmen: ze voorkomen dat er een CTA ontstaat, en verschijnen dus
+niet in de CTA-log van §6.2 — wel in `beachalert_events` (§10.5). Block by busy en
+de tempo-limiet komen daarna en kunnen de CTA alsnog tegenhouden, mét logregel
+(§6.3).
 
 ### §10.4 Roep LG
 
