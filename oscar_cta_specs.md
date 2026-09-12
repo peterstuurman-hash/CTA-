@@ -752,6 +752,13 @@ dan is dat een fout in dit document.
 
 CTA 9 en 10 hebben geen parameters — zie §5.9. De promo-permissie (§2.14) ook niet.
 
+**Let op bij `cta1_check_delay` en `cta2_sleep_threshold`.** Die twee komen uit de
+maart-PDF en zijn sindsdien nooit herbevestigd. Ze bepalen samen hoe opdringerig
+het systeem aanvoelt: 120 seconden na seaten is kort, en 1800 seconden zonder
+kelner-actie is lang. In de gesprekken van 12-09-2026 vielen 360 en 900 als
+voorbeeld — niet als besluit. Herijk ze vóór de eerste locatie live gaat, met de
+shadow-log (§6.3) als grondslag in plaats van een schatting.
+
 ### §7.3 Vervallen parameters
 
 Deze stonden in de maart-PDF en gelden niet meer. Ze staan hier zodat niemand ze
@@ -880,9 +887,13 @@ Deze staan per locatie in, net als §7.1 en §7.2.
 
 ### §8.3 Nog niet gebouwd
 
-Beschreven in dit document, niet aanwezig in `index.html`:
+Beschreven in dit document, **niet aanwezig in de demo** `index.html`. Dat zegt
+iets over de demo, niet per se over het productiesysteem — zie de eerste regel.
 
-- Routing (§3) in zijn geheel — de demo kent één kelner en één handy
+- Routing (§3) — **bestaat wél** aan Oscars kant: hij weet met grote zekerheid
+  welke kelner in welke wijk loopt (Peter, 12-09-2026). De demo kent één kelner
+  en één handy, dus daar zit hij niet in. Wat nog niet vastligt zijn de
+  parameters: O2
 - Drukte als gemeten order-rate (§4) — in de demo een handmatige schakelaar
 - De statuslus terug naar de runner-iPad (§5.9, §5.10)
 - De promo-permissie als échte achtergrondregel (§2.14) — in de demo een info-kaartje
