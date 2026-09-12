@@ -114,6 +114,9 @@ volgende CTA uit de wachtrij door. Er is geen wegklikken zonder registratie.
 
 Zonder vertraging, zonder uitzondering.
 
+Dit gaat over CTA's die op dat moment openstaan. Een CTA die ná het sluiten
+ontstaat valt er niet onder — zie CTA 13 (§5.13), die juist op het sluiten wacht.
+
 ### §2.6 Een tafel sluiten is altijd een kelnerbeslissing
 
 Geen enkele CTA en geen enkel systeemproces sluit zelf een tafel.
@@ -723,15 +726,41 @@ staat open — TODO (O10): naar wie escaleert een onbeantwoorde oproep aan de LG
 **Doel** Vastleggen welke gasten je in de toekomst wilt uitnodigen, beoordeeld
 door degene die ze de hele avond heeft bediend.
 
-**Trigger** `cta13_moment` — zie de vraag hieronder.
+**Trigger** `cta13_vertraging` ná het sluiten van het ticket, **en** niet druk
+(§4.1).
 
-**Kaart** `Tafel [nr] — uitnodigen in de toekomst?`
+**Kaart** `Tafel [nr] · vertrokken [tijd] — uitnodigen in de toekomst?`
 
 | Knop | Actie |
 |---|---|
 | `YES` | Markeren als gast die je terug wilt zien. |
 | `MAYBE` | Geen oordeel. Wordt vastgelegd als "weet niet", niet als "nee". |
 | `NO` | Geen uitnodiging. |
+
+#### De flow
+
+Het afrekenen is het ankerpunt, maar de kaart komt er niet tijdens.
+
+| Moment | Wat er gebeurt |
+|---|---|
+| Rekening aangeslagen | Niets. Een openstaande CTA 10 wordt auto-closed (§5.10) |
+| Betaling verwerkt, ticket gesloten | §2.5: alle CTA's van die tafel verdwijnen |
+| Ticket gesloten + `cta13_vertraging` | CTA 13 verschijnt — als het op dat moment niet druk is |
+
+De vertraging is er om één reden: bij het afrekenen staat de kelner met zijn handy
+áán tafel, met de pin in zijn hand. Dat is het slechtste moment om een
+beoordelingsvraag in beeld te hebben. De kaart komt pas als hij is weggelopen.
+
+**Niet tijdens drukte.** Is het druk op het moment dat de kaart zou komen, dan
+wacht hij op een rustig moment, tot uiterlijk `cta13_levensduur` na het sluiten.
+Daarna vervalt hij. Een oordeel dat drie kwartier later gevraagd wordt, gaat over
+een tafel die de kelner zich niet meer scherp herinnert — dan is de vraag stellen
+erger dan hem overslaan.
+
+**De vertrektijd staat op de kaart, de gastnaam niet.** Tafel 3 kan inmiddels
+opnieuw geseat zijn; zonder tijdstip beoordeelt de kelner misschien de verkeerde
+gasten. `vertrokken 21:40` is genoeg om het gezelschap terug te halen, en verraadt
+niets aan wie meekijkt.
 
 `MAYBE` is een nieuwe knop in §2.12. Hij is er omdat "weet niet" en "zeker niet"
 echt verschillende dingen zijn, en omdat een kelner die moet kiezen tussen ja en
@@ -999,7 +1028,8 @@ Horen bij §5.13 en §5.14, die nog niet besloten zijn (O17).
 
 | Parameter | Default | Wat |
 |---|---|---|
-| `cta13_moment` | TODO (O17) | Wanneer de uitnodigen-vraag komt — tijdens of na het bezoek |
+| `cta13_vertraging` | TODO (O17) | Tijd na het sluiten van het ticket voordat de kaart komt |
+| `cta13_levensduur` | TODO (O17) | Hoe lang de vraag nog zinvol is; daarna vervalt hij |
 | `cta13_bewaartermijn` | TODO (O18) | Na hoeveel tijd een `NO` vervalt |
 | `cta14_postcodes` | TODO (O17) | Postcodes of straal die als "uit de buurt" gelden, per locatie |
 | `cta14_moment` | TODO (O17) | Wanneer het wervingskaartje wordt voorgesteld |
