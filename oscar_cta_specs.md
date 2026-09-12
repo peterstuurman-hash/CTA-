@@ -1099,6 +1099,8 @@ shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
 | 12-09-2026 | CTA 11 gaat eerst naar de kelner, niet naar de LG | Die staat er het dichtst bij en lost het meestal zelf op |
 | 12-09-2026 | Beachalert volgt de routing van §3 (wijk), niet een lookup per tafel | Twee routings naast elkaar laten CTA 9 en CTA 1 voor dezelfde tafel bij verschillende kelners landen |
 | 12-09-2026 | `beachalert_events` is de rijkere bron, §6.2 is de projectie ervan | Twee losse logs voor hetzelfde signaal geeft twee waarheden |
+| 12-09-2026 | Het rapport gaat per periode van vier weken, niet per week (§11.6) | Escalaties per kelner per week zijn te kleine getallen om ruis van beweging te onderscheiden. De vier weken staan er los in |
+| 12-09-2026 | De kelner ziet zijn eigen deel op verzoek, via de staff-app (§11.6) | Inzagerecht bestaat sowieso; dit legt vast dat het via een kanaal loopt dat hij al kent |
 | 12-09-2026 | Alle instellingen worden door kantoor beheerd (§11.3) | Eén plek, overal dezelfde getallen. Verschillen tussen zaken komen dan uit de vloer en niet uit de configuratie. Het gevolg — een LG kan in het moment niets — is aanvaard |
 | 12-09-2026 | Beachalert geeft alleen een commando af — tafelnummer plus soort actie (§10.1) | Eén centrale applicatie bepaalt alle CTA's. Routing, dedupe, remmen, escalatie en levering horen daar, niet in een tablet-app. Welke applicatie dat wordt, wordt later bepaald |
 
@@ -1117,7 +1119,7 @@ iets over de demo, niet per se over het productiesysteem — zie de eerste regel
 - De CTA-backend (§11) in zijn geheel: monitor, triggers, poort, transport, log
 - De poort (§2.15) als één doorgang voor alle bronnen
 - Het LG-dashboard met wijk-kleuren (§4.2, §11.4)
-- Het weekrapport (§11.6)
+- Het periodesrapport (§11.6)
 - Levering, fallback en escalatie van mens-CTA's (§2.16)
 - CTA 11 en CTA 12 (§5.11, §5.12) — bestaan alleen op papier
 - Beachalert zelf (§10) — nog geen regel code
@@ -1142,8 +1144,8 @@ verschuiven. Er wordt niet op een open punt gebouwd.
 | O10 | Naar wie escaleert een onbeantwoorde "roep LG" (CTA 12)? De LG is al het eindpunt van elke andere escalatie. | CTA 12, escalatiedeel | Oscar |
 | O11 | Wat zijn de defaults voor CTA 11 en 12 in §7.4 — status, block by busy, vibratie? En in welk CTA-niveau horen ze (§2.11)? | Invoering van Beachalert | Oscar |
 | O13 | De zes drempels voor de drukte van een kelner (§7.6). Beter te ijken op een paar weken echte data dan nu te schatten. | Het LG-dashboard (§4.2) | Oscar, na meting |
-| O15 | Het weekrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het weekrapport, niet de rest | Peter / kantoor |
-| O16 | Wie krijgt het weekrapport — alleen de LG van die zaak, of ook kantoor? En krijgt de kelner zijn eigen deel te zien? | Het weekrapport | Peter |
+| O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport, niet de rest | Peter / kantoor |
+| O19 | De staff-app moet het eigen deel van het periodesrapport kunnen tonen. Welke app is dat, en hoe knopen we de ingelogde medewerker aan de kelner in de CTA-log? | Inzage voor de kelner | Peter |
 | O17 | Komen CTA 13 (uitnodigen) en CTA 14 (wervingskaartje) er, en met welke momenten en drempels? | Alleen zichzelf | Peter |
 | O18 | CTA 13 legt een oordeel over een gast vast; CTA 14 gebruikt de postcode voor een ander doel dan de reservering. Grondslag en bewaartermijn laten toetsen vóór invoering. | CTA 13 en 14 | Peter / kantoor |
 
@@ -1340,7 +1342,7 @@ Daarom gelden voor dit scherm de volgende regels:
 Dit scherm beantwoordt één vraag: **waar moet ik nu heen?** Alles wat die vraag
 niet beantwoordt, hoort er niet op — hoe interessant het ook is.
 
-Wat een kelner over langere tijd nodig heeft, staat in het weekrapport (§11.6).
+Wat een kelner over langere tijd nodig heeft, staat in het periodesrapport (§11.6).
 Dat is een andere vraag, met een ander tempo. Een LG die midden in een service
 "deze kelner heeft training nodig" in beeld krijgt, behandelt het als iets dat nu
 moet, en dat is het niet.
@@ -1363,9 +1365,17 @@ toestand.
 Wat er wél gebeurt: de stilte wordt gelogd, zodat achteraf te zien is waarom er
 een gat in de cijfers zit.
 
-### §11.6 Het weekrapport
+### §11.6 Het periodesrapport
 
-Eén overzicht per zaak, per week, voor de LG: hoe staat het team ervoor.
+Eén overzicht per zaak, per periode van vier weken: hoe staat het team ervoor.
+
+**Waarom niet wekelijks.** Escalaties per kelner per week zijn kleine getallen.
+Van drie naar vijf ziet eruit als zeventig procent meer en is vrijwel zeker ruis.
+Over vier weken staat er genoeg onder om iets te durven zeggen, en het volgt het
+periode-ritme dat er toch al is. Een trainingsgesprek voer je ook niet wekelijks.
+
+De vier weken staan wél apart in het rapport, zodat te zien is of er iets
+veranderde na week twee.
 
 **Escalatie is het signaal.** Een kelner die het niet aankan wordt geholpen — dat
 is wat escalatie doet (§2.16), en dat is meteen de belangrijkste waarneming. Dat
@@ -1380,7 +1390,7 @@ aparte beoordeling, niets wat de kelner niet zelf ook kan navertellen.
 
 - Hoe vaak er geëscaleerd is, per kelner en per wijk
 - Waar het over ging: welke CTA's het vaakst tot een escalatie leidden
-- Wat er beter of slechter ging dan de week ervoor
+- Het verloop over de vier weken, en het verschil met de vorige periode
 - Waarnemingen in gewone taal, met de omstandigheden erbij
 
 #### Vergelijken met wat
@@ -1424,7 +1434,23 @@ Geen ranglijst van slechtste naar beste, geen cijfer achter een naam, geen
 voorspelling over wie gaat uitvallen. Het rapport is een vertrekpunt voor een
 gesprek, niet de uitkomst ervan.
 
-Open: O15 (instemmingsrecht), O16 (wie krijgt het rapport).
+#### Wie het krijgt
+
+| Wie | Wat |
+|---|---|
+| LG van de zaak | Het volledige rapport van zijn team |
+| Kantoor | Alle zaken |
+| Kelner | Zijn eigen deel, **op verzoek**, via de staff-app |
+
+De kelner krijgt het dus niet uit zichzelf, maar kan het opvragen wanneer hij wil.
+Dat vraagt van de staff-app een koppeling naar dit rapport en een manier om de
+ingelogde medewerker aan de kelner in de CTA-log te knopen — zie O19.
+
+Inzagerecht bestaat sowieso; "op verzoek" is dus het minimum en geen gunst. Wat
+hier besloten is, is dat het via een bestaand kanaal loopt dat de kelner al kent,
+in plaats van via een formulier bij kantoor.
+
+Open: O15 (instemmingsrecht), O19 (koppeling staff-app).
 
 ---
 
