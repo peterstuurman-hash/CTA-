@@ -178,13 +178,14 @@
       <button class="small" onclick="scenarioCTA1()">CTA 1 · first order</button>
       <button class="small" onclick="scenarioCTA2()">CTA 2 · sleeping table</button>
       <button class="small" onclick="scenarioCTA3()">CTA 3 · seater actief</button>
-      <button class="small" onclick="scenarioCTA4()">CTA 4 · promo</button>
       <button class="small" onclick="scenarioCTA5()">CTA 5 · offer a coffee</button>
       <button class="small" onclick="scenarioCTA6()">CTA 6 · ready for main</button>
       <button class="small" onclick="scenarioCTA7()">CTA 7 · kelner actief?</button>
       <button class="small" onclick="scenarioCTA8()">CTA 8 · ready for dessert</button>
       <button class="small" onclick="scenarioCTA9()">CTA 9 · wil bestellen</button>
       <button class="small" onclick="scenarioCTA10()">CTA 10 · wil betalen</button>
+      <button class="small" onclick="scenarioCTA11()">CTA 11 · bestelling klopt niet</button>
+      <button class="small" onclick="scenarioCTA12()">CTA 12 · roep LG</button>
     </div>
 
     <h2 style="margin-top:14px;">Overig</h2>
@@ -207,7 +208,7 @@
       <strong>Standaard:</strong> de <b>forceer-knoppen</b> staan centraal — klik een CTA om 'm te tonen. Er verschijnt niets uit zichzelf.
       <br><strong>Tijd-gestuurde flow zien?</strong> Zet <b>Auto-timers aan</b>: seat een tafel → <b>CTA 1</b> (first order);
       sla een <b>voorgerecht</b> aan → na een tijdje <b>CTA 6</b> ("ready for main", GO firet / NO stelt uit, na 2e NO auto-fire),
-      daarna <b>CTA 8</b> ("ready for dessert"). <b>CTA 2</b> (sleeping) keert terug op kelner-actie. <b>CTA 4</b> (promo) draait op de achtergrond.
+      daarna <b>CTA 8</b> ("ready for dessert"). <b>CTA 2</b> (sleeping) keert terug op kelner-actie. De <b>promo-permissie</b> draait op de achtergrond en is geen CTA meer.
       Max 3 kaarten per handy, prio = CTA-nummer.
     </div>
   </div>
@@ -247,21 +248,21 @@ const T = {
   CTA8_AFTER_MAIN: 6,        // na fire hoofdgerecht -> CTA8 (ready for dessert?)
   CTA8_REPUSH: 300,          // CTA8 NO -> komt nog 1x terug na (backend in sec)
   CTA8_MAX: 2,               // max. keer CTA8 per ticket
-  KELNER_IDLE: 3,            // geen CTA's < X sec na laatste kelner-actie
-  CTA_MAX_PER_WINDOW: 6,     // tempo-limiet: max CTA's per venster per handy
-  CTA_WINDOW: 600,           // venster voor tempo-limiet (sec)
+  KELNER_IDLE: 10,           // geen CTA's < X sec na laatste kelner-actie (niveau 3)
+  CTA_MAX_PER_WINDOW: 3,     // tempo-limiet: max CTA's per venster per handy
+  CTA_WINDOW: 900,           // venster voor tempo-limiet (sec) — 3 per 15 min = 12 per uur
 };
 // CTA-niveau (adoptie-ramp): welke CTA's aan + hoe streng de rem
 let currentNiveau = 3;
 let shownTimes = [];   // tijdstippen waarop een CTA daadwerkelijk getoond is (tempo-limiet)
 const NIVEAUS = {
-  1: { aan:[1,4,6,8,9,10],            idle:60, max:1, window:600 },  // introductie: streng
-  2: { aan:[1,2,3,4,6,8,9,10],        idle:20, max:3, window:600 },  // gemiddeld
-  3: { aan:[1,2,3,4,5,6,7,8,9,10],    idle:3,  max:6, window:600 },  // volledig
+  1: { aan:[1,6,8,9,10,11,12],          idle:60, max:1, window:900 },  // introductie: streng
+  2: { aan:[1,2,3,6,8,9,10,11,12],      idle:20, max:2, window:900 },  // gemiddeld
+  3: { aan:[1,2,3,5,6,7,8,9,10,11,12],  idle:10, max:3, window:900 },  // volledig
 };
 function setNiveau(n){
   const cfg = NIVEAUS[n]; if (!cfg) return;
-  for (let t=1; t<=10; t++) status[t] = cfg.aan.includes(t) ? "enabled" : "disabled";
+  ALLE_CTA.forEach(t => status[t] = cfg.aan.includes(t) ? "enabled" : "disabled");
   T.KELNER_IDLE = cfg.idle; T.CTA_MAX_PER_WINDOW = cfg.max; T.CTA_WINDOW = cfg.window;
   currentNiveau = n;
   renderNiveau(); renderSettings();
@@ -308,7 +309,7 @@ function addDbRow(cta_nr, tafelnr, st, actie, resp){
   const datum = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
   const tijd = `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
   const tnr = (tafelnr==null?'-':tafelnr);
-  dbRecords.push({ cta_nr, datum, tijd, kelner:"Peter", tafelnr:tnr, status:st, actie, response_sec:resp });
+  dbRecords.push({ cta_nr, datum, tijd, medewerker_id:"M-0412", tafelnr:tnr, status:st, actie, gelezen_sec:(resp===""?"":Math.min(4,resp)), response_sec:resp });
   const badge = document.getElementById("dbCount");
   if (badge) badge.textContent = dbRecords.length + " in DB";
   renderDbLog();
@@ -317,7 +318,7 @@ function renderDbLog(){
   const el = document.getElementById("dblog"); if (!el) return;
   if (!dbRecords.length){ el.innerHTML = `<div class="small">Nog geen regels — toon/forceer een CTA en handel 'm af.</div>`; return; }
   el.innerHTML = [...dbRecords].slice(-100).reverse().map(r => {
-    let line = `${r.datum} ${r.tijd} · CTA ${r.cta_nr} · tafel ${r.tafelnr} · ${r.kelner} · ${r.status}`;
+    let line = `${r.datum} ${r.tijd} · CTA ${r.cta_nr} · tafel ${r.tafelnr} · ${r.medewerker_id} · ${r.status}`;
     if (r.actie) line += ` · ${r.actie}`;
     if (r.response_sec !== "") line += ` · reactie na ${r.response_sec}s`;
     else if (r.status === "disabled") line += ` · (niet getoond)`;
@@ -328,8 +329,8 @@ function pushRecord(c, actie){ addDbRow(c.type, c.tableNr, "enabled", actie, clo
 function shadowLog(type, nr){ addDbRow(type, nr, "disabled", "", ""); }   // zou getoond zijn, maar CTA staat uit
 function downloadCSV(){
   if (!dbRecords.length){ log("Nog geen DB-regels om te exporteren.", "ev"); return; }
-  const head = "cta_nr;datum;tijd;kelner;tafelnr;status;actie;response_sec";
-  const rows = dbRecords.map(r => `${r.cta_nr};${r.datum};${r.tijd};${r.kelner};${r.tafelnr};${r.status};${r.actie};${r.response_sec}`);
+  const head = "cta_nr;datum;tijd;medewerker_id;tafelnr;status;actie;gelezen_sec;response_sec";
+  const rows = dbRecords.map(r => `${r.cta_nr};${r.datum};${r.tijd};${r.medewerker_id};${r.tafelnr};${r.status};${r.actie};${r.gelezen_sec};${r.response_sec}`);
   const blob = new Blob([head + "\n" + rows.join("\n")], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = "oscar_cta_log.csv"; a.click();
@@ -352,13 +353,14 @@ function ctaToast(type, action){
     "1/order":"WaiterPro opened", "1/move":"Bill moved", "1/close":"Table closed",
     "2/order":"WaiterPro opened", "2/move":"Bill moved", "2/calllg":"LG informed",
     "3/new":"Table opened", "3/pull":"Bill moved",
-    "4/ok":"Promo active (background)",
     "5/order":"Gift registered", "5/no":"No need",
     "6/go":"Main ordered",
     "7/ja":"Active", "7/nee":"Removed", "7/pauze":"break",
     "8/go":"Dessert Go",
     "9/order":"Order — runner ✓", "9/dismiss":"Declined → runner",
     "10/print":"Printed — runner ✓", "10/dismiss":"Declined → runner",
+    "11/fixed":"Fixed", "11/calllg":"LG informed",
+    "12/go":"On my way", "12/dismiss":"Dismissed",
   };
   return map[key] || "OK";
 }
@@ -455,13 +457,14 @@ function anyOpenTable(){
 function scenarioCTA1(){ addCTA(1, anyOpenTable().nr, { forced:true }); }
 function scenarioCTA2(){ addCTA(2, anyOpenTable().nr, { forced:true }); }
 function scenarioCTA3(){ const t = tables.find(x=>x.state==="leeg") || tables[0]; addCTA(3, t.nr, { blocking:true, forced:true }); }
-function scenarioCTA4(){ addCTA(4, anyOpenTable().nr, { forced:true }); }
 function scenarioCTA5(){ const t = anyOpenTable(); t.cta5Done=false; t.cta5RepushAt=0; addCTA(5, t.nr, { forced:true }); }
 function scenarioCTA6(){ const t = anyOpenTable(); t.cta6Done=false; t.cta6RepushAt=0; t.cta6AutoFireAt=0; t.cta6Shown=true; t.cta6Pushes=1; addCTA(6, t.nr, { forced:true }); }
 function scenarioCTA7(){ addCTA(7, null, { forced:true }); }
 function scenarioCTA8(){ const t = anyOpenTable(); t.cta8Done=false; t.cta8RepushAt=0; t.cta8Shown=true; t.cta8Pushes=1; addCTA(8, t.nr, { forced:true }); }
 function scenarioCTA9(){ addCTA(9, anyOpenTable().nr, { forced:true }); }
 function scenarioCTA10(){ addCTA(10, anyOpenTable().nr, { forced:true }); }
+function scenarioCTA11(){ addCTA(11, anyOpenTable().nr, { forced:true }); }
+function scenarioCTA12(){ addCTA(12, null, { forced:true }); }
 
 /* ---------- auto-timers & backend-instellingen ---------- */
 function toggleAuto(){
@@ -474,22 +477,26 @@ function toggleAuto(){
 function setT(key, val){ T[key] = Math.max(0, parseInt(val) || 0); }
 function numInput(key){ return `<input type="number" min="0" value="${T[key]}" onchange="setT('${key}',this.value)">`; }
 // per CTA: geldt de kelner-druk-gate? (CTA 3 standaard uit — die wordt dóór een kelner-actie getriggerd)
-const blockByBusy = { 1:true, 2:true, 3:false, 4:true, 5:true, 6:true, 7:true, 8:true, 9:true, 10:true };
+const blockByBusy = { 1:true, 2:true, 3:false, 5:true, 6:true, 7:true, 8:true, 9:true, 10:true, 11:false, 12:false };
 // per CTA: mag de handy trillen bij push? (backend-instelling)
-const vibrate = { 1:true, 2:true, 3:true, 4:false, 5:false, 6:false, 7:false, 8:false, 9:true, 10:true };
+const vibrate = { 1:true, 2:true, 3:true, 5:false, 6:false, 7:false, 8:false, 9:true, 10:true, 11:true, 12:true };
 // per CTA status: enabled / disabled (telt wel mee, toont niet) / deleted (weg)
-const status = { 1:"enabled", 2:"enabled", 3:"enabled", 4:"enabled", 5:"enabled", 6:"enabled", 7:"enabled", 8:"enabled", 9:"enabled", 10:"enabled" };
+const status = { 1:"enabled", 2:"enabled", 3:"enabled", 5:"enabled", 6:"enabled", 7:"enabled", 8:"enabled", 9:"enabled", 10:"enabled", 11:"enabled", 12:"enabled" };
+// CTA 4 bestaat niet meer: de promo is een achtergrond-permissie zonder kaart (SPEC §2.14).
+// Het nummer blijft leeg zodat oude verwijzingen niet bij een andere CTA uitkomen.
+const ALLE_CTA = [1,2,3,5,6,7,8,9,10,11,12];
 const CFG = [
   { nr:1, naam:"First order",        acties:"order / wait / move / close",  times:[["check delay","CTA1_DELAY"],["postpone","CTA1_POSTPONE"],["levensduur","CTA1_LIFE"]], max:"tot 1e order" },
   { nr:2, naam:"Sleeping table",     acties:"order / wait / move / call lg", times:[["sleep threshold","CTA2_THRESHOLD"]], max:"terugkerend" },
   { nr:3, naam:"Not seated, moved?", acties:"new / pull",                    times:[], max:"1 (blokkerend)" },
-  { nr:4, naam:"Promo",              acties:"— (achtergrond)",               times:[], max:"—" },
   { nr:5, naam:"Offer a coffee",     acties:"order / wait / no",             times:[["postpone (wait)","CTA5_POSTPONE"]], max:"tot order/no" },
   { nr:6, naam:"Ready for main",     acties:"go / no",                       times:[["na voorgerecht","CTA6_AFTER_STARTER"],["repush (no)","CTA6_REPUSH"],["autofire","CTA6_AUTOFIRE"]], maxKey:"CTA6_MAX" },
   { nr:7, naam:"Actief-check",       acties:"ja / nee / pauze",              times:[], max:"1" },
   { nr:8, naam:"Ready for dessert",  acties:"go / no",                       times:[["na hoofdgerecht","CTA8_AFTER_MAIN"],["repush (no)","CTA8_REPUSH"]], maxKey:"CTA8_MAX" },
   { nr:9, naam:"Gast wil bestellen", acties:"order / dismiss",               times:[], max:"via iPad/runner" },
-  { nr:10, naam:"Gast wil betalen",  acties:"print ticket / dismiss",        times:[], max:"via iPad/runner" },
+  { nr:10, naam:"Gast wil betalen",  acties:"print / no",                    times:[], max:"via tablet" },
+  { nr:11, naam:"Bestelling klopt niet", acties:"fixed / call lg",           times:[], max:"via tablet" },
+  { nr:12, naam:"Roep LG",           acties:"go / no",                       times:[], max:"nooit geweigerd" },
 ];
 function renderSettings(){
   const rows = CFG.map(c => {
@@ -577,8 +584,6 @@ function ctaAction(id, action){
     case "3/new":    { if(t && t.state==="leeg"){ t.state="geseat"; t.seatedAt=clock; t.lastActionAt=clock; } removeCTA(id,"NEW — geopend als nieuwe gasten","new"); renderTables(); } break;
     case "3/pull":   { const oud = prompt(`Pull table → welke oude tafel naar tafel ${nr} halen?`); if (oud){ removeCTA(id,`PULL — tafel ${oud} naar tafel ${nr} gehaald, oude tafel vrij`,"pull"); } } break;
 
-    // CTA 4 — promo (achtergrond; hier alleen ter info wegklikbaar)
-    case "4/ok":     removeCTA(id,"promo-permissie staat op de achtergrond aan (geen actie nodig)","ok"); break;
 
     // CTA 5 — offer a drink: order / wait / no
     case "5/order":  t.cta5Done = true; removeCTA(id,"gift geregistreerd","order"); break;
@@ -610,12 +615,21 @@ function ctaAction(id, action){
     case "9/dismiss":  removeCTA(id,"DISMISS","dismiss"); break;
     case "10/print":   removeCTA(id,"ticket geprint / afrekenen","print"); break;
     case "10/dismiss": removeCTA(id,"DISMISS","dismiss"); break;
+
+    // CTA 11 — bestelling klopt niet: eerst de kelner zelf, dan pas de LG
+    case "11/fixed":   removeCTA(id,"FIXED — opgelost","fixed"); break;
+    case "11/calllg":  removeCTA(id,"CALL LG — doorgezet naar de leidinggevende","call_lg"); addCTA(12, null, { forced:true }); break;
+
+    // CTA 12 — roep LG
+    case "12/go":      removeCTA(id,"GO — de LG komt eraan","go"); break;
+    case "12/dismiss": removeCTA(id,"weggeklikt","dismiss"); break;
   }
 }
 
 /* ---------- rendering ---------- */
-// prio-volgorde: 1, 2, 9, 10, 3, 4, 5, 6, 7, 8 (CTA 9/10 vlak na 1/2 — gast wacht)
-const PRIO = { 1:1, 2:2, 9:3, 10:4, 3:5, 4:6, 5:7, 6:8, 7:9, 8:10 };
+// prio-volgorde: 1, 2, 9, 10, 11, 12, 3, 5, 6, 7, 8 (SPEC §2.3)
+// De mens-CTA's staan vlak achter 1 en 2 — daar wacht iemand die het al gemeld heeft.
+const PRIO = { 1:1, 2:2, 9:3, 10:4, 11:5, 12:6, 3:7, 5:8, 6:9, 7:10, 8:11 };
 function tlabel(nr){ const t = tbl(nr); return (t && t.naam) ? `Tafel ${nr} (${t.naam})` : `Tafel ${nr}`; }
 const CARD = {
   1: c => ({ cls:"", prio:"CTA 1 · First order",
@@ -627,9 +641,6 @@ const CARD = {
   3: c => ({ cls:"", prio:"CTA 3 · Seater actief (why not seated?)",
         title:`${tlabel(c.tableNr)} — Not seated. Previous table?`,
         btns:[["NEW","primary","new"],["PULL","","pull"]] }),
-  4: c => ({ cls:"info", prio:"CTA 4 · Promo (achtergrond)",
-        title:`${tlabel(c.tableNr)} — promo: offreren toegestaan`,
-        btns:[["OK","","ok"]] }),
   5: c => ({ cls:"purple", prio:"CTA 5 · Loyalty",
         title:`${tlabel(c.tableNr)} — offer a coffee`,
         btns:[["ORDER","primary","order"],["WAIT","","wait"],["NO","","no"]] }),
@@ -645,9 +656,15 @@ const CARD = {
   9: c => ({ cls:"", prio:"CTA 9 · Gast wil bestellen (via runner/iPad)",
         title:`${tlabel(c.tableNr)} — wil bestellen`,
         btns:[["ORDER","primary","order"],["NO","","dismiss"]] }),
-  10: c => ({ cls:"", prio:"CTA 10 · Gast wil betalen (via runner/iPad)",
+  10: c => ({ cls:"", prio:"CTA 10 · Gast wil betalen (via tablet)",
         title:`${tlabel(c.tableNr)} — wil betalen`,
         btns:[["PRINT","primary","print"],["NO","","dismiss"]] }),
+  11: c => ({ cls:"", prio:"CTA 11 · Bestelling klopt niet (via tablet)",
+        title:`${tlabel(c.tableNr)} — check je bestelling`,
+        btns:[["FIXED","primary","fixed"],["CALL LG","","calllg"]] }),
+  12: c => ({ cls:"", prio:"CTA 12 · Roep LG",
+        title:`LG gevraagd — bar`,
+        btns:[["GO","primary","go"],["NO","","dismiss"]] }),
 };
 
 function render(){
