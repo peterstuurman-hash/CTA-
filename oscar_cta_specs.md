@@ -954,9 +954,21 @@ andere analyses wordt gebruikt.
 ### §6.2 Recordformaat
 
 ```
-cta_nr;datum;tijd;kelner;tafelnr;status;actie;response_sec
-1;2026-06-12;19:42:13;Peter;14;enabled;ORDER;12
+cta_nr;datum;tijd;medewerker_id;tafelnr;status;actie;response_sec
+1;2026-06-12;19:42:13;M-0412;14;enabled;ORDER;12
 ```
+
+**`medewerker_id` is het personeelsnummer**, hetzelfde nummer dat WaiterPro, de
+staff-app en de loonadministratie gebruiken. Geen naam. De naam wordt erbij
+opgezocht op het moment dat iets getoond wordt.
+
+Twee redenen. Het rapport (§11.6) telt op over vier weken, en dat moet blijven
+kloppen bij twee medewerkers met dezelfde voornaam of bij iemand die van
+achternaam verandert. En de staff-app heeft iets nodig om "mijn eigen deel" op te
+halen; een naam is daar geen sleutel voor.
+
+Bijvangst: in de tabel waar alle analyses op draaien staat daarmee geen enkele
+naam.
 
 `response_sec` is de tijd tussen push en kelner-actie. Bij verval en bij
 onderdrukking blijft hij leeg.
@@ -969,8 +981,8 @@ Vastgelegd wordt elke **afgeronde** CTA — een kelner-respons óf een verval �
 elke CTA die wél zou afgaan maar de handy niet haalt (§6.3). Een CTA die nog open
 staat, staat nog niet in de database.
 
-De kolom `kelner` blijft leeg bij `geen_wijk` (§6.3): er was dan per definitie geen
-kelner om naar te routeren.
+De kolom `medewerker_id` blijft leeg bij `geen_wijk` (§6.3): er was dan per
+definitie geen kelner om naar te routeren.
 
 Analyses waar dit voor bedoeld is: response-tijden, CTA-volume per kelner en per
 tijdvak, hoe vaak CTA's vervallen, en hoeveel de remmen tegenhouden.
@@ -1006,8 +1018,7 @@ lege `actie`, een lege `response_sec`, en in de `status`-kolom de **reden**.
 | `niet_afgeleverd` | Geen bevestiging binnen `mens_delivery_timeout`; alsnog fallback | §2.16 |
 
 De laatste drie horen bij mens-CTA's (§2.15); bij die regels is `actie` leeg maar
-staat er wél een doelmedewerker in `kelner` — degene naar wie hij uiteindelijk
-ging. Een escalatie naar de LG (§2.16, stap 4) is een gewone nieuwe CTA en krijgt
+staat er wél een `medewerker_id` — degene naar wie hij uiteindelijk ging. Een escalatie naar de LG (§2.16, stap 4) is een gewone nieuwe CTA en krijgt
 dus een eigen `enabled`-regel, niet een van deze.
 
 `deleted` logt niets — dat is het enige verschil met `disabled`.
@@ -1268,6 +1279,7 @@ shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
 | 12-09-2026 | CTA 11 gaat eerst naar de kelner, niet naar de LG | Die staat er het dichtst bij en lost het meestal zelf op |
 | 12-09-2026 | Beachalert volgt de routing van §3 (wijk), niet een lookup per tafel | Twee routings naast elkaar laten CTA 9 en CTA 1 voor dezelfde tafel bij verschillende kelners landen |
 | 12-09-2026 | `beachalert_events` is de rijkere bron, §6.2 is de projectie ervan | Twee losse logs voor hetzelfde signaal geeft twee waarheden |
+| 12-09-2026 | De log bevat het personeelsnummer, niet de naam (§6.2) | Het rapport telt op over vier weken en moet kloppen bij twee dezelfde voornamen of een naamswijziging; de staff-app heeft een sleutel nodig. Herziet het besluit "recordformaat ongewijzigd" op dit ene punt. Bijvangst: geen namen in de analysetabel |
 | 12-09-2026 | "Uit de buurt" (CTA 14) is een lijst postcodes per locatie in de backend; de gastpostcode komt uit de reservering (§5.14) | Geen geocoding en geen externe dienst. Bij een strandlocatie is een straal voor de helft zee en onbereikbaar gebied; een lijst kun je precies snijden |
 | 12-09-2026 | Eén systeembrede standaard, per locatie te overschrijven; het beheerscherm toont het verschil (§7.0) | Een zaak die niets instelt volgt de standaard en blijft dat doen. Zonder dat onderscheid zichtbaar te maken snapt niemand waarom een wijziging bij vier zaken werkt en bij drie niet |
 | 12-09-2026 | Getallen in §7 zijn startwaarden, geen besluiten; ijken gebeurt op de shadow-log (§7.0) | Negen van de vijftien open punten waren "welk getal". Meten met CTA's op `disabled` kost niets en levert een beter fundament dan een schatting aan tafel |
@@ -1320,7 +1332,6 @@ Geen van deze gaat weg door te meten.
 | O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport | Peter / kantoor |
 | O17 | Komen CTA 13 (uitnodigen) en CTA 14 (wervingskaartje) er? De werking ligt vast; alleen het go/no-go staat nog open. | Alleen zichzelf | Peter |
 | O18 | CTA 13 legt een oordeel over een gast vast; CTA 14 gebruikt de postcode voor een ander doel dan de reservering. Grondslag en bewaartermijn laten toetsen vóór invoering. | CTA 13 en 14 | Peter / kantoor |
-| O19 | De staff-app moet het eigen deel van het periodesrapport kunnen tonen. Welke app is dat, en hoe knopen we de ingelogde medewerker aan de kelner in de CTA-log? | Inzage voor de kelner | Peter |
 
 ### §9.2 IJken — met de shadow-log, niet aan tafel
 
@@ -1639,8 +1650,9 @@ gesprek, niet de uitkomst ervan.
 | Kelner | Zijn eigen deel, **op verzoek**, via de staff-app |
 
 De kelner krijgt het dus niet uit zichzelf, maar kan het opvragen wanneer hij wil.
-Dat vraagt van de staff-app een koppeling naar dit rapport en een manier om de
-ingelogde medewerker aan de kelner in de CTA-log te knopen — zie O19.
+De staff-app vraagt het op met het personeelsnummer van de ingelogde medewerker —
+hetzelfde nummer dat in `medewerker_id` staat (§6.2). Verder is er geen koppeling
+of mappingtabel nodig.
 
 Inzagerecht bestaat sowieso; "op verzoek" is dus het minimum en geen gunst. Wat
 hier besloten is, is dat het via een bestaand kanaal loopt dat de kelner al kent,
