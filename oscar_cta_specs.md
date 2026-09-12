@@ -1015,13 +1015,37 @@ opschalen een gok in plaats van een beslissing.
 Elk getal in de bouw komt hiervandaan. Staat een getal alleen in §5 en niet hier,
 dan is dat een fout in dit document.
 
+### §7.0 Startwaarden, geen besluiten
+
+Elk getal hieronder is **per locatie instelbaar** en wordt beheerd door kantoor
+(§11.3). Wat er staat is de waarde waarmee een zaak begint als er niets is
+ingesteld — een startwaarde, geen vastgesteld beleid.
+
+Daarom staat er bij elk getal een **herkomst**. Drie soorten:
+
+| Herkomst | Betekenis |
+|---|---|
+| maart 2026 | Uit de oude PDF. Nooit herbevestigd |
+| besluit | Vastgesteld, met datum in §8.2 |
+| startwaarde | Door ons ingevuld om te kunnen beginnen. Vervangen zodra er data is |
+
+**Een startwaarde is geen AANNAME die blijft staan.** Vóór de eerste zaak live
+gaat wordt er geijkt op de shadow-log (§6.3): zet de CTA's op `disabled`, laat ze
+een paar weken meelopen, en kijk hoe vaak ze zóúden vuren. Dat is een beter
+fundament dan een schatting aan tafel, en het kost niets — het loopt mee terwijl
+er nog niets op de vloer gebeurt.
+
+Wat níét op deze manier te bepalen is, staat in §9: een bedrag dat het huis moet
+kiezen, een tegenspraak tussen twee bronnen, een grondslag die getoetst moet
+worden. Die vragen gaan niet weg door te meten.
+
 ### §7.1 Systeembreed
 
 | Parameter | Default | Herkomst | Wat |
 |---|---|---|---|
 | `max_kaarten_zichtbaar` | 3 | uitleg | Kaarten tegelijk op een handy (§2.3). **Vast** — niet per locatie instelbaar |
 | `log_live_regels` | 500 | uitleg | Lengte van het rollende live log (§6.1) |
-| `kelner_idle` | 60 / 20 / TODO (O1) | demo, per niveau | Geen CTA binnen X sec na de laatste kelner-actie (§2.7) |
+| `kelner_idle` | 60 / 20 / 10 sec | niveau 1 en 2 uit de demo, niveau 3 startwaarde | Geen CTA binnen X sec na de laatste kelner-actie (§2.7) |
 | `cta_max_per_window` | 1 / 3 / 6 | demo, per niveau | Tempo-limiet per handy (§2.8) |
 | `cta_window` | 600 sec | demo | Venster voor de tempo-limiet |
 | `routing_meerderheid_pct` | TODO (O2) | uitleg noemt "±70%" | Drempel voor verschuiving eigenaarschap (§3.3) |
@@ -1046,7 +1070,7 @@ dan is dat een fout in dit document.
 | `cta6_repush` | 300 sec | demo (backend-waarde) | Terugkomen na `NO` |
 | `cta6_autofire` | 300 sec | uitleg ("na 5 min") | Automatisch firen na de laatste `NO` |
 | `cta6_max` | 2 | uitleg + demo | Max. kaarten per ticket |
-| `cta7_inactief_drempel` | TODO (O7) | — | Inactiviteit voor de actief-check |
+| `cta7_inactief_drempel` | 1800 sec | startwaarde | Stilte voor de actief-check (§5.7) en de grens voor "stil" (§4.3) |
 | `cta8_after_main` | 1200 sec | uitleg ("default 20 min") | Na het firen van het hoofdgerecht → kaart |
 | `cta8_repush` | 300 sec | demo (backend-waarde) | Terugkomen na `NO` |
 | `cta8_max` | 2 | uitleg + demo | Max. kaarten per ticket |
@@ -1124,20 +1148,26 @@ CTA 13 en 14 staan er nog niet in; die zijn nog een voorstel (§7.7).
 | `recente_order_venster` | 120 sec | opdracht Beachalert | "Zojuist besteld — toch doorgeven?" bij CTA 9 (§5.9) |
 | `lookup_cache` | 60 sec | opdracht Beachalert | Maximale leeftijd van de tafel-naar-kelner lookup (§10.2) |
 | `lg_routing` | vaste instelling per zaak | besluit 12-09-2026 | Vangnet voor wanneer er niemand met de rol LG is ingelogd (§5.12) |
-| `cta12_samenvoegvenster` | TODO (O20) | — | Binnen deze tijd worden oproepen aan dezelfde LG één kaart (§5.12) |
+| `cta12_samenvoegvenster` | 300 sec | startwaarde | Binnen deze tijd worden oproepen aan dezelfde LG één kaart (§5.12) |
 
 Deze staan per locatie in, net als §7.1 en §7.2.
 
 ### §7.6 Drukte van de kelner en inactiviteit
 
-| Parameter | Default | Wat |
+Allemaal startwaarden (§7.0). Deze zes bepalen wanneer een wijk oranje of rood
+kleurt, en dat is bij uitstek iets om op echte data te ijken in plaats van te
+schatten: laat het dashboard een paar weken meedraaien zonder dat iemand het ziet,
+en kijk welke drempels overeenkomen met de avonden waarop het daadwerkelijk
+misging.
+
+| Parameter | Startwaarde | Wat |
 |---|---|---|
-| `kelner_venster` | TODO (O13) | Venster waarover achterstand wordt gemeten (§4.2) |
-| `kelner_werklast_tafels` | TODO (O13) | Open tafels vanaf waar de werklast "hoog" heet |
-| `kelner_werklast_gangen` | TODO (O13) | Tafels met een gang onderweg, idem |
-| `kelner_achterstand_open` | TODO (O13) | Openstaande CTA's vanaf waar er achterstand is |
-| `kelner_achterstand_vervallen` | TODO (O13) | Vervallen CTA's in het venster, idem |
-| `kelner_achterstand_respons` | TODO (O13) | Mediane responstijd vanaf waar er achterstand is |
+| `kelner_venster` | 3600 sec | Venster waarover achterstand wordt gemeten (§4.2) |
+| `kelner_werklast_tafels` | 6 | Open tafels vanaf waar de werklast "hoog" heet |
+| `kelner_werklast_gangen` | 3 | Tafels met een gang onderweg, idem |
+| `kelner_achterstand_open` | 2 | Openstaande CTA's vanaf waar er achterstand is |
+| `kelner_achterstand_vervallen` | 2 | Vervallen CTA's in het venster, idem |
+| `kelner_achterstand_respons` | 120 sec | Mediane responstijd vanaf waar er achterstand is |
 
 "Stil" (§4.3) gebruikt geen eigen drempel maar `cta7_inactief_drempel` (§7.2) —
 dezelfde grens die bepaalt wanneer CTA 7 vuurt. Eén getal, één betekenis.
@@ -1219,6 +1249,7 @@ shadow-loggen hoe vaak ze zouden vuren, dan pas beslissen of ze het waard zijn.
 | 12-09-2026 | CTA 11 gaat eerst naar de kelner, niet naar de LG | Die staat er het dichtst bij en lost het meestal zelf op |
 | 12-09-2026 | Beachalert volgt de routing van §3 (wijk), niet een lookup per tafel | Twee routings naast elkaar laten CTA 9 en CTA 1 voor dezelfde tafel bij verschillende kelners landen |
 | 12-09-2026 | `beachalert_events` is de rijkere bron, §6.2 is de projectie ervan | Twee losse logs voor hetzelfde signaal geeft twee waarheden |
+| 12-09-2026 | Getallen in §7 zijn startwaarden, geen besluiten; ijken gebeurt op de shadow-log (§7.0) | Negen van de vijftien open punten waren "welk getal". Meten met CTA's op `disabled` kost niets en levert een beter fundament dan een schatting aan tafel |
 | 12-09-2026 | Een oproep gaat naar álle ingelogde LG's; de eerste die `GO` drukt pakt hem (§5.12) | Bij een oproep maakt het niet uit wie er komt, als er maar iemand komt. Uitzondering op §2.2, die over tafel-CTA's gaat |
 | 12-09-2026 | De LG komt uit de devicedata, met de vaste instelling per zaak als vangnet (§5.12) | Volgt de dienst vanzelf, en valt niet stil als er niemand is ingelogd |
 | 12-09-2026 | Geen escalatieketen als de LG niet reageert (§5.12) | De nullijn is lopen, en dat werkte vijftien jaar. Het systeem voorkomt alleen dat de melder stopt met zoeken omdat hij denkt dat het geregeld is. Eerst meten hoe vaak het misgaat, dan pas bouwen |
@@ -1257,31 +1288,44 @@ iets over de demo, niet per se over het productiesysteem — zie de eerste regel
 Één voor één af te werken, in deze volgorde: elk antwoord kan het volgende punt
 verschuiven. Er wordt niet op een open punt gebouwd.
 
-### §9.1 Fase 1 — beantwoorden vóór de bouw
+### §9.1 Beleid — alleen jullie kunnen dit beantwoorden
+
+Geen van deze gaat weg door te meten.
 
 | Code | Vraag | Blokkeert | Wie |
 |---|---|---|---|
-| O2 | `routing_meerderheid_pct` staat in de uitleg als "±70%" — wat is het exacte getal, en over welk tijdvenster worden de tickets geteld? | Alle routing (§3), en daarmee elke CTA | Oscar |
-| O7 | Na hoeveel inactiviteit vraagt CTA 7 of de kelner er nog is? | CTA 7, én hoe lang een wijk verkeerd kan staan (§3.3) | Oscar |
-| O4 | De maart-PDF zegt "meer dan 2 plaatsingen in het venster", de juni-uitleg zegt "een seat-actie binnen de laatste X minuten". Eén plaatsing of twee? | CTA 3 | Oscar |
-| O1 | `kelner_idle` op niveau 3 staat in de demo op 3 seconden. Dat lijkt een demo-waarde. Wat is het in productie? | Niveau 3 | Oscar |
-| O8 | Trillen alleen CTA 1, 2, 3, 9 en 10, zoals nu in §7.4? Dat patroon is nooit apart besloten. | Niets — defaults zijn instelbaar | Oscar |
-| O20 | Hoe lang is `cta12_samenvoegvenster` — binnen welke tijd worden oproepen aan dezelfde LG één kaart? | CTA 12 | Oscar |
-| O13 | De zes drempels voor de drukte van een kelner (§7.6). Beter te ijken op een paar weken echte data dan nu te schatten. | Het LG-dashboard (§4.2) | Oscar, na meting |
-| O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport, niet de rest | Peter / kantoor |
-| O19 | De staff-app moet het eigen deel van het periodesrapport kunnen tonen. Welke app is dat, en hoe knopen we de ingelogde medewerker aan de kelner in de CTA-log? | Inzage voor de kelner | Peter |
-| O17 | Komen CTA 13 (uitnodigen) en CTA 14 (wervingskaartje) er, en met welke momenten en drempels? | Alleen zichzelf | Peter |
+| O4 | De maart-PDF zegt "meer dan 2 plaatsingen in het venster", de juni-uitleg zegt "een seat-actie binnen de laatste X minuten". Eén plaatsing of twee? Dit is een tegenspraak tussen bronnen, geen drempel. | CTA 3 | Oscar |
+| O8 | Trillen alleen CTA 1, 2, 3, 9, 10, 11 en 12, zoals nu in §7.4? Dat patroon is nooit apart besloten. | Niets — instelbaar | Oscar |
+| O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport | Peter / kantoor |
+| O17 | Komen CTA 13 (uitnodigen) en CTA 14 (wervingskaartje) er? En welke postcodes gelden als "uit de buurt"? | Alleen zichzelf | Peter |
 | O18 | CTA 13 legt een oordeel over een gast vast; CTA 14 gebruikt de postcode voor een ander doel dan de reservering. Grondslag en bewaartermijn laten toetsen vóór invoering. | CTA 13 en 14 | Peter / kantoor |
+| O19 | De staff-app moet het eigen deel van het periodesrapport kunnen tonen. Welke app is dat, en hoe knopen we de ingelogde medewerker aan de kelner in de CTA-log? | Inzage voor de kelner | Peter |
 
-### §9.2 Fase 2 — pas nodig bij §4 en §5.5
+### §9.2 IJken — met de shadow-log, niet aan tafel
+
+Deze hebben een startwaarde (§7.0) en blokkeren de bouw dus niet. Ze worden
+vastgesteld vóór de eerste zaak live gaat, op de gegevens uit §6.3.
+
+| Code | Wat | Startwaarde |
+|---|---|---|
+| O1 | `kelner_idle` op niveau 3 | 10 sec |
+| O7 | `cta7_inactief_drempel` — ook de grens voor "stil" (§4.3) | 1800 sec |
+| O13 | De zes drempels voor de drukte van een kelner (§7.6) | zie §7.6 |
+| O20 | `cta12_samenvoegvenster` | 300 sec |
+| — | `cta1_check_delay` en `cta2_sleep_threshold` — uit maart 2026, nooit herbevestigd (§7.2) | 120 / 1800 sec |
+
+**O2 is anders.** De routing draait al bij Oscar (§8.3), dus
+`routing_meerderheid_pct` en `routing_venster` hebben daar waarschijnlijk al een
+waarde. Neem die over in plaats van een nieuwe te kiezen — twee implementaties met
+verschillende drempels is erger dan een drempel die niet optimaal is.
+
+### §9.3 Fase 2 — pas nodig bij §4.1 en §5.5
 
 | Code | Vraag | Wie |
 |---|---|---|
-| O5 | Wat is `cta5_bedrag_pp` — de besteding per persoon vanaf welke de koffie mag? Eén bedrag per locatie. | Oscar / bedrijfsleiding |
-| O3 | Wat is de order-rate-drempel voor "druk", en over welk venster gemeten? | Oscar |
-| O6 | Hoe lang stelt `WAIT` op CTA 5 uit? | Oscar |
-
----
+| O5 | Wat is `cta5_bedrag_pp` — de besteding per persoon vanaf welke de koffie mag? Eén bedrag per locatie. Dit is een keuze van het huis, geen meting. | Oscar / bedrijfsleiding |
+| O3 | De order-rate-drempel voor "druk", en over welk venster gemeten | Oscar, te ijken |
+| O6 | Hoe lang `WAIT` op CTA 5 uitstelt | Oscar, te ijken |
 
 ## §10 Beachalert — het vloertablet als bron
 
