@@ -1313,6 +1313,7 @@ er over een half jaar aan, dan begint het meten ook pas dan.
 | 12-09-2026 | CTA 11 gaat eerst naar de kelner, niet naar de LG | Die staat er het dichtst bij en lost het meestal zelf op |
 | 12-09-2026 | Beachalert volgt de routing van §3 (wijk), niet een lookup per tafel | Twee routings naast elkaar laten CTA 9 en CTA 1 voor dezelfde tafel bij verschillende kelners landen |
 | 12-09-2026 | `beachalert_events` is de rijkere bron, §6.2 is de projectie ervan | Twee losse logs voor hetzelfde signaal geeft twee waarheden |
+| 12-09-2026 | Fooi vastgelegd als idee zonder CTA-nummer (§12.1) | Nog niets over besloten. Een genummerde lege paragraaf leest als een gat in de spec, en niet elk idee wordt een CTA |
 | 12-09-2026 | CTA 13 en 14 worden in fase 1 gebouwd, allebei op `disabled` (§5.13, §5.14) | Op `disabled` storen ze niemand en kosten ze geen kaartslot, maar de shadow-log loopt wel vol. Later beginnen betekent later kunnen beslissen |
 | 12-09-2026 | "Er staat een seater" volgt uit de forecast, niet uit plaatsingen (§4.4, §5.3) | Boven 150 couverts wordt er altijd een seater ingeroosterd. Een roosterfeit is directer dan het afleiden uit gedrag, en het werkt vanaf de eerste tafel van de service |
 | 12-09-2026 | De log bevat het personeelsnummer, niet de naam (§6.2) | Het rapport telt op over vier weken en moet kloppen bij twee dezelfde voornamen of een naamswijziging; de staff-app heeft een sleutel nodig. Herziet het besluit "recordformaat ongewijzigd" op dit ene punt. Bijvangst: geen namen in de analysetabel |
@@ -1694,6 +1695,46 @@ hier besloten is, is dat het via een bestaand kanaal loopt dat de kelner al kent
 in plaats van via een formulier bij kantoor.
 
 Open: O15 (instemmingsrecht), O19 (koppeling staff-app).
+
+## §12 Ideeën, nog niet uitgewerkt
+
+Dingen die we willen onthouden maar waar nog niets over besloten is. Ze hebben
+bewust **geen CTA-nummer**: een genummerde lege paragraaf leest als een gat in de
+spec, en niet elk idee wordt een CTA.
+
+Wordt er iets van uitgewerkt, dan verhuist het naar §5 met een eigen nummer en
+verdwijnt het hier.
+
+### §12.1 Fooi
+
+Peter, 12-09-2026. Verder niet uitgewerkt.
+
+De kern: met fooi moeten we in de toekomst iets doen. Hoe, staat open.
+
+**De eerste vraag is niet hoe de kaart eruitziet, maar of het wel een CTA is.**
+Er zijn twee richtingen, en ze sluiten elkaar niet uit:
+
+*Fooi als meting.* §2.13 zegt dat per CTA gemeten wordt of het gewenste effect
+volgt. Dat is nu moeilijk: je ziet responstijden en afhandelingen, maar niet of de
+gast er iets van gemerkt heeft. Fooi per tafel is een van de weinige signalen die
+wél iets over de gast zegt. Als tafels die op tijd hun eerste drankje kregen
+structureel beter geven, is dat het sterkste bewijs dat dit systeem werkt dat we
+kunnen krijgen — en dan is fooi een uitkomstmaat en geen melding.
+
+*Fooi als aanleiding.* Een CTA die ergens op reageert: een tafel die goed geeft,
+of juist niet. Dat is verleidelijk en meteen het meest riskante, om twee redenen.
+Het beoordeelt gasten (zie §5.13), en het beoordeelt kelners op iets waar ze maar
+deels invloed op hebben. Een kelner die ziet dat tafel 3 slecht gaf, bedient tafel
+3 anders — en dat is precies het gedrag dat je niet wilt kopen.
+
+**Wat er in elk geval nodig is voordat hier iets mee kan:**
+
+- Komt fooi überhaupt herleidbaar per tafel binnen uit de POS, of alleen als
+  dagtotaal? Zonder dat eerste kan geen van beide richtingen.
+- Wordt fooi individueel of in een pot verdeeld? Bij een pot zegt fooi per kelner
+  vrijwel niets.
+- Dezelfde toets als O15 en O18: dit raakt zowel gastgegevens als prestaties van
+  medewerkers.
 
 ---
 
