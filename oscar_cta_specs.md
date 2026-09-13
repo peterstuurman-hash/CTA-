@@ -2023,6 +2023,61 @@ deels invloed op hebben. Een kelner die ziet dat tafel 3 slecht gaf, bedient taf
 - Dezelfde toets als O15 en O18: dit raakt zowel gastgegevens als prestaties van
   medewerkers.
 
+### §12.2 Vrije tafel met een openstaande bon
+
+Peter, 13-09-2026. Verder niet uitgewerkt.
+
+In de seating-app komt de mogelijkheid om vrije tafels aan te slaan. Maar een
+tafel die er vrij uitziet, kan nog een openstaande bon hebben. Dat is een alert.
+
+**Waarom dit ertoe doet.** Het is hetzelfde gat als bij CTA 3: de tafel is een
+plek, de bon hoort bij een gezelschap, en die twee lopen uit elkaar. Een nieuwe groep op een tafel met een oude bon betekent dat er
+producten op andermans rekening terechtkomen — of dat er niet is afgerekend.
+
+**Wat er beslist moet worden:**
+
+- Blokkeert de melding het seaten, zoals CTA 3, of is het een waarschuwing?
+- Naar wie gaat hij: de seater die op het punt staat te seaten, of de eigenaar
+  van de wijk die de bon heeft laten staan?
+- Betekent een openstaande bon dat de vorige gasten zonder afrekenen weg zijn, of
+  dat er alleen niet is afgesloten? Dat verschil bepaalt of het een geldkwestie
+  is of een opruimkwestie.
+
+### §12.3 Wijkoverdracht
+
+Peter, 13-09-2026. Verder niet uitgewerkt.
+
+Een kelner verlaat zijn wijk: pauze, uitklokken, of hij krijgt een andere wijk.
+Hij hoort die wijk dan **netjes op te leveren**. Daar horen twee meldingen bij:
+
+- bij vertrek: *wijk klaar voor overdracht* — of juist niet
+- bij aankomst: *de overdracht is nog niet gedaan, er staan nog veel rode tafels
+  open*
+
+**Dit raakt §3.3 rechtstreeks.** Daar is besloten dat eigenaarschap alleen
+vervalt door overname of door CTA 7, met als aanvaard gevolg dat de eigenaar van
+de vorige service 's ochtends nog steeds eigenaar is. Een expliciete overdracht
+is een derde weg, en een betere: dan is het geen afleiding meer uit POS-gedrag
+maar een handeling.
+
+**En het raakt O2.** Wordt een wijk expliciet toegewezen bij het begin van een
+dienst ("welke wijk ga je lopen?"), dan is de ±70%-meerderheidsregel grotendeels
+overbodig — die bestaat alleen omdat het systeem nu moet raden wie waar loopt.
+Dat zou een flinke vereenvoudiging zijn.
+
+**Wat er beslist moet worden:**
+
+- Wat is "netjes"? Geen openstaande CTA's, elke tafel een recente actie, geen
+  tafels zonder bestelling? Dat is de definitie van "rood" op tafelniveau, en die
+  bestaat nog niet — §4.2 kleurt nu wijken, geen tafels.
+- Blokkeert het systeem het uitklokken, of meldt het alleen? Blokkeren raakt
+  arbeidstijd en is geen technische keuze.
+- Gaat de melding naar de vertrekkende kelner, de aankomende, of de LG? Bij
+  voorkeur alle drie iets anders: de een moet opruimen, de ander moet weten wat
+  hij overneemt, en de derde moet zien dat het blijft hangen.
+- Wat gebeurt er bij een pauze van tien minuten — is dat een overdracht, of komt
+  hij gewoon terug bij zijn eigen wijk?
+
 ---
 
 *Gereconstrueerd op 12-09-2026 uit `docs/oscar_CTA_uitleg.html` (juni 2026),
