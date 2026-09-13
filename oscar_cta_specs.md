@@ -2088,6 +2088,135 @@ Dat zou een flinke vereenvoudiging zijn.
 - Wat gebeurt er bij een pauze van tien minuten — is dat een overdracht, of komt
   hij gewoon terug bij zijn eigen wijk?
 
+### §12.4 Tafels, tickets en bezoeken
+
+Peter, 12 en 13-09-2026. Nog geen besluiten — wel de analyse, zodat hij niet
+verdwijnt.
+
+Dit gaat niet over één CTA maar over de bodem eronder: de koppeling tussen een
+reservering, een ticket en een gezelschap. Zolang die los kan raken, is elke
+analyse op de CTA-log gebouwd op zand.
+
+#### De kern: een tafel is geen gezelschap
+
+Het systeem gebruikt het tafelnummer als identiteit van een gezelschap. Maar een
+tafel is een **plek**, en het gezelschap is het ding dat beweegt. Zodra die twee
+uit elkaar lopen — verzitten, samenvoegen, een kelnerwissel — is er geen anker
+meer, en verdwijnt de koppeling naar de reservering geruisloos.
+
+#### Waar het misgaat, en wat het kost
+
+| Stap | Wat er misgaat | Detecteerbaar | Kosten van herstel |
+|---|---|---|---|
+| 1 · Seater plaatst | Niets — het enige moment dat de koppeling zéker klopt | — | — |
+| 2 · Aanslag op tafel 2 i.p.v. 1 | Eén product op het verkeerde ticket | Ja, sterk | Laag: één regel |
+| 3 · Verzitten, nieuw ticket | Gezelschap gesplitst over twee tickets | Ja, redelijk | Middel: een halve rekening |
+| 4 · Verkeerde tafel afgerekend | Twee tickets fout, gast is weg | Zwak vooraf, wél achteraf | Hoog, vaak onomkeerbaar |
+| 5 · Omzetten naar de juiste tafel | Ticket-id breekt, productregels worden één samenvatting | Alleen als patroon | Detail is definitief weg |
+
+Elke stap die je eerder vangt is een orde van grootte goedkoper. Bij stap 2 gaat
+het om één product en is de reparatie gratis; bij stap 5 om een heel ticket plus
+alle regeldetails.
+
+**Wat die samenvatting bij stap 5 ook sloopt:** de orderregels onder CTA 11
+(§5.11), de besteding per persoon van CTA 5, en het onderscheid tussen voor- en
+hoofdgerecht waar CTA 6 en 8 op draaien. Zie O23 — het is nog niet bevestigd dát
+dit gebeurt.
+
+#### Vijf maatregelen, in deze volgorde
+
+**1 · Kopieer de ticketregels naar onze eigen database, zodra ze worden
+aangeslagen.** Dit is de enige maatregel die stap 5 echt oplost, en hij vraagt
+niets van WaiterPro: de monitor leest de POS toch al continu (§11.1). Wordt er
+later omgezet en vat de POS alles samen, dan heeft dat geen effect op onze kopie.
+Daarmee wordt onze database de plek waar "wat heeft dit bezoek gedaan" wél
+beantwoordbaar is.
+
+**2 · Vang stap 2, want die is de goedkoopste.** Tafel 1 is geseat en heeft na X
+minuten niets; tafel 2 is niet geseat en krijgt een order. Twee tafels,
+tegengesteld afwijkend, in dezelfde wijk, binnen een paar minuten. Eén vraag bij
+het eerste product: *"Tafel 2 is niet geseat. Sanne zit op tafel 1 en heeft nog
+niets — bedoelde je die?"*
+
+**3 · Maak de CTA-route makkelijker dan de POS-route.** Doet de kelner een
+omzetting via `MOVE` of `PULL` op een kaart, dan is het één bekende gebeurtenis.
+Doet hij het zelf in de POS, dan moet het gereconstrueerd worden. Dus:
+kandidaten voorstellen in plaats van een lijst laten kiezen.
+
+**4 · Bescherm het afrekenen van een tafel buiten je eigen wijk.** Stap 4 is de
+duurste en het minst te repareren. De routing weet wie welke wijk heeft (§3), dus
+een bevestiging is mogelijk. Achteraf is het ook te zien: een tafel die is
+afgerekend en daarna alsnog orders krijgt, was vrijwel zeker de verkeerde.
+
+**5 · Herken omzettingen op patroon, als vangnet.** Ticket A loopt leeg, ticket B
+krijgt binnen seconden een samenvattingsregel met hetzelfde bedrag. Niet
+waterdicht, maar het verschil tussen "we weten het niet" en "waarschijnlijk hoorde
+dit bij elkaar, met deze zekerheid".
+
+#### De naam als draadje
+
+Bij veel reserveringen is er een naam, en die hoort bij het gezelschap in plaats
+van bij de plek. Twee toepassingen:
+
+- **Als controle bij het afrekenen.** Vraag niet "zit u op tafel 12?" maar "op
+  welke naam staat het?" — dat is de enige vraag die de gást kan beantwoorden.
+  Dat vraagt wel dat een bon op naam te vinden is en dat de naam groot op het
+  afrekenscherm staat. Een niet-matchende naam mag nooit blokkeren: het is een
+  controle, geen slot.
+- **Mogelijk als stitch-sleutel door een omzetting heen**, áls de naam meeverhuist
+  terwijl het ticket-id dat niet doet. Dat is de eerste vraag van O23.
+
+**Grens:** een naam is geen sleutel. Op een zaterdag zijn er drie keer Jansen.
+Naam plus service plus wijk plus couverts is een sterke *match*, en een gestitcht
+bezoek hoort daarom een zekerheid te dragen: zeker (via een CTA), waarschijnlijk,
+of onbekend.
+
+**Consistent houden:** in de log staat het reserverings-id, niet de naam — net
+zoals daar het personeelsnummer staat en geen kelnernaam (§6.2). De naam wordt
+erbij opgezocht op het moment van tonen.
+
+#### De verplaats-vraag bij het afrekenen
+
+Het scherpste geval: een runner brengt een cola naar tafel 3, die zegt "niet
+besteld", en de runner zet hem bij tafel 4. Fysiek opgelost, administratief niet —
+de cola staat nog op 3. Bij het afrekenen gaat hij er terecht af, en komt nooit
+bij 4 op. Een boekhoudfout wordt zo omzetverlies, en niemand die erbij staat
+merkt het.
+
+Die fout gaat **altijd één kant op**: de gast die het niet besteld heeft klaagt,
+de gast die het wél kreeg meldt nooit dat het ontbreekt op zijn rekening.
+
+De ingreep met de meeste winst zit niet bij de runner maar bij het afrekenen. Nu
+is "dit hebben we niet besteld" een **verwijder-knop**; dat zou een
+**verplaats-vraag** moeten zijn, met kandidaat-tafels erbij. Eén tik verschil
+tussen een verlies en een correctie — en je onderbreekt niemand, want de kelner
+was die regel toch al aan het weghalen.
+
+#### Eerst meten
+
+Niets hiervan bouwen voordat bekend is hoe groot het is. Dit kan met data die er
+al is:
+
+- verwijderde regels bij het afrekenen: welk product, welke tafel, welk bedrag
+- tickets zonder reserveringskoppeling tijdens een gereserveerde service
+- tafels die binnen tien minuten na sluiten opnieuw opengaan
+- tickets met een gat van meer dan 45 minuten tussen orders
+- aanslagen buiten de eigen wijk
+
+Dat is een query, geen project. Bij 2% is maatregel 1 genoeg; bij 20% is het een
+post die ertoe doet.
+
+#### Wat dit niet oplost
+
+Je komt nooit op 100%. Het doel is niet foutloos maar **weten welk deel
+onbetrouwbaar is**. Data met bekende ruis is bruikbaar; data met onbekende ruis
+is dat niet — en dat laatste is de huidige situatie.
+
+Let op dat maatregel 2 en 4 nieuwe CTA's zijn, op momenten dat de kelner iets
+anders doet. Ze concurreren om dezelfde drie kaartslots (§2.3) en dezelfde
+tempo-limiet (§2.8) als de operationele meldingen. Niet alle drie tegelijk
+aanzetten.
+
 ---
 
 *Gereconstrueerd op 12-09-2026 uit `docs/oscar_CTA_uitleg.html` (juni 2026),
