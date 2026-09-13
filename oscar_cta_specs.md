@@ -195,6 +195,10 @@ Per CTA staat in de backend of de handy trilt bij een push. Dit is niet zichtbaa
 op de kaart en de kelner kan er niets mee — het is een instelling van het huis.
 Defaults per CTA: §7.4.
 
+Dat het **per CTA instelbaar** is, is het besluit (Peter, 13-09-2026). Welke er in
+de doos aan staan is daarmee een startwaarde als alle andere (§7.0) en geen
+afzonderlijke beslissing.
+
 ### §2.10 Status per CTA per locatie
 
 | Status | Gedrag |
@@ -571,9 +575,20 @@ Gebruikt door:
 De meter loopt vanzelf terug als de zaak leegloopt, zodat een nalopende tafel op
 een uitgelopen avond "druk" niet kunstmatig hoog houdt.
 
-CTA 3 gebruikt géén drukte, maar puur "seater actief" (§5.3).
+CTA 3 gebruikt géén drukte, maar de forecast (§4.4, §5.3).
 
-Parameters: `drukte_venster`, `drukte_drempel` (§7.1) — beide TODO (O3).
+**Oscar bouwt hier zelf aan** (13-09-2026): er is een druktemeter in ontwikkeling.
+Sluit daarop aan in plaats van een eigen order-rate te bouwen — twee meters die
+iets anders zeggen over dezelfde avond is erger dan geen meter.
+
+**Een tweede signaal, met een valkuil.** Het aantal openstaande tafels is realtime
+beschikbaar en zegt iets over de werkdruk. Maar aan het begin en aan het eind van
+een service staan er weinig tafels open terwijl het juist hectisch is — iedereen
+komt tegelijk binnen of wil tegelijk afrekenen. Openstaande tafels alleen is dus
+misleidend op precies de twee momenten die ertoe doen.
+
+Parameters: `drukte_venster`, `drukte_drempel` (§7.1) — TODO (O3), en mogelijk
+overbodig als de druktemeter van Oscar ze levert.
 
 ### §4.2 Drukte van de kelner
 
@@ -639,9 +654,13 @@ automatisch uit het overzicht.
 
 ### §4.4 Verwachte drukte (forecast)
 
-De forecast is het aantal couverts dat voor een service verwacht wordt. Hij komt
-uit het reserveringssysteem en zegt iets heel anders dan §4.1: niet hoe hard het
-nú loopt, maar hoeveel er is ingekocht en ingeroosterd.
+De forecast is het aantal couverts dat voor een service verwacht wordt. Hij zegt
+iets heel anders dan §4.1: niet hoe hard het nú loopt, maar hoeveel er is
+ingekocht en ingeroosterd.
+
+**Hij is statisch en vooraf bekend** (Oscar, 13-09-2026): bij de start van de
+lunch of het diner staat het getal vast. Er hoeft dus niet tijdens de service
+opgevraagd te worden, en CTA 3 kan er vanaf de eerste tafel op leunen.
 
 Daarom wordt hij maar voor één ding gebruikt: bepalen of er een **seater**
 ingeroosterd staat (§5.3). Boven `cta3_forecast_min` couverts is dat altijd zo.
@@ -1598,6 +1617,9 @@ er over een half jaar aan, dan begint het meten ook pas dan.
 | 12-09-2026 | Afgeleverd, gelezen en beantwoord worden apart vastgelegd (§6.4) | De handy koppelt dat terug (Peter, 12-09-2026). Zonder dat onderscheid meet het periodesrapport voor een deel de wifi-dekking en presenteert dat als het functioneren van een medewerker |
 | 12-09-2026 | De log bevat het personeelsnummer, niet de naam (§6.2) | Het rapport telt op over vier weken en moet kloppen bij twee dezelfde voornamen of een naamswijziging; de staff-app heeft een sleutel nodig. Herziet het besluit "recordformaat ongewijzigd" op dit ene punt. Bijvangst: geen namen in de analysetabel |
 | 12-09-2026 | "Uit de buurt" (CTA 14) is een lijst postcodes per locatie in de backend; de gastpostcode komt uit de reservering (§5.14) | Geen geocoding en geen externe dienst. Bij een strandlocatie is een straal voor de helft zee en onbereikbaar gebied; een lijst kun je precies snijden |
+| 13-09-2026 | De forecast is statisch en vooraf bekend; CTA 3 kan er vanaf de eerste tafel op leunen (§4.4) | Oscar. O21 gesloten |
+| 13-09-2026 | Vibratie is per CTA instelbaar in de backend; de defaults zijn startwaarden (§2.9) | Peter. O8 gesloten — het was geen besluit maar een instelling |
+| 13-09-2026 | Aansluiten op de druktemeter die Oscar bouwt, in plaats van een eigen order-rate (§4.1) | Twee meters die iets anders zeggen over dezelfde avond is erger dan geen meter |
 | 13-09-2026 | De tabletflow van CTA 11 blijft in twee niveaus (§5.11) | Overzicht op een tablet dat buiten hangt weegt zwaarder dan één tik winst. Verworpen: de redenen direct op het actiescherm, en een tafelgrid in plaats van het toetsenblok |
 | 13-09-2026 | CTA 11 is een interne kwaliteitsmelding, geen gastvraag, met drie redenen (§5.11) | Het gaat om tafelnummering en orders die niet kloppen. De drie redenen vragen elk om een andere handeling, en samen zijn ze een telling van administratiefouten per kelner |
 | 13-09-2026 | CTA 11 krijgt bewust bijna geen vervalvoorwaarde (§5.11) | Er is geen systeemgebeurtenis die betekent dat een verkeerde bestelling is rechtgezet; alleen `FIXED` zegt dat. Een gast met een verkeerde bestelling die genegeerd wordt is erger dan een gemiste tik |
@@ -1652,13 +1674,11 @@ Geen van deze gaat weg door te meten.
 
 | Code | Vraag | Blokkeert | Wie |
 |---|---|---|---|
-| O8 | Trillen alleen CTA 1, 2, 3, 9, 10, 11 en 12, zoals nu in §7.4? Dat patroon is nooit apart besloten. | Niets — instelbaar | Oscar |
 | O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport | Peter / kantoor |
 | O26 | Zijn wijzigingen en verwijderingen van bonregels zichtbaar in de POS-data? Dan kan CTA 11 vervallen zodra de klacht is hersteld (§5.11) — en het is ook de basis voor het meten van weggehaalde regels bij het afrekenen. | CTA 11, en het meten van verdwenen producten | Oscar |
 | O25 | Is uit de POS te zien dat een kelner een tafel open heeft staan zonder iets verzonden te hebben? Dan kan CTA 9 vervallen omdat hij er al mee bezig is (§2.18). | Alleen dit extra geval | Oscar |
 | O23 | Wat gebeurt er technisch bij het **omzetten** van een tafel? Verhuist het ticket-id mee, verhuist de reserveringsnaam mee, en blijven de productregels bestaan of worden ze tot één regel samengevat? | Of een bezoek achteraf te reconstrueren is, en of de naam als koppeling bruikbaar is | Oscar |
 | O22 | Wat koppelt de handy precies terug — afgeleverd, gelezen, knop, iets anders (§6.4)? Daar hangt aan of `gelezen_sec` te vullen is, en daarmee of het periodesrapport eerlijk kan meten. | §6.4, en de eerlijkheid van §11.6 | Oscar |
-| O21 | Waar komt de forecast vandaan en is hij voor de monitor beschikbaar op het moment dat een tafel geopend wordt (§4.4)? Zonder die koppeling vuurt CTA 3 niet. | CTA 3 | Oscar |
 | O18 | CTA 13 legt een oordeel over een gast vast; CTA 14 gebruikt de postcode voor een ander doel dan de reservering. Grondslag en bewaartermijn laten toetsen vóór invoering. | CTA 13 en 14 | Peter / kantoor |
 
 ### §9.2 IJken — met de shadow-log, niet aan tafel
@@ -1684,7 +1704,7 @@ verschillende drempels is erger dan een drempel die niet optimaal is.
 | Code | Vraag | Wie |
 |---|---|---|
 | O5 | Wat is `cta5_bedrag_pp` — de besteding per persoon vanaf welke de koffie mag? Eén bedrag per locatie. Dit is een keuze van het huis, geen meting. | Oscar / bedrijfsleiding |
-| O3 | De order-rate-drempel voor "druk", en over welk venster gemeten | Oscar, te ijken |
+| O3 | De order-rate-drempel voor "druk", en over welk venster gemeten. Mogelijk overbodig: Oscar heeft een druktemeter in ontwikkeling (§4.1) | Oscar |
 | O6 | Hoe lang `WAIT` op CTA 5 uitstelt | Oscar, te ijken |
 
 ## §10 Beachalert — het vloertablet als bron
