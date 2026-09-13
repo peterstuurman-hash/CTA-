@@ -387,6 +387,65 @@ niet kent, valt terug op een neutrale zin.
 Is de poort onbereikbaar, dan is dat geen uitkomst maar een storing: de bron toont
 een handelingsperspectief en belooft niets.
 
+### §2.18 Actualiteit — geen loze meldingen
+
+Een CTA heeft niet alleen een **trigger** maar ook een **geldigheidsvoorwaarde**:
+de reden waarom hij bestaat. Die wordt op drie momenten opnieuw gecontroleerd:
+
+1. bij het ontstaan
+2. **op het moment dat hij getoond zou worden** — uit de wachtrij, of na uitstel
+3. zolang hij op de handy staat
+
+Is de reden weg, dan vervalt hij. Hij wordt niet getoond, en als hij al stond,
+verdwijnt hij.
+
+**Waarom dit nodig is.** Tussen ontstaan en tonen zit tijd. Er staan maximaal
+drie kaarten op een handy (§2.3) en er is een tempo-limiet (§2.8), dus op
+niveau 1 kan een CTA een kwartier in de wachtrij staan. In dat kwartier kan de
+kelner precies datgene hebben gedaan waar de melding over ging.
+
+Een voorbeeld waar het misgaat zonder deze regel:
+
+```
+19:02  CTA 1 ontstaat op tafel 3 — nog niets besteld
+19:02  tegengehouden: de kelner deed net iets  → wachtrij
+19:04  runner meldt "wil bestellen" op tafel 3 → CTA 9 gaat direct door (§2.8)
+19:05  de kelner neemt de bestelling op
+19:17  het venster loopt af → CTA 1 komt uit de wachtrij
+```
+
+Zonder controle komt er om 19:17 een kaart "tafel 3 — first order" op een tafel
+die al twaalf minuten heeft besteld. Dat is precies de melding die kelners leert
+dat het systeem niet meekijkt.
+
+#### Wat per CTA de voorwaarde is
+
+| CTA | Vervalt zodra |
+|---|---|
+| 1 · First order | er een POS-order op de tafel staat |
+| 2 · Sleeping table | er sindsdien een kelner-actie is geweest |
+| 3 · Seater actief | de tafel inmiddels geseat is |
+| 5 · Offer a coffee | het druk is geworden (§4.1) |
+| 6 · Ready for main | het hoofdgerecht al gefired is |
+| 7 · Actief-check | de kelner inmiddels iets heeft aangeslagen |
+| 8 · Ready for dessert | het dessert al gefired is |
+| 9 · Gast wil bestellen | er sindsdien is aangeslagen op die tafel — TODO (O24) |
+| 10 · Gast wil betalen | de rekening is aangeslagen of het ticket gesloten |
+| 11 · Bestelling klopt niet | — de melding blijft geldig tot iemand hem afhandelt |
+| 12 · Roep LG | een collega-LG hem heeft opgepakt (§5.12) |
+| 13 · Uitnodigen | het druk is geworden |
+| 14 · Wervingskaartje | het druk is geworden |
+
+Voor élke CTA geldt daarnaast: een **gesloten ticket** laat hem vervallen. Dat is
+§2.5, maar dan ook voor wat nog in de wachtrij staat.
+
+#### Loggen
+
+Een CTA die hierop vervalt krijgt `actie = vervallen_aanleiding_weg` (§6.2), te
+onderscheiden van `vervallen_levensduur`. Dat is een nuttig getal op zichzelf:
+het zegt hoe vaak het systeem op het punt stond iets te melden dat al geregeld
+was. Loopt dat op, dan staan de timers te scherp of is de wachtrij te lang.
+
 ---
 
 ## §3 Kelnerselectie (routing)
@@ -1432,6 +1491,7 @@ er over een half jaar aan, dan begint het meten ook pas dan.
 | 12-09-2026 | Afgeleverd, gelezen en beantwoord worden apart vastgelegd (§6.4) | De handy koppelt dat terug (Peter, 12-09-2026). Zonder dat onderscheid meet het periodesrapport voor een deel de wifi-dekking en presenteert dat als het functioneren van een medewerker |
 | 12-09-2026 | De log bevat het personeelsnummer, niet de naam (§6.2) | Het rapport telt op over vier weken en moet kloppen bij twee dezelfde voornamen of een naamswijziging; de staff-app heeft een sleutel nodig. Herziet het besluit "recordformaat ongewijzigd" op dit ene punt. Bijvangst: geen namen in de analysetabel |
 | 12-09-2026 | "Uit de buurt" (CTA 14) is een lijst postcodes per locatie in de backend; de gastpostcode komt uit de reservering (§5.14) | Geen geocoding en geen externe dienst. Bij een strandlocatie is een straal voor de helft zee en onbereikbaar gebied; een lijst kun je precies snijden |
+| 13-09-2026 | Elke CTA krijgt een geldigheidsvoorwaarde die opnieuw wordt gecontroleerd vóór tonen (§2.18) | Tussen ontstaan en tonen kan een kwartier zitten. Zonder die controle komt er een kaart "first order" op een tafel die al lang besteld heeft — precies de melding die kelners leert dat het systeem niet meekijkt |
 | 12-09-2026 | De remmen (§2.7, §2.8) gelden alleen voor systeem-CTA's; mens-CTA's gaan altijd door maar tellen wél mee voor het venster | Er staat iemand te wachten die het al gemeld heeft. Door ze te laten meetellen treden Oscars eigen timers terug als de vloer aan het melden is — en blijft het maximum betekenen wat het zegt |
 | 12-09-2026 | Tempo-limiet naar 1 / 2 / 3 per 900 sec, en §2.8 gecorrigeerd | De oude waarden (1/3/6 per 600 sec) kwamen uit de demo en waren nooit gekozen: niveau 3 stond op ~180 meldingen per dienst. §2.8 beweerde bovendien dat de limiet het totaal per dienst begrenst, en dat doet hij niet |
 | 12-09-2026 | Eén systeembrede standaard, per locatie te overschrijven; het beheerscherm toont het verschil (§7.0) | Een zaak die niets instelt volgt de standaard en blijft dat doen. Zonder dat onderscheid zichtbaar te maken snapt niemand waarom een wijziging bij vier zaken werkt en bij drie niet |
@@ -1482,6 +1542,7 @@ Geen van deze gaat weg door te meten.
 |---|---|---|---|
 | O8 | Trillen alleen CTA 1, 2, 3, 9, 10, 11 en 12, zoals nu in §7.4? Dat patroon is nooit apart besloten. | Niets — instelbaar | Oscar |
 | O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport | Peter / kantoor |
+| O24 | CTA 9 vervalt als er sindsdien op die tafel is aangeslagen — maar binnen welk venster? Peter noemde ">60 seconden vóór de melding"; dat is de omgekeerde richting van de recente-bestelling-check (§5.9). Wat is bedoeld? | CTA 9 | Peter |
 | O23 | Wat gebeurt er technisch bij het **omzetten** van een tafel? Verhuist het ticket-id mee, verhuist de reserveringsnaam mee, en blijven de productregels bestaan of worden ze tot één regel samengevat? | Of een bezoek achteraf te reconstrueren is, en of de naam als koppeling bruikbaar is | Oscar |
 | O22 | Wat koppelt de handy precies terug — afgeleverd, gelezen, knop, iets anders (§6.4)? Daar hangt aan of `gelezen_sec` te vullen is, en daarmee of het periodesrapport eerlijk kan meten. | §6.4, en de eerlijkheid van §11.6 | Oscar |
 | O21 | Waar komt de forecast vandaan en is hij voor de monitor beschikbaar op het moment dat een tafel geopend wordt (§4.4)? Zonder die koppeling vuurt CTA 3 niet. | CTA 3 | Oscar |
