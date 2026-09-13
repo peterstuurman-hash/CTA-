@@ -429,7 +429,7 @@ dat het systeem niet meekijkt.
 | 6 · Ready for main | het hoofdgerecht al gefired is |
 | 7 · Actief-check | de kelner inmiddels iets heeft aangeslagen |
 | 8 · Ready for dessert | het dessert al gefired is |
-| 9 · Gast wil bestellen | er sindsdien is aangeslagen op die tafel — TODO (O24) |
+| 9 · Gast wil bestellen | er ná het melden is aangeslagen op die tafel |
 | 10 · Gast wil betalen | de rekening is aangeslagen of het ticket gesloten |
 | 11 · Bestelling klopt niet | — de melding blijft geldig tot iemand hem afhandelt |
 | 12 · Roep LG | een collega-LG hem heeft opgepakt (§5.12) |
@@ -438,6 +438,29 @@ dat het systeem niet meekijkt.
 
 Voor élke CTA geldt daarnaast: een **gesloten ticket** laat hem vervallen. Dat is
 §2.5, maar dan ook voor wat nog in de wachtrij staat.
+
+#### Twee momenten bij CTA 9, en ze zijn niet hetzelfde
+
+Bij "wil bestellen" wordt twee keer naar dezelfde tafel gekeken, met een ander
+gevolg:
+
+| Wanneer | Wat er gecheckt wordt | Gevolg |
+|---|---|---|
+| **Bij het intoetsen** | Is er binnen `recente_order_venster` vóór de melding aangeslagen? | Het tablet vraagt "zojuist besteld — toch doorgeven?" De runner kan doordrukken (§5.9) |
+| **Vóór het tonen** | Is er ná de melding aangeslagen? | De CTA vervalt. Geen vraag, geen venster |
+
+Het eerste is een **marge**: de kelner was er misschien net, en de runner weet dat
+niet. Daar hoort een venster bij, en de runner mag het overrulen — hij heeft de
+gast gesproken.
+
+Het tweede is **geen marge maar een feit**: er is besteld nadat de gast erom
+vroeg. Dan is de melding klaar, ook als de runner had doorgedrukt. Daar is geen
+getal voor nodig.
+
+**Nog een geval, als de POS het prijsgeeft.** Een kelner die tafel 3 open heeft
+staan in de POS maar nog niets heeft verzonden, is er al mee bezig. Een melding
+sturen heeft dan geen zin. Of die toestand uit WaiterPro te lezen is, staat open
+— O25.
 
 #### Loggen
 
@@ -1491,6 +1514,7 @@ er over een half jaar aan, dan begint het meten ook pas dan.
 | 12-09-2026 | Afgeleverd, gelezen en beantwoord worden apart vastgelegd (§6.4) | De handy koppelt dat terug (Peter, 12-09-2026). Zonder dat onderscheid meet het periodesrapport voor een deel de wifi-dekking en presenteert dat als het functioneren van een medewerker |
 | 12-09-2026 | De log bevat het personeelsnummer, niet de naam (§6.2) | Het rapport telt op over vier weken en moet kloppen bij twee dezelfde voornamen of een naamswijziging; de staff-app heeft een sleutel nodig. Herziet het besluit "recordformaat ongewijzigd" op dit ene punt. Bijvangst: geen namen in de analysetabel |
 | 12-09-2026 | "Uit de buurt" (CTA 14) is een lijst postcodes per locatie in de backend; de gastpostcode komt uit de reservering (§5.14) | Geen geocoding en geen externe dienst. Bij een strandlocatie is een straal voor de helft zee en onbereikbaar gebied; een lijst kun je precies snijden |
+| 13-09-2026 | CTA 9 vervalt zodra er ná het melden is aangeslagen — zonder venster (§2.18) | Een order vóór de melding is een marge waar de runner overheen mag; een order ná de melding is een feit. Voor een feit is geen getal nodig |
 | 13-09-2026 | Elke CTA krijgt een geldigheidsvoorwaarde die opnieuw wordt gecontroleerd vóór tonen (§2.18) | Tussen ontstaan en tonen kan een kwartier zitten. Zonder die controle komt er een kaart "first order" op een tafel die al lang besteld heeft — precies de melding die kelners leert dat het systeem niet meekijkt |
 | 12-09-2026 | De remmen (§2.7, §2.8) gelden alleen voor systeem-CTA's; mens-CTA's gaan altijd door maar tellen wél mee voor het venster | Er staat iemand te wachten die het al gemeld heeft. Door ze te laten meetellen treden Oscars eigen timers terug als de vloer aan het melden is — en blijft het maximum betekenen wat het zegt |
 | 12-09-2026 | Tempo-limiet naar 1 / 2 / 3 per 900 sec, en §2.8 gecorrigeerd | De oude waarden (1/3/6 per 600 sec) kwamen uit de demo en waren nooit gekozen: niveau 3 stond op ~180 meldingen per dienst. §2.8 beweerde bovendien dat de limiet het totaal per dienst begrenst, en dat doet hij niet |
@@ -1542,7 +1566,7 @@ Geen van deze gaat weg door te meten.
 |---|---|---|---|
 | O8 | Trillen alleen CTA 1, 2, 3, 9, 10, 11 en 12, zoals nu in §7.4? Dat patroon is nooit apart besloten. | Niets — instelbaar | Oscar |
 | O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport | Peter / kantoor |
-| O24 | CTA 9 vervalt als er sindsdien op die tafel is aangeslagen — maar binnen welk venster? Peter noemde ">60 seconden vóór de melding"; dat is de omgekeerde richting van de recente-bestelling-check (§5.9). Wat is bedoeld? | CTA 9 | Peter |
+| O25 | Is uit de POS te zien dat een kelner een tafel open heeft staan zonder iets verzonden te hebben? Dan kan CTA 9 vervallen omdat hij er al mee bezig is (§2.18). | Alleen dit extra geval | Oscar |
 | O23 | Wat gebeurt er technisch bij het **omzetten** van een tafel? Verhuist het ticket-id mee, verhuist de reserveringsnaam mee, en blijven de productregels bestaan of worden ze tot één regel samengevat? | Of een bezoek achteraf te reconstrueren is, en of de naam als koppeling bruikbaar is | Oscar |
 | O22 | Wat koppelt de handy precies terug — afgeleverd, gelezen, knop, iets anders (§6.4)? Daar hangt aan of `gelezen_sec` te vullen is, en daarmee of het periodesrapport eerlijk kan meten. | §6.4, en de eerlijkheid van §11.6 | Oscar |
 | O21 | Waar komt de forecast vandaan en is hij voor de monitor beschikbaar op het moment dat een tafel geopend wordt (§4.4)? Zonder die koppeling vuurt CTA 3 niet. | CTA 3 | Oscar |
