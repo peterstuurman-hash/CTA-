@@ -923,16 +923,25 @@ POS ze geeft.
 | `MOVE` | Alleen bij "voor een andere tafel": de regel verplaatsen naar de genoemde tafel. |
 | `CALL LG` | De kelner komt er niet uit. Push naar de LG met tafel en orderregels. |
 
-#### De runner kost het één tik
+#### Wat dit de runner kost
 
-Drie grote knoppen, klaar — hij loopt door. Alleen bij "voor een andere tafel"
-komt er een tweede scherm, en ook dat is één tik: Oscar stelt de kandidaten voor
-op grond van welke tafels in de buurt open staan en daar rond dat tijdstip een
-order hadden. Typen hoeft niet, en overslaan mag altijd.
+Vier tot zeven tikken, plus het loopje naar het tablet: openen, tafelnummer,
+"bestelling klopt niet", de reden, en eventueel de andere tafel.
 
-Dat is bewust krap gehouden. De runner heeft het probleem fysiek al opgelost; de
-melding is er alleen om de administratie te laten volgen. Kost het hem meer dan
-een paar seconden, dan doet hij het de volgende keer niet.
+**En hij wint er niets mee.** Hij heeft het probleem fysiek al opgelost door het
+glas bij de juiste tafel te zetten; alles daarna is overhead voor iemand anders.
+Dat is precies de reden dat dit soort meldingen doodbloedt, en het is een
+ontwerpprobleem en geen kwestie van goede wil.
+
+**Toch blijft de flow in twee niveaus** (besluit 13-09-2026): eerst "bestelling
+klopt niet", dan pas de reden. Het actiescherm houdt daarmee drie knoppen in
+plaats van vijf, en overzicht weegt op een tablet dat buiten hangt zwaarder dan
+één tik winst. Overwogen en verworpen: de redenen direct op het actiescherm, en
+een tafelgrid in plaats van het toetsenblok.
+
+Reken er daarom op dat een deel van deze fouten nooit gemeld wordt. Het getal in
+het periodesrapport (§11.6) is een **ondergrens, geen telling** — en zo hoort het
+daar ook besproken te worden.
 
 #### Waarom de kelner hem zelf krijgt
 
@@ -1589,6 +1598,7 @@ er over een half jaar aan, dan begint het meten ook pas dan.
 | 12-09-2026 | Afgeleverd, gelezen en beantwoord worden apart vastgelegd (§6.4) | De handy koppelt dat terug (Peter, 12-09-2026). Zonder dat onderscheid meet het periodesrapport voor een deel de wifi-dekking en presenteert dat als het functioneren van een medewerker |
 | 12-09-2026 | De log bevat het personeelsnummer, niet de naam (§6.2) | Het rapport telt op over vier weken en moet kloppen bij twee dezelfde voornamen of een naamswijziging; de staff-app heeft een sleutel nodig. Herziet het besluit "recordformaat ongewijzigd" op dit ene punt. Bijvangst: geen namen in de analysetabel |
 | 12-09-2026 | "Uit de buurt" (CTA 14) is een lijst postcodes per locatie in de backend; de gastpostcode komt uit de reservering (§5.14) | Geen geocoding en geen externe dienst. Bij een strandlocatie is een straal voor de helft zee en onbereikbaar gebied; een lijst kun je precies snijden |
+| 13-09-2026 | De tabletflow van CTA 11 blijft in twee niveaus (§5.11) | Overzicht op een tablet dat buiten hangt weegt zwaarder dan één tik winst. Verworpen: de redenen direct op het actiescherm, en een tafelgrid in plaats van het toetsenblok |
 | 13-09-2026 | CTA 11 is een interne kwaliteitsmelding, geen gastvraag, met drie redenen (§5.11) | Het gaat om tafelnummering en orders die niet kloppen. De drie redenen vragen elk om een andere handeling, en samen zijn ze een telling van administratiefouten per kelner |
 | 13-09-2026 | CTA 11 krijgt bewust bijna geen vervalvoorwaarde (§5.11) | Er is geen systeemgebeurtenis die betekent dat een verkeerde bestelling is rechtgezet; alleen `FIXED` zegt dat. Een gast met een verkeerde bestelling die genegeerd wordt is erger dan een gemiste tik |
 | 13-09-2026 | Een geprinte bon laat CTA 10 alleen vervallen als hij kort geleden is aangeslagen (§5.10) | "Rekening aangeslagen" is niet "gast geholpen". Een bon die tien minuten op tafel ligt zonder dat er iemand terugkomt, is juist de melding die je wilt hebben |
