@@ -431,7 +431,7 @@ dat het systeem niet meekijkt.
 | 8 · Ready for dessert | het dessert al gefired is |
 | 9 · Gast wil bestellen | er ná het melden is aangeslagen op die tafel |
 | 10 · Gast wil betalen | het ticket betaald is. Een **geprinte maar onbetaalde** bon laat hem alleen vervallen als die kort geleden is aangeslagen — zie §5.10 |
-| 11 · Bestelling klopt niet | — de melding blijft geldig tot iemand hem afhandelt |
+| 11 · Bestelling klopt niet | alleen bij een gesloten ticket — zie §5.11 |
 | 12 · Roep LG | een collega-LG hem heeft opgepakt (§5.12) |
 | 13 · Uitnodigen | het druk is geworden |
 | 14 · Wervingskaartje | het druk is geworden |
@@ -917,6 +917,33 @@ niet meteen.
 
 **Mens-CTA** (§2.15): delivery-check, fallback en escalatie volgens §2.16, met
 `escalatie_check` als timer (§7.5).
+
+#### Waarom deze bijna nooit vervalt
+
+CTA 9 en 10 hebben een systeemgebeurtenis die betekent dat de gast geholpen is:
+er is aangeslagen, of er is betaald. **CTA 11 heeft die niet.** Een order
+aanslaan maakt een verkeerde bestelling niet goed, en een bon printen evenmin.
+Het enige betrouwbare signaal dat het is opgelost, is de kelner die `FIXED`
+indrukt.
+
+Deze CTA heeft dus bewust bijna geen vervalvoorwaarde, en dat is geen omissie.
+Een gast met een verkeerde bestelling die genegeerd wordt, is erger dan een
+gemiste tik van het systeem — hier hoort de melding hardnekkig te zijn.
+
+**Eén uitzondering: een gesloten ticket.** Dan zit er niemand meer aan tafel en
+valt er niets meer te herstellen. Maar dat is geen "opgelost": het kan net zo
+goed betekenen dat de tafel is afgerekend mét de fout erop, of dat de regel er
+bij het afrekenen is afgehaald en nooit ergens anders op terecht is gekomen.
+
+Log zo'n verval daarom apart (`actie = ticket_gesloten`, §6.2) en tel hem. Een
+CTA 11 die eindigt doordat het ticket dichtging, is een melding die niemand heeft
+afgehandeld — en dat getal hoort in het periodesrapport (§11.6) thuis, niet in de
+ruis.
+
+**Wat er nog bij zou kunnen.** Is uit de POS te zien dat er ná de melding een
+regel op die tafel is gewijzigd of verwijderd, dan is de klacht vrijwel zeker
+afgehandeld en kan de CTA vervallen. Of die mutaties zichtbaar zijn, staat open —
+O26.
 
 ### §5.12 CTA 12 — Roep LG
 
@@ -1534,6 +1561,7 @@ er over een half jaar aan, dan begint het meten ook pas dan.
 | 12-09-2026 | Afgeleverd, gelezen en beantwoord worden apart vastgelegd (§6.4) | De handy koppelt dat terug (Peter, 12-09-2026). Zonder dat onderscheid meet het periodesrapport voor een deel de wifi-dekking en presenteert dat als het functioneren van een medewerker |
 | 12-09-2026 | De log bevat het personeelsnummer, niet de naam (§6.2) | Het rapport telt op over vier weken en moet kloppen bij twee dezelfde voornamen of een naamswijziging; de staff-app heeft een sleutel nodig. Herziet het besluit "recordformaat ongewijzigd" op dit ene punt. Bijvangst: geen namen in de analysetabel |
 | 12-09-2026 | "Uit de buurt" (CTA 14) is een lijst postcodes per locatie in de backend; de gastpostcode komt uit de reservering (§5.14) | Geen geocoding en geen externe dienst. Bij een strandlocatie is een straal voor de helft zee en onbereikbaar gebied; een lijst kun je precies snijden |
+| 13-09-2026 | CTA 11 krijgt bewust bijna geen vervalvoorwaarde (§5.11) | Er is geen systeemgebeurtenis die betekent dat een verkeerde bestelling is rechtgezet; alleen `FIXED` zegt dat. Een gast met een verkeerde bestelling die genegeerd wordt is erger dan een gemiste tik |
 | 13-09-2026 | Een geprinte bon laat CTA 10 alleen vervallen als hij kort geleden is aangeslagen (§5.10) | "Rekening aangeslagen" is niet "gast geholpen". Een bon die tien minuten op tafel ligt zonder dat er iemand terugkomt, is juist de melding die je wilt hebben |
 | 13-09-2026 | CTA 9 vervalt zodra er ná het melden is aangeslagen — zonder venster (§2.18) | Een order vóór de melding is een marge waar de runner overheen mag; een order ná de melding is een feit. Voor een feit is geen getal nodig |
 | 13-09-2026 | Elke CTA krijgt een geldigheidsvoorwaarde die opnieuw wordt gecontroleerd vóór tonen (§2.18) | Tussen ontstaan en tonen kan een kwartier zitten. Zonder die controle komt er een kaart "first order" op een tafel die al lang besteld heeft — precies de melding die kelners leert dat het systeem niet meekijkt |
@@ -1587,6 +1615,7 @@ Geen van deze gaat weg door te meten.
 |---|---|---|---|
 | O8 | Trillen alleen CTA 1, 2, 3, 9, 10, 11 en 12, zoals nu in §7.4? Dat patroon is nooit apart besloten. | Niets — instelbaar | Oscar |
 | O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport | Peter / kantoor |
+| O26 | Zijn wijzigingen en verwijderingen van bonregels zichtbaar in de POS-data? Dan kan CTA 11 vervallen zodra de klacht is hersteld (§5.11) — en het is ook de basis voor het meten van weggehaalde regels bij het afrekenen. | CTA 11, en het meten van verdwenen producten | Oscar |
 | O25 | Is uit de POS te zien dat een kelner een tafel open heeft staan zonder iets verzonden te hebben? Dan kan CTA 9 vervallen omdat hij er al mee bezig is (§2.18). | Alleen dit extra geval | Oscar |
 | O23 | Wat gebeurt er technisch bij het **omzetten** van een tafel? Verhuist het ticket-id mee, verhuist de reserveringsnaam mee, en blijven de productregels bestaan of worden ze tot één regel samengevat? | Of een bezoek achteraf te reconstrueren is, en of de naam als koppeling bruikbaar is | Oscar |
 | O22 | Wat koppelt de handy precies terug — afgeleverd, gelezen, knop, iets anders (§6.4)? Daar hangt aan of `gelezen_sec` te vullen is, en daarmee of het periodesrapport eerlijk kan meten. | §6.4, en de eerlijkheid van §11.6 | Oscar |
