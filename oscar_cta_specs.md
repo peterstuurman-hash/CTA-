@@ -898,22 +898,50 @@ loopt dat op, dan staat `cta10_bon_wachttijd` te ruim.
 
 ### §5.11 CTA 11 — Bestelling klopt niet
 
-**Doel** Een klopt-niet-melding bij de kelner zelf krijgen, niet bij de LG.
+**Doel** Signaleren dat de **tafelnummering of de orders niet kloppen**. Dit is in
+de eerste plaats een interne kwaliteitsmelding, geen vraag van een gast: er staat
+iets op de verkeerde plek, en dat loopt door in de rekening en in de data.
 
 **Trigger** Een medewerker tikt op het vloertablet de tafel aan plus "bestelling
-klopt niet" (§10.3).
+klopt niet", en kiest daarna in één tik wat er aan de hand is (§10.3).
 
-**Kaart** `Tafel [nr] ([naam]) — check je bestelling` · met, als ze beschikbaar
-zijn, de laatste orderregels van de tafel eronder.
+#### Drie redenen, want ze vragen om iets anders
+
+| Wat de runner kiest | Wat het betekent | Wat de kelner moet doen |
+|---|---|---|
+| **Niet besteld** | De gasten zeggen dat dit niet van hen is | De regel van deze rekening af, en uitzoeken waar hij wél hoort |
+| **Tafel is leeg** | Er zit niemand aan die tafel | De order staat op een tafel die niet bezet is: verkeerd nummer, of de gasten zijn al weg |
+| **Voor een andere tafel** | De runner weet waar het wél hoort | De regel verplaatsen |
+
+**Kaart** `Tafel [nr] — niet besteld` · `Tafel [nr] — tafel is leeg` ·
+`Tafel [nr] → hoort bij tafel [X]` · met de laatste orderregels eronder, als de
+POS ze geeft.
 
 | Knop | Actie |
 |---|---|
-| `FIXED` | Opgelost. CTA afgehandeld, geen escalatie. |
+| `FIXED` | Rechtgezet. CTA afgehandeld, geen escalatie. |
+| `MOVE` | Alleen bij "voor een andere tafel": de regel verplaatsen naar de genoemde tafel. |
 | `CALL LG` | De kelner komt er niet uit. Push naar de LG met tafel en orderregels. |
 
-**Gaat eerst naar de kelner, niet naar de LG.** Die staat er het dichtst bij en
-lost het meestal zelf op. De LG komt erbij via `CALL LG` of via de escalatietimer,
-niet meteen.
+#### De runner kost het één tik
+
+Drie grote knoppen, klaar — hij loopt door. Alleen bij "voor een andere tafel"
+komt er een tweede scherm, en ook dat is één tik: Oscar stelt de kandidaten voor
+op grond van welke tafels in de buurt open staan en daar rond dat tijdstip een
+order hadden. Typen hoeft niet, en overslaan mag altijd.
+
+Dat is bewust krap gehouden. De runner heeft het probleem fysiek al opgelost; de
+melding is er alleen om de administratie te laten volgen. Kost het hem meer dan
+een paar seconden, dan doet hij het de volgende keer niet.
+
+#### Waarom de kelner hem zelf krijgt
+
+Niet de LG, maar de kelner die de fout maakte. Die moet weten dat het misgaat, en
+wel op het moment zelf — een opmerking van de LG een week later koppelt niet meer
+terug aan wat hij toen deed.
+
+De LG komt erbij via `CALL LG` of via de escalatietimer, niet meteen. Een klacht
+die meteen bij de leidinggevende landt, maakt van elk verkeerd glas een incident.
 
 **Mens-CTA** (§2.15): delivery-check, fallback en escalatie volgens §2.16, met
 `escalatie_check` als timer (§7.5).
@@ -1561,6 +1589,7 @@ er over een half jaar aan, dan begint het meten ook pas dan.
 | 12-09-2026 | Afgeleverd, gelezen en beantwoord worden apart vastgelegd (§6.4) | De handy koppelt dat terug (Peter, 12-09-2026). Zonder dat onderscheid meet het periodesrapport voor een deel de wifi-dekking en presenteert dat als het functioneren van een medewerker |
 | 12-09-2026 | De log bevat het personeelsnummer, niet de naam (§6.2) | Het rapport telt op over vier weken en moet kloppen bij twee dezelfde voornamen of een naamswijziging; de staff-app heeft een sleutel nodig. Herziet het besluit "recordformaat ongewijzigd" op dit ene punt. Bijvangst: geen namen in de analysetabel |
 | 12-09-2026 | "Uit de buurt" (CTA 14) is een lijst postcodes per locatie in de backend; de gastpostcode komt uit de reservering (§5.14) | Geen geocoding en geen externe dienst. Bij een strandlocatie is een straal voor de helft zee en onbereikbaar gebied; een lijst kun je precies snijden |
+| 13-09-2026 | CTA 11 is een interne kwaliteitsmelding, geen gastvraag, met drie redenen (§5.11) | Het gaat om tafelnummering en orders die niet kloppen. De drie redenen vragen elk om een andere handeling, en samen zijn ze een telling van administratiefouten per kelner |
 | 13-09-2026 | CTA 11 krijgt bewust bijna geen vervalvoorwaarde (§5.11) | Er is geen systeemgebeurtenis die betekent dat een verkeerde bestelling is rechtgezet; alleen `FIXED` zegt dat. Een gast met een verkeerde bestelling die genegeerd wordt is erger dan een gemiste tik |
 | 13-09-2026 | Een geprinte bon laat CTA 10 alleen vervallen als hij kort geleden is aangeslagen (§5.10) | "Rekening aangeslagen" is niet "gast geholpen". Een bon die tien minuten op tafel ligt zonder dat er iemand terugkomt, is juist de melding die je wilt hebben |
 | 13-09-2026 | CTA 9 vervalt zodra er ná het melden is aangeslagen — zonder venster (§2.18) | Een order vóór de melding is een marge waar de runner overheen mag; een order ná de melding is een feit. Voor een feit is geen getal nodig |
@@ -1703,6 +1732,11 @@ geteld.
 **Recente-bestelling-check.** Bij "wil bestellen": is er korter dan
 `recente_order_venster` geleden op die tafel aangeslagen, dan eerst "zojuist besteld
 — toch doorgeven?" vóór er iets wordt weggeschreven.
+
+**Bij "bestelling klopt niet" volgt één vraag:** niet besteld · tafel is leeg ·
+voor een andere tafel (§5.11). Drie grote knoppen, één tik. Kiest hij de derde,
+dan stelt de poort kandidaat-tafels voor — open tafels in de buurt met een order
+rond dat tijdstip — zodat hij niet hoeft te typen. Overslaan mag.
 
 **Beide beslissingen zitten in de poort, niet in het tablet** (§10.1). Het tablet
 stuurt zijn commando, krijgt terug dat er al gemeld is of dat er net besteld is,
@@ -1904,7 +1938,7 @@ Wel:
 
 | Signaal | Wat het zegt |
 |---|---|
-| **CTA 11** bestelling klopt niet | Orderaccuratesse. Schaalt nauwelijks met drukte — het scherpste signaal dat we hebben |
+| **CTA 11** bestelling klopt niet | Orderaccuratesse. Dit is geen inschatting maar een **telling van fouten**: elke melding is een order die op de verkeerde plek stond. Schaalt nauwelijks met drukte, en daarmee het scherpste signaal dat we hebben |
 | **CTA 3** tafel buiten de seater om geopend | Procedure. Heeft weinig met drukte te maken |
 | **CTA 6 / 8** tweemaal `NO`, dan autofire | Gangbewaking. Deels vakmanschap, deels keuken |
 | **CTA 1 / 2** verlopen | Schaalt sterk mee met werklast. Alleen betekenisvol na normalisatie |
