@@ -430,7 +430,7 @@ dat het systeem niet meekijkt.
 | 7 · Actief-check | de kelner inmiddels iets heeft aangeslagen |
 | 8 · Ready for dessert | het dessert al gefired is |
 | 9 · Gast wil bestellen | er ná het melden is aangeslagen op die tafel |
-| 10 · Gast wil betalen | de rekening is aangeslagen of het ticket gesloten |
+| 10 · Gast wil betalen | het ticket betaald is. Een **geprinte maar onbetaalde** bon laat hem alleen vervallen als die kort geleden is aangeslagen — zie §5.10 |
 | 11 · Bestelling klopt niet | — de melding blijft geldig tot iemand hem afhandelt |
 | 12 · Roep LG | een collega-LG hem heeft opgepakt (§5.12) |
 | 13 · Uitnodigen | het druk is geworden |
@@ -871,11 +871,30 @@ besteld — toch doorgeven?") vóór er iets wordt weggeschreven. Zie §10.3.
 **Mens-CTA** (§2.15): delivery-check, fallback en escalatie volgens §2.16, met
 `escalatie_afrekenen` als timer (§7.5).
 
-**Auto-close.** Laat de orderstatus zien dat de rekening is aangeslagen of het
-ticket gesloten, dan wordt een openstaande CTA 10 automatisch afgehandeld — niemand
-hoeft af te vinken. Gelogd als `auto_close` in de `actie`-kolom (§6.2). Dit is
-naast §2.5, dat alle CTA's van een afgerekende tafel sowieso weghaalt; auto-close
-vuurt ook als de rekening is aangeslagen zonder dat het ticket al dicht is.
+**Auto-close.** Staat er een CTA 10 open en slaat de kelner de rekening aan, dan
+wordt de kaart automatisch afgehandeld — hij heeft gedaan wat er gevraagd werd,
+niemand hoeft af te vinken. Gelogd als `auto_close` (§6.2).
+
+#### Een geprinte bon is geen betaalde bon
+
+Voor een **nieuwe** melding ligt het anders, en dat onderscheid is belangrijk.
+
+Een bon kan tien minuten geleden geprint en op tafel gelegd zijn en nog steeds
+niet betaald. De gast zit te wachten en spreekt de runner aan — dat is precies de
+melding die je wilt hebben. Zou je hem laten vervallen omdat "de rekening is
+aangeslagen", dan schakel je het geval uit waar het systeem voor bedoeld is.
+
+| Toestand van het ticket | Nieuwe melding "wil betalen" |
+|---|---|
+| Betaald of gesloten | **Vervalt altijd.** De gast is geholpen |
+| Bon aangeslagen, korter dan `cta10_bon_wachttijd` geleden | **Vervalt.** De kelner is er net mee bezig; de bon is onderweg |
+| Bon aangeslagen, langer geleden | **Gaat door.** De bon ligt er kennelijk al een tijd en er is niemand teruggekomen |
+| Nog geen bon aangeslagen | **Gaat door.** Gewoon een verzoek |
+
+**Geen terugkoppeling naar de runner** als de melding op deze grond vervalt. Hij
+is al doorgelopen en er valt niets te doen; een bericht achteraf helpt niemand.
+Het vervallen wordt wél gelogd (§2.18), zodat te zien is hoe vaak dit gebeurt —
+loopt dat op, dan staat `cta10_bon_wachttijd` te ruim.
 
 ### §5.11 CTA 11 — Bestelling klopt niet
 
@@ -1400,6 +1419,7 @@ CTA 13 en 14 staan er nog niet in; die zijn nog een voorstel (§7.7).
 | `escalatie_roep_lg` | TODO (O10) | — | CTA 12 onbeantwoord → naar wie? |
 | `dedupe_venster` | 180 sec | opdracht Beachalert | Zelfde tafel + zelfde actie binnen deze tijd = geen tweede CTA (§10.3) |
 | `recente_order_venster` | 120 sec | opdracht Beachalert | "Zojuist besteld — toch doorgeven?" bij CTA 9 (§5.9) |
+| `cta10_bon_wachttijd` | 300 sec | startwaarde | Tijd na het aanslaan van de bon waarna een nieuwe "wil betalen" alsnog doorgaat (§5.10) |
 | `lookup_cache` | 60 sec | opdracht Beachalert | Maximale leeftijd van de tafel-naar-kelner lookup (§10.2) |
 | `lg_routing` | vaste instelling per zaak | besluit 12-09-2026 | Vangnet voor wanneer er niemand met de rol LG is ingelogd (§5.12) |
 | `cta12_samenvoegvenster` | 300 sec | startwaarde | Binnen deze tijd worden oproepen aan dezelfde LG één kaart (§5.12) |
@@ -1514,6 +1534,7 @@ er over een half jaar aan, dan begint het meten ook pas dan.
 | 12-09-2026 | Afgeleverd, gelezen en beantwoord worden apart vastgelegd (§6.4) | De handy koppelt dat terug (Peter, 12-09-2026). Zonder dat onderscheid meet het periodesrapport voor een deel de wifi-dekking en presenteert dat als het functioneren van een medewerker |
 | 12-09-2026 | De log bevat het personeelsnummer, niet de naam (§6.2) | Het rapport telt op over vier weken en moet kloppen bij twee dezelfde voornamen of een naamswijziging; de staff-app heeft een sleutel nodig. Herziet het besluit "recordformaat ongewijzigd" op dit ene punt. Bijvangst: geen namen in de analysetabel |
 | 12-09-2026 | "Uit de buurt" (CTA 14) is een lijst postcodes per locatie in de backend; de gastpostcode komt uit de reservering (§5.14) | Geen geocoding en geen externe dienst. Bij een strandlocatie is een straal voor de helft zee en onbereikbaar gebied; een lijst kun je precies snijden |
+| 13-09-2026 | Een geprinte bon laat CTA 10 alleen vervallen als hij kort geleden is aangeslagen (§5.10) | "Rekening aangeslagen" is niet "gast geholpen". Een bon die tien minuten op tafel ligt zonder dat er iemand terugkomt, is juist de melding die je wilt hebben |
 | 13-09-2026 | CTA 9 vervalt zodra er ná het melden is aangeslagen — zonder venster (§2.18) | Een order vóór de melding is een marge waar de runner overheen mag; een order ná de melding is een feit. Voor een feit is geen getal nodig |
 | 13-09-2026 | Elke CTA krijgt een geldigheidsvoorwaarde die opnieuw wordt gecontroleerd vóór tonen (§2.18) | Tussen ontstaan en tonen kan een kwartier zitten. Zonder die controle komt er een kaart "first order" op een tafel die al lang besteld heeft — precies de melding die kelners leert dat het systeem niet meekijkt |
 | 12-09-2026 | De remmen (§2.7, §2.8) gelden alleen voor systeem-CTA's; mens-CTA's gaan altijd door maar tellen wél mee voor het venster | Er staat iemand te wachten die het al gemeld heeft. Door ze te laten meetellen treden Oscars eigen timers terug als de vloer aan het melden is — en blijft het maximum betekenen wat het zegt |
