@@ -996,10 +996,16 @@ CTA 11 die eindigt doordat het ticket dichtging, is een melding die niemand heef
 afgehandeld — en dat getal hoort in het periodesrapport (§11.6) thuis, niet in de
 ruis.
 
-**Wat er nog bij zou kunnen.** Is uit de POS te zien dat er ná de melding een
-regel op die tafel is gewijzigd of verwijderd, dan is de klacht vrijwel zeker
-afgehandeld en kan de CTA vervallen. Of die mutaties zichtbaar zijn, staat open —
-O26.
+#### Er volgt niets richting de gast
+
+Dat is geen omissie maar de bedoeling (Peter, 13-09-2026). De runner heeft het
+fysiek al opgelost; de gast merkt er niets meer van. De melding bestaat om de
+**kelner** te laten weten dat zijn administratie niet klopt.
+
+De winst komt daar vandaan: doe je dat vaak genoeg, dan gaat de tafeladministratie
+beter en verdwijnen deze fouten aan de bron. Dat is een kortere weg dan het
+systeem elke losse fout laten herstellen — en de gast profiteert er indirect van,
+zonder dat er iets naar hem toe hoeft.
 
 ### §5.12 CTA 12 — Roep LG
 
@@ -1675,7 +1681,6 @@ Geen van deze gaat weg door te meten.
 | Code | Vraag | Blokkeert | Wie |
 |---|---|---|---|
 | O15 | Het periodesrapport (§11.6) registreert prestaties van individuele medewerkers. In Nederland geldt zoiets doorgaans als personeelsvolgsysteem, waar de OR instemmingsrecht op heeft. Vooraf laten toetsen. | Het periodesrapport | Peter / kantoor |
-| O26 | Zijn wijzigingen en verwijderingen van bonregels zichtbaar in de POS-data? Dan kan CTA 11 vervallen zodra de klacht is hersteld (§5.11) — en het is ook de basis voor het meten van weggehaalde regels bij het afrekenen. | CTA 11, en het meten van verdwenen producten | Oscar |
 | O25 | Is uit de POS te zien dat een kelner een tafel open heeft staan zonder iets verzonden te hebben? Dan kan CTA 9 vervallen omdat hij er al mee bezig is (§2.18). | Alleen dit extra geval | Oscar |
 | O23 | Wat gebeurt er technisch bij het **omzetten** van een tafel? Verhuist het ticket-id mee, verhuist de reserveringsnaam mee, en blijven de productregels bestaan of worden ze tot één regel samengevat? | Of een bezoek achteraf te reconstrueren is, en of de naam als koppeling bruikbaar is | Oscar |
 | O22 | Wat koppelt de handy precies terug — afgeleverd, gelezen, knop, iets anders (§6.4)? Daar hangt aan of `gelezen_sec` te vullen is, en daarmee of het periodesrapport eerlijk kan meten. | §6.4, en de eerlijkheid van §11.6 | Oscar |
@@ -2195,36 +2200,28 @@ of onbekend.
 zoals daar het personeelsnummer staat en geen kelnernaam (§6.2). De naam wordt
 erbij opgezocht op het moment van tonen.
 
-#### De verplaats-vraag bij het afrekenen
+#### Verworpen: het systeem fouten laten repareren
 
-Het scherpste geval: een runner brengt een cola naar tafel 3, die zegt "niet
-besteld", en de runner zet hem bij tafel 4. Fysiek opgelost, administratief niet —
-de cola staat nog op 3. Bij het afrekenen gaat hij er terecht af, en komt nooit
-bij 4 op. Een boekhoudfout wordt zo omzetverlies, en niemand die erbij staat
-merkt het.
+Overwogen en afgewezen (Peter, 13-09-2026): bij het afrekenen van "dit hebben we
+niet besteld" een **verplaats-vraag** maken in plaats van een verwijder-knop, en
+het weggevallen bedrag gaan meten.
 
-Die fout gaat **altijd één kant op**: de gast die het niet besteld heeft klaagt,
-de gast die het wél kreeg meldt nooit dat het ontbreekt op zijn rekening.
+Reden: dit gebeurt al vijftien jaar en het is niet wat we oplossen. De weg loopt
+via CTA 11 — de kelner terugkoppelen dat zijn administratie niet klopt (§5.11).
+Wordt die beter, dan verdwijnt het verlies aan de bron. Een correctiemechanisme
+eromheen bouwen is symptoombestrijding en kost meer dan het oplevert.
 
-De ingreep met de meeste winst zit niet bij de runner maar bij het afrekenen. Nu
-is "dit hebben we niet besteld" een **verwijder-knop**; dat zou een
-**verplaats-vraag** moeten zijn, met kandidaat-tafels erbij. Eén tik verschil
-tussen een verlies en een correctie — en je onderbreekt niemand, want de kelner
-was die regel toch al aan het weghalen.
+Niet opnieuw voorstellen zonder dat daar een aanleiding voor is.
 
 #### Eerst meten
 
-Niets hiervan bouwen voordat bekend is hoe groot het is. Dit kan met data die er
-al is:
+Wat je met bestaande data wél kunt zien, als je wilt weten hoe scheef het staat:
 
-- verwijderde regels bij het afrekenen: welk product, welke tafel, welk bedrag
 - tickets zonder reserveringskoppeling tijdens een gereserveerde service
 - tafels die binnen tien minuten na sluiten opnieuw opengaan
 - tickets met een gat van meer dan 45 minuten tussen orders
-- aanslagen buiten de eigen wijk
 
-Dat is een query, geen project. Bij 2% is maatregel 1 genoeg; bij 20% is het een
-post die ertoe doet.
+Dat is een query, geen project.
 
 #### Wat dit niet oplost
 
