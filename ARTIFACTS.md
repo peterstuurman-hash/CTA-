@@ -6,14 +6,23 @@ wie de oude link in een appje heeft staan ziet dan voor altijd de oude versie.
 
 | Artifact | URL | Bron | Gedeeld met |
 |---|---|---|---|
-| Oscar poortsimulator | https://claude.ai/code/artifact/b23cc9b3-94e6-423a-ae4e-be43a898eef2 | `docs/poortsimulator.html` | nog niemand |
-| Branding plattegrond | https://claude.ai/artifact/DHSkqiydFuWoNyhPKdRCsC | `docs/plattegrond.html` | nog niemand |
+| Oscar poortsimulator | https://claude.ai/artifact/P1Z2a2dUjWnDEMisshCsR3 | `docs/poortsimulator.html` | nog niemand |
+| ~~Branding plattegrond~~ | https://claude.ai/artifact/DHSkqiydFuWoNyhPKdRCsC | `docs/plattegrond.html` | overbodig — zit nu als tab in de poortsimulator |
 
 ## Oscar poortsimulator
 
-Draai aan de instellingen uit SPEC §7 — CTA-niveau, `kelner_idle`,
-`cta_max_per_window`, de twee vensters — en zie per situatie welke CTA's de handy
+Twee tabbladen.
+
+**De poort** — draai aan de instellingen uit SPEC §7 (CTA-niveau, `kelner_idle`,
+`cta_max_per_window`, de twee vensters) en zie per situatie welke CTA's de handy
 halen en welke worden tegengehouden, met de logregels die dat oplevert.
+
+**Plattegrond** — wat de kelner ziet: de tafels van Branding met kleuren in
+plaats van kaartjes. Donker binnen de lichte pagina, want het is een
+voorvertoning van een handyscherm en geen bureau-gereedschap.
+
+De URL is in september 2026 van vorm veranderd (`/code/artifact/` werd
+`/artifact/`); het is dezelfde pagina.
 
 De logica in de pagina is een kopie van `packages/cta/src/poort`. **Wijzigt die
 logica, dan moet de pagina mee** — anders laat de simulator iets anders zien dan
