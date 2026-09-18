@@ -283,6 +283,22 @@
   #tab-plan .tellers div { display: grid; gap: 1px; }
   #tab-plan .tellers .n { font: 600 20px/1 var(--sans); font-variant-numeric: tabular-nums; color: var(--d-inkt); }
   #tab-plan .tellers .l { font-size: 12px; color: var(--d-zacht); }
+  #tab-plan .wijkblokken {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  }
+  @media (max-width: 620px) { #tab-plan .wijkblokken { grid-template-columns: repeat(2, 1fr); } }
+  #tab-plan .wijkblok {
+    border-radius: 12px; padding: 16px 14px 14px; min-height: 130px;
+    display: grid; align-content: space-between; gap: 10px;
+    border: 1px solid transparent;
+  }
+  #tab-plan .wijkblok .code { font: 700 22px/1 var(--sans); }
+  #tab-plan .wijkblok .naam { font-size: 12.5px; opacity: .8; margin-top: 2px; }
+  #tab-plan .wijkblok .wie { font-size: 12.5px; opacity: .8; }
+  #tab-plan .wijkblok .telling { font-size: 13px; font-weight: 600; }
+  #tab-plan .wijkblok.groen { background: #143026; border-color: #2f9e6e; color: #cdf0e0; }
+  #tab-plan .wijkblok.oranje { background: #33260f; border-color: #d9902f; color: #f6e2c2; }
+  #tab-plan .wijkblok.rood { background: #33161a; border-color: #dc4a54; color: #f7d3d6; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -353,9 +369,10 @@
 
       <div class="balk" id="wijkbalk" role="group" aria-label="Door wiens ogen"></div>
 
-      <div class="kaart">
+      <div class="kaart" id="kaartWrap">
         <svg id="plan" viewBox="330 165 1400 480" role="img" aria-label="Plattegrond van Branding met tafels"></svg>
       </div>
+      <div class="wijkblokken" id="wijkblokken" hidden></div>
 
       <div class="detail" id="paneelPlan" aria-live="polite">
         <p class="leeg-tekst">Tik op een tafel.</p>
@@ -782,16 +799,18 @@
   // --- wat er op een tafel speelt ------------------------------------------
   // Vijf CTA's sluiten zichzelf zodra de kelner het werk doet; die vragen geen
   // knop, alleen een kleur. De rest vraagt een echte beslissing.
+  // `bestellen: true` betekent dat het antwoord op deze melding gewoon bestellen
+  // is. Dan hoeft er geen kaart tussen: tikken op de tafel opent de POS.
   var SITUATIES = [
-    { id:'cta1',  kleur:'rood',   cta:'CTA 1',  wat:'Nog niets besteld sinds het seaten.', doen:'Neem de eerste bestelling op.', knoppen:null },
-    { id:'cta9',  kleur:'rood',   cta:'CTA 9',  wat:'De runner geeft door dat ze willen bestellen.', doen:'Loop erheen en neem op.', knoppen:null },
-    { id:'cta10', kleur:'rood',   cta:'CTA 10', wat:'De runner geeft door dat ze willen afrekenen.', doen:'Reken af of print de bon.', knoppen:null },
-    { id:'cta2',  kleur:'oranje', cta:'CTA 2',  wat:'Al een tijd geen actie op deze tafel.', doen:'Even langslopen.', knoppen:null },
-    { id:'cta5',  kleur:'oranje', cta:'CTA 5',  wat:'Gulle tafel — je mag een koffie aanbieden.', doen:'Aanbieden als het uitkomt.', knoppen:null },
-    { id:'cta6',  kleur:'oranje', cta:'CTA 6',  wat:'Het voorgerecht is een tijd geleden weg.', doen:'Kan het hoofdgerecht door?', knoppen:[['GO',1],['NO',0]] },
-    { id:'cta8',  kleur:'oranje', cta:'CTA 8',  wat:'Het hoofdgerecht is gefired.', doen:'Kan het dessert door?', knoppen:[['GO',1],['NO',0]] },
-    { id:'cta11', kleur:'rood',   cta:'CTA 11', wat:'Runner meldt: deze bestelling klopt niet.', doen:'Zet de tafeladministratie recht.', knoppen:[['FIXED',1],['CALL LG',0]] },
-    { id:'cta3',  kleur:'rood',   cta:'CTA 3',  wat:'Tafel is geopend zonder dat hij geseat is.', doen:'Waar komen deze gasten vandaan?', knoppen:[['NEW',1],['PULL',0]] }
+    { nr:1,  kleur:'rood',   wat:'Nog niets besteld sinds het seaten.',            bestellen:true },
+    { nr:9,  kleur:'rood',   wat:'De runner geeft door dat ze willen bestellen.',  bestellen:true },
+    { nr:2,  kleur:'oranje', wat:'Al een tijd geen actie op deze tafel.',          bestellen:true },
+    { nr:5,  kleur:'oranje', wat:'Gulle tafel — je mag een koffie aanbieden.',     bestellen:true },
+    { nr:10, kleur:'rood',   wat:'De runner geeft door dat ze willen afrekenen.',  doen:'Reken af of print de bon.', knoppen:[['PRINT',1],['NO',0]] },
+    { nr:11, kleur:'rood',   wat:'Runner meldt: deze bestelling klopt niet.',      doen:'Zet de tafeladministratie recht.', knoppen:[['FIXED',1],['CALL LG',0]] },
+    { nr:3,  kleur:'rood',   wat:'Tafel is geopend zonder dat hij geseat is.',     doen:'Waar komen deze gasten vandaan?', knoppen:[['NEW',1],['PULL',0]] },
+    { nr:6,  kleur:'oranje', wat:'Het voorgerecht is een tijd geleden weg.',       doen:'Kan het hoofdgerecht door?', knoppen:[['GO',1],['NO',0]] },
+    { nr:8,  kleur:'oranje', wat:'Het hoofdgerecht is gefired.',                   doen:'Kan het dessert door?', knoppen:[['GO',1],['NO',0]] }
   ];
 
   var staat = {};
@@ -876,11 +895,54 @@
     document.getElementById('tOranje').textContent = n.oranje;
     document.getElementById('tGroen').textContent = n.groen;
     document.getElementById('tLeeg').textContent = n.leeg;
+    tekenWijkblokken();
     var m = MENSEN[huidigePersoon];
     document.getElementById('wie').textContent =
       m.rol === 'LG'
-        ? 'Mark ziet alle vier de wijken'
+        ? 'Mark ziet geen losse tafels maar vier wijken — in één oogopslag waar het knelt'
         : m.naam + ' loopt ' + m.wijken.join(' en ') + ' — de rest staat er alleen om te herkennen waar hij is';
+  }
+
+  // --- het LG-beeld: vier wijken, geen tafels ------------------------------
+  function standVanWijk(code) {
+    var rood = 0, oranje = 0;
+    T.forEach(function (t) {
+      var w = wijkVan(t[0]);
+      if (!w || w.code !== code) return;
+      if (staat[t[0]].kleur === 'rood') rood++;
+      else if (staat[t[0]].kleur === 'oranje') oranje++;
+    });
+    var stand = rood >= 2 ? 'rood' : (rood === 1 || oranje >= 3 ? 'oranje' : 'groen');
+    return { stand: stand, rood: rood, oranje: oranje };
+  }
+
+  function wieLoopt(code) {
+    var namen = MENSEN.filter(function (m) {
+      return m.rol === 'kelner' && m.wijken.indexOf(code) !== -1;
+    }).map(function (m) { return m.naam; });
+    return namen.length ? namen.join(', ') : 'niemand';
+  }
+
+  function tekenWijkblokken() {
+    var el = document.getElementById('wijkblokken');
+    var isLG = MENSEN[huidigePersoon].rol === 'LG';
+    document.getElementById('kaartWrap').hidden = isLG;
+    el.hidden = !isLG;
+    if (!isLG) return;
+
+    el.innerHTML = WIJKEN.map(function (w) {
+      var s = standVanWijk(w.code);
+      var tekst = s.rood || s.oranje
+        ? (s.rood ? s.rood + ' × prioriteit' : '') +
+          (s.rood && s.oranje ? ' · ' : '') +
+          (s.oranje ? s.oranje + ' × aandacht' : '')
+        : 'niets open';
+      return '<div class="wijkblok ' + s.stand + '">' +
+        '<div><div class="code">' + w.code + '</div><div class="naam">' + w.naam + '</div></div>' +
+        '<div><div class="telling">' + tekst + '</div>' +
+        '<div class="wie">' + wieLoopt(w.code) + '</div></div>' +
+        '</div>';
+    }).join('');
   }
 
   // --- paneel --------------------------------------------------------------
@@ -892,31 +954,30 @@
   function toonPaneel() {
     var el = document.getElementById('paneelPlan');
     if (!gekozen) { el.innerHTML = '<p class="leeg-tekst">Tik op een tafel.</p>'; return; }
-    var s = staat[gekozen];
+
+    var st = staat[gekozen];
     var w = wijkVan(gekozen);
     var kop = '<h2>Tafel ' + gekozen + (w ? ' <span class="wijk">' + w.code + '</span>' : '') + '</h2>';
 
-    if (s.kleur === 'leeg') {
-      el.innerHTML = kop + '<p class="status">Leeg</p><p class="geen-knop">Geen gasten aan deze tafel.</p>';
+    // Geen kaart die om iets anders vraagt? Dan opent WaiterPro meteen.
+    if (!st.sit || st.sit.bestellen) {
+      var reden = st.kleur === 'leeg'
+        ? 'Nieuwe tafel openen.'
+        : (st.sit ? st.sit.wat : 'Niets bijzonders aan de hand.');
+      el.innerHTML = kop +
+        '<p class="status">WaiterPro opent</p>' +
+        '<p class="wat">' + reden + '</p>' +
+        '<p class="geen-knop">Eén tik vanaf de kaart. Er komt geen scherm tussen, want bestellen is hier het antwoord.</p>';
       return;
     }
-    if (!s.sit) {
-      el.innerHTML = kop + '<p class="status">In orde</p><p class="geen-knop">Niets aan de hand. Niets te doen.</p>';
-      return;
-    }
-    var sit = s.sit;
-    var body = kop +
-      '<p class="status">' + sit.cta + '</p>' +
-      '<p class="wat">' + sit.wat + ' <b>' + sit.doen + '</b></p>';
 
-    if (sit.knoppen) {
-      body += '<div class="knoppen">' + sit.knoppen.map(function (k, i) {
-        return '<button type="button" data-actie="' + k[0] + '"' +
-          (k[1] ? ' class="primair"' : '') + '>' + k[0] + '</button>';
+    var sit = st.sit;
+    var body = kop +
+      '<p class="status">CTA ' + sit.nr + '</p>' +
+      '<p class="wat">' + sit.wat + ' <b>' + sit.doen + '</b></p>' +
+      '<div class="knoppen">' + sit.knoppen.map(function (k) {
+        return '<button type="button"' + (k[1] ? ' class="primair"' : '') + '>' + k[0] + '</button>';
       }).join('') + '</div>';
-    } else {
-      body += '<p class="geen-knop">Geen knop nodig — dit verdwijnt zodra je het aanslaat.</p>';
-    }
     el.innerHTML = body;
 
     Array.prototype.forEach.call(el.querySelectorAll('button'), function (b) {

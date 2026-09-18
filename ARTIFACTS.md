@@ -21,6 +21,13 @@ halen en welke worden tegengehouden, met de logregels die dat oplevert.
 plaats van kaartjes. Donker binnen de lichte pagina, want het is een
 voorvertoning van een handyscherm en geen bureau-gereedschap.
 
+Tikken op een tafel opent WaiterPro, tenzij er een kaart staat die om iets
+anders vraagt — afrekenen, een gang die door kan, een klopt-niet-melding. Dan
+komt die kaart in beeld in plaats van het bestelscherm.
+
+De LG ziet geen losse tafels maar vier gekleurde wijken, zodat hij in één
+oogopslag ziet waar het knelt.
+
 De URL is in september 2026 van vorm veranderd (`/code/artifact/` werd
 `/artifact/`); het is dezelfde pagina.
 
