@@ -288,14 +288,12 @@
   }
   @media (max-width: 620px) { #tab-plan .wijkblokken { grid-template-columns: repeat(2, 1fr); } }
   #tab-plan .wijkblok {
-    border-radius: 12px; padding: 16px 14px 14px; min-height: 130px;
-    display: grid; align-content: space-between; gap: 10px;
+    border-radius: 14px; min-height: 108px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font: 700 30px/1 var(--sans); letter-spacing: .01em;
     border: 1px solid transparent;
   }
-  #tab-plan .wijkblok .code { font: 700 22px/1 var(--sans); }
-  #tab-plan .wijkblok .naam { font-size: 12.5px; opacity: .8; margin-top: 2px; }
-  #tab-plan .wijkblok .wie { font-size: 12.5px; opacity: .8; }
-  #tab-plan .wijkblok .telling { font-size: 13px; font-weight: 600; }
+  #tab-plan .wijkblok:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   #tab-plan .wijkblok.groen { background: #143026; border-color: #2f9e6e; color: #cdf0e0; }
   #tab-plan .wijkblok.oranje { background: #33260f; border-color: #d9902f; color: #f6e2c2; }
   #tab-plan .wijkblok.rood { background: #33161a; border-color: #dc4a54; color: #f7d3d6; }
@@ -364,9 +362,6 @@
 
   <div class="tab" id="tab-plan" role="tabpanel" aria-labelledby="t-plan" hidden>
     <div class="scherm">
-      <p><strong style="color:#e6eef7">Wat de kelner ziet.</strong> Rood is prioriteit, oranje is aandacht, groen is in orde. Tik op een tafel voor wat er speelt. Een kelner kiest zijn wijk niet: Oscar leidt die af uit wie waar aanslaat, dus deze knoppen zijn er alleen om door iemands ogen te kijken.</p>
-      <p id="wie" style="margin-top:6px;color:#a8bccf"></p>
-
       <div class="balk" id="wijkbalk" role="group" aria-label="Door wiens ogen"></div>
 
       <div class="kaart" id="kaartWrap">
@@ -386,7 +381,7 @@
       </div>
     </div>
 
-    <p class="voetnoot" style="margin-top:14px">Voor CTA 1, 2, 5, 9 en 10 staat er geen knop: die sluiten zichzelf zodra de kelner het werk aanslaat. Alleen CTA 3, 6, 8 en 11 vragen een echt antwoord.</p>
+    <p class="voetnoot" style="margin-top:14px">Tikken op een tafel opent WaiterPro. Alleen een kaart die om iets anders vraagt — afrekenen, een gang die door kan, een klopt-niet-melding — komt ervoor in de plaats. De leidinggevende ziet geen tafels maar vier wijken; tikken geeft de details. Een kelner kiest zijn wijk niet, Oscar leidt die af uit wie waar aanslaat: de knoppen hierboven zijn er alleen om door iemands ogen te kijken.</p>
   </div>
 
   <footer>
@@ -818,6 +813,7 @@
 
   var huidigePersoon = 0;
   var gekozen = null;
+  var gekozenWijk = null;
 
   function inWijk(nr) {
     var w = wijkVan(nr);
@@ -896,11 +892,6 @@
     document.getElementById('tGroen').textContent = n.groen;
     document.getElementById('tLeeg').textContent = n.leeg;
     tekenWijkblokken();
-    var m = MENSEN[huidigePersoon];
-    document.getElementById('wie').textContent =
-      m.rol === 'LG'
-        ? 'Mark ziet geen losse tafels maar vier wijken — in één oogopslag waar het knelt'
-        : m.naam + ' loopt ' + m.wijken.join(' en ') + ' — de rest staat er alleen om te herkennen waar hij is';
   }
 
   // --- het LG-beeld: vier wijken, geen tafels ------------------------------
@@ -930,19 +921,17 @@
     el.hidden = !isLG;
     if (!isLG) return;
 
-    el.innerHTML = WIJKEN.map(function (w) {
-      var s = standVanWijk(w.code);
-      var tekst = s.rood || s.oranje
-        ? (s.rood ? s.rood + ' × prioriteit' : '') +
-          (s.rood && s.oranje ? ' · ' : '') +
-          (s.oranje ? s.oranje + ' × aandacht' : '')
-        : 'niets open';
-      return '<div class="wijkblok ' + s.stand + '">' +
-        '<div><div class="code">' + w.code + '</div><div class="naam">' + w.naam + '</div></div>' +
-        '<div><div class="telling">' + tekst + '</div>' +
-        '<div class="wie">' + wieLoopt(w.code) + '</div></div>' +
-        '</div>';
-    }).join('');
+    el.innerHTML = '';
+    WIJKEN.forEach(function (w) {
+      var st = standVanWijk(w.code);
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'wijkblok ' + st.stand;
+      b.textContent = w.code;
+      b.setAttribute('aria-label', w.naam + ' — ' + st.stand);
+      b.addEventListener('click', function () { gekozenWijk = w.code; toonPaneel(); });
+      el.appendChild(b);
+    });
   }
 
   // --- paneel --------------------------------------------------------------
@@ -953,6 +942,25 @@
 
   function toonPaneel() {
     var el = document.getElementById('paneelPlan');
+    var isLG = MENSEN[huidigePersoon].rol === 'LG';
+
+    if (isLG) {
+      if (!gekozenWijk) { el.innerHTML = '<p class="leeg-tekst">Tik op een wijk.</p>'; return; }
+      var w = null;
+      for (var i = 0; i < WIJKEN.length; i++) if (WIJKEN[i].code === gekozenWijk) w = WIJKEN[i];
+      var st = standVanWijk(gekozenWijk);
+      var regels = st.rood || st.oranje
+        ? (st.rood ? st.rood + ' × prioriteit' : '') +
+          (st.rood && st.oranje ? ' · ' : '') +
+          (st.oranje ? st.oranje + ' × aandacht' : '')
+        : 'Niets open.';
+      el.innerHTML =
+        '<h2>' + w.naam + ' <span class="wijk">' + w.code + '</span></h2>' +
+        '<p class="status">' + wieLoopt(w.code) + '</p>' +
+        '<p class="wat">' + regels + '</p>';
+      return;
+    }
+
     if (!gekozen) { el.innerHTML = '<p class="leeg-tekst">Tik op een tafel.</p>'; return; }
 
     var st = staat[gekozen];
@@ -1000,7 +1008,7 @@
       if (m.rol === 'LG') b.textContent = m.naam + ' · LG';
       b.setAttribute('aria-pressed', String(i === huidigePersoon));
       b.addEventListener('click', function () {
-        huidigePersoon = i; gekozen = null; bouwBalk(); verfPlan(); toonPaneel();
+        huidigePersoon = i; gekozen = null; gekozenWijk = null; bouwBalk(); verfPlan(); toonPaneel();
       });
       el.appendChild(b);
     });
