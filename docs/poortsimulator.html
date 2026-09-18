@@ -228,25 +228,51 @@
   .tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .tab[hidden] { display: none; }
 
-  /* ---------- plattegrond: het handyscherm, donker binnen de lichte pagina ---------- */
-  #tab-plan { --d-vlak: #131c26; --d-lijn: #24323f; --d-inkt: #e6eef7; --d-zacht: #8497aa; }
-  #tab-plan .scherm {
-    background: #0b1118; border: 1px solid #1c2733; border-radius: 12px;
-    padding: 16px 16px 18px; margin-top: 20px; color: var(--d-inkt);
-  }
-  #tab-plan .scherm p { color: var(--d-zacht); font-size: 13px; margin: 0; max-width: 62ch; }
-  #tab-plan .balk { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-block: 12px; }
+  /* ---------- plattegrond: een echte telefoon op ware grootte ---------- */
+  #tab-plan .kiezer { margin-top: 20px; display: grid; gap: 8px; }
+  #tab-plan .balk { display: flex; flex-wrap: wrap; gap: 8px; }
   #tab-plan .balk button {
-    font: 600 13px/1 var(--sans); color: var(--d-inkt);
-    background: var(--d-vlak); border: 1px solid var(--d-lijn);
-    border-radius: 999px; padding: 9px 14px; cursor: pointer; min-height: 38px;
+    font: 600 13px/1 var(--sans); color: var(--inkt);
+    background: var(--vlak); border: 1px solid var(--lijn);
+    border-radius: 999px; padding: 10px 15px; cursor: pointer; min-height: 40px;
   }
-  #tab-plan .balk button[aria-pressed="true"] { background: var(--d-inkt); color: #0b1118; border-color: var(--d-inkt); }
-  #tab-plan .legenda { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--d-zacht); }
-  #tab-plan .legenda span { display: inline-flex; align-items: center; gap: 6px; }
-  #tab-plan .bol { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
-  #tab-plan .spacer { flex: 1 1 auto; }
-  #tab-plan .kaart { background: #0f1720; border: 1px solid var(--d-lijn); border-radius: 12px; padding: 8px; }
+  #tab-plan .balk button[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
+  #tab-plan .balk button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .toestelrij {
+    margin-top: 20px; display: grid; gap: 26px;
+    grid-template-columns: 390px minmax(0, 1fr); align-items: start;
+  }
+  @media (max-width: 800px) { .toestelrij { grid-template-columns: 1fr; justify-items: center; } }
+
+  .toestel {
+    width: 390px; max-width: 100%; height: 780px;
+    background: #0b1118; border: 11px solid #16181c; border-radius: 46px;
+    box-shadow: 0 18px 50px rgba(15, 30, 55, .22);
+    overflow: hidden; display: grid; grid-template-rows: auto 1fr;
+    color: #e6eef7;
+  }
+  .statusbalk {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 22px 6px; font: 600 13px/1 var(--sans);
+    font-variant-numeric: tabular-nums;
+  }
+  .statusbalk .rechts { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; }
+  .accu { width: 22px; height: 11px; border: 1.5px solid rgba(255,255,255,.6); border-radius: 3px; position: relative; display: inline-block; }
+  .accu b { position: absolute; inset: 1.5px; width: 70%; background: #2f9e6e; border-radius: 1px; display: block; }
+
+  .schermdoek { padding: 10px 14px 16px; overflow-y: auto; display: grid; gap: 10px; align-content: start; }
+  .schermdoek .kop {
+    display: flex; align-items: center; gap: 8px;
+    font: 600 15px/1 var(--sans); padding: 2px 2px 6px;
+  }
+  .schermdoek .wijkcode {
+    font: 600 11px/1 var(--mono); color: #8497aa;
+    border: 1px solid #24323f; border-radius: 4px; padding: 4px 6px;
+    text-transform: none; letter-spacing: 0;
+  }
+
+  #tab-plan .kaart { background: #0f1720; border: 1px solid #24323f; border-radius: 12px; padding: 8px; }
   #tab-plan svg { display: block; width: 100%; height: auto; }
   #tab-plan .tafel { cursor: pointer; }
   #tab-plan .tafel rect, #tab-plan .tafel circle { stroke-width: 1.5; }
@@ -259,34 +285,8 @@
     fill: none !important; stroke: #1e2b39 !important; stroke-width: 1 !important;
   }
   #tab-plan .tafel.buiten-wijk text { display: none; }
-  #tab-plan .detail {
-    margin-top: 14px; background: var(--d-vlak); border: 1px solid var(--d-lijn);
-    border-radius: 12px; padding: 16px 18px; min-height: 104px;
-  }
-  #tab-plan .detail h2 { margin: 0 0 2px; font-size: 17px; font-weight: 600; color: var(--d-inkt); }
-  #tab-plan .detail .wijk {
-    font: 600 11px/1 var(--mono); color: var(--d-zacht); border: 1px solid var(--d-lijn);
-    border-radius: 4px; padding: 3px 6px; margin-left: 6px; vertical-align: 2px;
-    text-transform: none; letter-spacing: 0;
-  }
-  #tab-plan .detail .status { margin: 0 0 10px; color: var(--d-zacht); font-size: 13.5px; }
-  #tab-plan .detail .wat { margin: 0 0 12px; color: var(--d-inkt); font-size: 14px; }
-  #tab-plan .knoppen { display: flex; flex-wrap: wrap; gap: 8px; }
-  #tab-plan .knoppen button {
-    font: 600 14px/1 var(--sans); border-radius: 8px; padding: 12px 18px;
-    min-height: 48px; min-width: 88px; cursor: pointer;
-    background: #0f1720; color: var(--d-inkt); border: 1px solid var(--d-lijn);
-  }
-  #tab-plan .knoppen button.primair { background: #2f9e6e; border-color: #2f9e6e; color: #06130d; }
-  #tab-plan .geen-knop, #tab-plan .leeg-tekst { color: var(--d-zacht); font-size: 13.5px; margin: 0; }
-  #tab-plan .tellers { display: flex; gap: 18px; margin-top: 14px; flex-wrap: wrap; }
-  #tab-plan .tellers div { display: grid; gap: 1px; }
-  #tab-plan .tellers .n { font: 600 20px/1 var(--sans); font-variant-numeric: tabular-nums; color: var(--d-inkt); }
-  #tab-plan .tellers .l { font-size: 12px; color: var(--d-zacht); }
-  #tab-plan .wijkblokken {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-  }
-  @media (max-width: 700px) { #tab-plan .wijkblokken { grid-template-columns: repeat(2, 1fr); } }
+
+  #tab-plan .wijkblokken { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   #tab-plan .wijkblok {
     border-radius: 14px; min-height: 104px; cursor: pointer;
     display: grid; align-content: center; justify-items: center; gap: 12px;
@@ -302,6 +302,37 @@
   #tab-plan .wijkblok.groen { background: #143026; border-color: #2f9e6e; color: #cdf0e0; }
   #tab-plan .wijkblok.oranje { background: #33260f; border-color: #d9902f; color: #f6e2c2; }
   #tab-plan .wijkblok.rood { background: #33161a; border-color: #dc4a54; color: #f7d3d6; }
+
+  #tab-plan .detail {
+    background: #131c26; border: 1px solid #24323f; border-radius: 12px;
+    padding: 14px 16px; min-height: 104px;
+  }
+  #tab-plan .detail h2 { margin: 0 0 2px; font-size: 16px; font-weight: 600; color: #e6eef7; text-transform: none; letter-spacing: 0; }
+  #tab-plan .detail .wijk {
+    font: 600 11px/1 var(--mono); color: #8497aa; border: 1px solid #24323f;
+    border-radius: 4px; padding: 3px 6px; margin-left: 6px; vertical-align: 2px;
+    text-transform: none; letter-spacing: 0;
+  }
+  #tab-plan .detail .status { margin: 0 0 8px; color: #8497aa; font-size: 13px; }
+  #tab-plan .detail .wat { margin: 0 0 12px; color: #e6eef7; font-size: 14px; }
+  #tab-plan .knoppen { display: flex; flex-wrap: wrap; gap: 8px; grid-template-columns: none; }
+  #tab-plan .knoppen button {
+    font: 600 14px/1 var(--sans); border-radius: 8px; padding: 13px 18px;
+    min-height: 48px; min-width: 92px; cursor: pointer;
+    background: #0f1720; color: #e6eef7; border: 1px solid #24323f;
+  }
+  #tab-plan .knoppen button.primair { background: #2f9e6e; border-color: #2f9e6e; color: #06130d; }
+  #tab-plan .geen-knop, #tab-plan .leeg-tekst { color: #8497aa; font-size: 13px; margin: 0; }
+
+  #tab-plan .ernaast { display: grid; gap: 16px; align-content: start; max-width: 42ch; }
+  #tab-plan .legenda { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--inkt-zacht); }
+  #tab-plan .legenda span { display: inline-flex; align-items: center; gap: 6px; }
+  #tab-plan .bol { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+  #tab-plan .tellers { display: flex; gap: 18px; flex-wrap: wrap; }
+  #tab-plan .tellers div { display: grid; gap: 1px; }
+  #tab-plan .tellers .n { font: 600 20px/1 var(--sans); font-variant-numeric: tabular-nums; color: var(--inkt); }
+  #tab-plan .tellers .l { font-size: 12px; color: var(--inkt-zacht); }
+
   /* ---------- telefoon ---------- */
   @media (max-width: 520px) {
     body { padding: 0 12px; padding-block: 0 32px; font-size: 14.5px; }
@@ -313,7 +344,7 @@
     .kolommen { gap: 16px; }
     .handy { position: static; }
     .logregels { font-size: 10.5px; }
-    #tab-plan .scherm { padding: 12px; }
+    .toestel { height: 720px; border-width: 8px; border-radius: 38px; }
     #tab-plan .wijkblok { min-height: 92px; }
     #tab-plan .wijkblok .code { font-size: 26px; }
   }
@@ -385,27 +416,52 @@
   </div>
 
   <div class="tab" id="tab-plan" role="tabpanel" aria-labelledby="t-plan" hidden>
-    <div class="scherm">
+
+    <div class="kiezer">
       <div class="balk" id="wijkbalk" role="group" aria-label="Door wiens ogen"></div>
-
-      <div class="kaart" id="kaartWrap">
-        <svg id="plan" viewBox="330 165 1400 480" role="img" aria-label="Plattegrond van Branding met tafels"></svg>
-      </div>
-      <div class="wijkblokken" id="wijkblokken" hidden></div>
-
-      <div class="detail" id="paneelPlan" aria-live="polite">
-        <p class="leeg-tekst">Tik op een tafel.</p>
-      </div>
-
-      <div class="tellers">
-        <div><span class="n" id="tRood">0</span><span class="l">prioriteit</span></div>
-        <div><span class="n" id="tOranje">0</span><span class="l">aandacht</span></div>
-        <div><span class="n" id="tGroen">0</span><span class="l">in orde</span></div>
-        <div><span class="n" id="tLeeg">0</span><span class="l">leeg</span></div>
-      </div>
+      <p class="voetnoot" id="wie"></p>
     </div>
 
-    <p class="voetnoot" style="margin-top:14px">Tikken op een tafel opent WaiterPro. Alleen een kaart die om iets anders vraagt — afrekenen, een gang die door kan, een klopt-niet-melding — komt ervoor in de plaats. De leidinggevende ziet geen tafels maar vier wijken; tikken geeft de details. Een kelner kiest zijn wijk niet, Oscar leidt die af uit wie waar aanslaat: de knoppen hierboven zijn er alleen om door iemands ogen te kijken.</p>
+    <div class="toestelrij">
+      <div class="toestel">
+        <div class="statusbalk">
+          <span id="klok">19:42</span>
+          <span class="rechts">5G <i class="accu"><b></b></i></span>
+        </div>
+        <div class="schermdoek">
+          <div class="kop">
+            <span id="kopNaam">Rutger</span>
+            <span id="kopWijk" class="wijkcode">RZ</span>
+          </div>
+
+          <div class="kaart" id="kaartWrap">
+            <svg id="plan" viewBox="330 165 1400 480" role="img" aria-label="Plattegrond"></svg>
+          </div>
+          <div class="wijkblokken" id="wijkblokken" hidden></div>
+
+          <div class="detail" id="paneelPlan" aria-live="polite">
+            <p class="leeg-tekst">Tik op een tafel.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ernaast">
+        <div class="legenda">
+          <span><i class="bol" style="background:#dc4a54"></i>prioriteit</span>
+          <span><i class="bol" style="background:#d9902f"></i>aandacht</span>
+          <span><i class="bol" style="background:#2f9e6e"></i>in orde</span>
+          <span><i class="bol" style="background:#1a2532;border:1px solid #2a3a4a"></i>leeg</span>
+        </div>
+        <div class="tellers">
+          <div><span class="n" id="tRood">0</span><span class="l">prioriteit</span></div>
+          <div><span class="n" id="tOranje">0</span><span class="l">aandacht</span></div>
+          <div><span class="n" id="tGroen">0</span><span class="l">in orde</span></div>
+          <div><span class="n" id="tLeeg">0</span><span class="l">leeg</span></div>
+        </div>
+        <p class="voetnoot">Tikken op een tafel opent WaiterPro. Alleen een kaart die om iets anders vraagt — afrekenen, een gang die door kan, een klopt-niet-melding — komt ervoor in de plaats.</p>
+        <p class="voetnoot">De kaart zoomt in op de eigen wijk. Een kelner kiest die niet: Oscar leidt hem af uit wie waar aanslaat. De knoppen hierboven zijn er alleen om door iemands ogen te kijken.</p>
+      </div>
+    </div>
   </div>
 
   <footer>
@@ -940,6 +996,12 @@
     document.getElementById('tLeeg').textContent = n.leeg;
     tekenWijkblokken();
     stelBeeldIn();
+    var mm = MENSEN[huidigePersoon];
+    document.getElementById('kopNaam').textContent = mm.naam;
+    document.getElementById('kopWijk').textContent = mm.rol === 'LG' ? 'alle wijken' : mm.wijken.join(' + ');
+    document.getElementById('wie').textContent = mm.rol === 'LG'
+      ? 'De leidinggevende ziet geen tafels maar vier wijken.'
+      : mm.naam + ' loopt ' + mm.wijken.join(' en ') + '.';
   }
 
   // --- het LG-beeld: vier wijken, geen tafels ------------------------------
@@ -1067,17 +1129,6 @@
       });
       el.appendChild(b);
     });
-    var sp = document.createElement('span');
-    sp.className = 'spacer';
-    el.appendChild(sp);
-    var lg = document.createElement('div');
-    lg.className = 'legenda';
-    lg.innerHTML =
-      '<span><i class="bol" style="background:#dc4a54"></i>prioriteit</span>' +
-      '<span><i class="bol" style="background:#d9902f"></i>aandacht</span>' +
-      '<span><i class="bol" style="background:#2f9e6e"></i>in orde</span>' +
-      '<span><i class="bol" style="background:#1a2532;border:1px solid #2a3a4a"></i>leeg</span>';
-    el.appendChild(lg);
   }
 
   // --- de avond loopt door -------------------------------------------------
@@ -1153,5 +1204,12 @@
   bouwBalk();
   start();
   verfPlan();
+  function klok() {
+    var d = new Date();
+    document.getElementById('klok').textContent =
+      String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+  klok();
+  setInterval(klok, 20000);
   setInterval(tik, 2600);
 </script>
