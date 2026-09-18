@@ -31,9 +31,15 @@ Proef of een gekleurde plattegrond op de handy rustiger werkt dan drie kaartjes.
 Rood is prioriteit, oranje is aandacht, groen is in orde, grijs is leeg. Tik op
 een tafel voor wat er speelt.
 
-De vier wijken van Branding zitten erin: G (Grill, 401-431), RN (Restaurant
-Noord, 1-32), RZ (Restaurant Zuid, 41-81) en K (Kas, 701-744). Kies een wijk en
-de rest valt weg.
+**Een kelner ziet alleen zijn eigen wijk of wijken.** Hij kiest die niet — die
+heeft hij. In het prototype kun je door de ogen van vier mensen kijken: Rutger
+(RZ), Sanne (G), Daan (RN + K) en Mark (LG, ziet alles).
+
+Tafels buiten zijn wijk verdwijnen niet helemaal maar blijven als lege contour
+staan, zodat hij nog ziet wáár hij is. Weghalen maakt de kaart onleesbaar.
+
+De vier wijken: G (Grill, 401-431), RN (Restaurant Noord, 1-32), RZ (Restaurant
+Zuid, 41-81), K (Kas, 701-744).
 
 **De kern van de proef:** CTA 1, 2, 5, 9 en 10 sluiten zichzelf zodra de kelner
 het werk doet. Die tonen dus geen knop — alleen een kleur. Alleen CTA 3, 6, 8 en

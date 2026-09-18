@@ -65,7 +65,11 @@
     font-family: var(--mono); font-weight: 600; font-size: 13px;
     text-anchor: middle; dominant-baseline: central; pointer-events: none;
   }
-  .tafel.buiten-wijk { opacity: .18; pointer-events: none; }
+  .tafel.buiten-wijk { pointer-events: none; }
+  .tafel.buiten-wijk rect, .tafel.buiten-wijk circle {
+    fill: none !important; stroke: #1e2b39 !important; stroke-width: 1 !important;
+  }
+  .tafel.buiten-wijk text { display: none; }
   .tafel:focus-visible { outline: none; }
   .tafel:focus-visible rect, .tafel:focus-visible circle { stroke: #fff; stroke-width: 3; }
 
@@ -105,6 +109,7 @@
   <header>
     <h1>Branding — plattegrond</h1>
     <p class="sub">Proef of een kaart rustiger werkt dan drie kaartjes. Rood is prioriteit, oranje is aandacht, groen is in orde. Tik op een tafel om te zien wat er is.</p>
+    <p class="sub" id="wie" style="margin-top:6px;color:#a8bccf"></p>
   </header>
 
   <div class="balk" id="wijkbalk" role="group" aria-label="Wijk"></div>
@@ -160,15 +165,23 @@
   ];
 
   var WIJKEN = [
-    { code: '',   naam: 'Hele zaak',         test: function () { return true; } },
-    { code: 'G',  naam: 'Grill',             test: function (n) { return +n >= 401 && +n <= 431; } },
-    { code: 'RN', naam: 'Restaurant Noord',  test: function (n) { return +n <= 32; } },
-    { code: 'RZ', naam: 'Restaurant Zuid',   test: function (n) { return +n >= 41 && +n <= 81; } },
-    { code: 'K',  naam: 'Kas',               test: function (n) { return +n >= 701; } }
+    { code: 'G',  naam: 'Grill',            test: function (n) { return +n >= 401 && +n <= 431; } },
+    { code: 'RN', naam: 'Restaurant Noord', test: function (n) { return +n <= 32; } },
+    { code: 'RZ', naam: 'Restaurant Zuid',  test: function (n) { return +n >= 41 && +n <= 81; } },
+    { code: 'K',  naam: 'Kas',              test: function (n) { return +n >= 701; } }
+  ];
+
+  // Een kelner kiest zijn wijk niet — die heeft hij, en soms twee. Hier kun je
+  // door zijn ogen kijken; op de handy staat er maar één stand.
+  var MENSEN = [
+    { naam: 'Rutger', rol: 'kelner', wijken: ['RZ'] },
+    { naam: 'Sanne',  rol: 'kelner', wijken: ['G'] },
+    { naam: 'Daan',   rol: 'kelner', wijken: ['RN', 'K'] },
+    { naam: 'Mark',   rol: 'LG',     wijken: ['G', 'RN', 'RZ', 'K'] }
   ];
 
   function wijkVan(nr) {
-    for (var i = 1; i < WIJKEN.length; i++) if (WIJKEN[i].test(nr)) return WIJKEN[i];
+    for (var i = 0; i < WIJKEN.length; i++) if (WIJKEN[i].test(nr)) return WIJKEN[i];
     return null;
   }
 
@@ -190,10 +203,13 @@
   var staat = {};
   T.forEach(function (t) { staat[t[0]] = { kleur: 'leeg', sit: null }; });
 
-  var huidigeWijk = 0;
+  var huidigePersoon = 0;
   var gekozen = null;
 
-  function inWijk(nr) { return WIJKEN[huidigeWijk].test(nr); }
+  function inWijk(nr) {
+    var w = wijkVan(nr);
+    return !!w && MENSEN[huidigePersoon].wijken.indexOf(w.code) !== -1;
+  }
 
   function kleurVan(nr) { return staat[nr].kleur; }
 
@@ -266,6 +282,11 @@
     document.getElementById('tOranje').textContent = n.oranje;
     document.getElementById('tGroen').textContent = n.groen;
     document.getElementById('tLeeg').textContent = n.leeg;
+    var m = MENSEN[huidigePersoon];
+    document.getElementById('wie').textContent =
+      m.rol === 'LG'
+        ? 'Mark ziet alle vier de wijken'
+        : m.naam + ' loopt ' + m.wijken.join(' en ') + ' — de rest staat er alleen om te herkennen waar hij is';
   }
 
   // --- paneel --------------------------------------------------------------
@@ -317,12 +338,15 @@
   function bouwBalk() {
     var el = document.getElementById('wijkbalk');
     el.innerHTML = '';
-    WIJKEN.forEach(function (w, i) {
+    MENSEN.forEach(function (m, i) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.textContent = w.code ? w.code + ' · ' + w.naam : w.naam;
-      b.setAttribute('aria-pressed', String(i === huidigeWijk));
-      b.addEventListener('click', function () { huidigeWijk = i; bouwBalk(); verfPlan(); });
+      b.textContent = m.naam + ' · ' + m.wijken.join(' + ');
+      if (m.rol === 'LG') b.textContent = m.naam + ' · LG';
+      b.setAttribute('aria-pressed', String(i === huidigePersoon));
+      b.addEventListener('click', function () {
+        huidigePersoon = i; gekozen = null; bouwBalk(); verfPlan(); toonPaneel();
+      });
       el.appendChild(b);
     });
     var sp = document.createElement('span');
