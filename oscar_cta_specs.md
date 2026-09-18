@@ -2095,10 +2095,13 @@ de vorige service 's ochtends nog steeds eigenaar is. Een expliciete overdracht
 is een derde weg, en een betere: dan is het geen afleiding meer uit POS-gedrag
 maar een handeling.
 
-**En het raakt O2.** Wordt een wijk expliciet toegewezen bij het begin van een
-dienst ("welke wijk ga je lopen?"), dan is de ±70%-meerderheidsregel grotendeels
-overbodig — die bestaat alleen omdat het systeem nu moet raden wie waar loopt.
-Dat zou een flinke vereenvoudiging zijn.
+**Geen expliciete wijkkeuze.** Een kelner kiest zijn wijk niet en krijgt hem ook
+niet toegewezen; Oscar leidt hem af uit wie waar aanslaat (Peter, 18-09-2026).
+Dat is een bewuste keuze en geen tussenoplossing: het kost niemand een handeling
+en het klopt vanzelf als er iets verschuift.
+
+De ±70%-regel van §3.3 blijft dus staan. Een eerdere notitie hier suggereerde dat
+een wijkkeuze bij aanvang die regel overbodig zou maken — dat is ingetrokken.
 
 **Wat er beslist moet worden:**
 
