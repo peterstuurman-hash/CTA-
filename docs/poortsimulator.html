@@ -246,8 +246,8 @@
   #tab-plan .legenda span { display: inline-flex; align-items: center; gap: 6px; }
   #tab-plan .bol { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
   #tab-plan .spacer { flex: 1 1 auto; }
-  #tab-plan .kaart { background: #0f1720; border: 1px solid var(--d-lijn); border-radius: 12px; padding: 8px; overflow-x: auto; }
-  #tab-plan svg { display: block; width: 100%; height: auto; min-width: 720px; }
+  #tab-plan .kaart { background: #0f1720; border: 1px solid var(--d-lijn); border-radius: 12px; padding: 8px; }
+  #tab-plan svg { display: block; width: 100%; height: auto; }
   #tab-plan .tafel { cursor: pointer; }
   #tab-plan .tafel rect, #tab-plan .tafel circle { stroke-width: 1.5; }
   #tab-plan .tafel text {
@@ -286,17 +286,41 @@
   #tab-plan .wijkblokken {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
   }
-  @media (max-width: 620px) { #tab-plan .wijkblokken { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 700px) { #tab-plan .wijkblokken { grid-template-columns: repeat(2, 1fr); } }
   #tab-plan .wijkblok {
-    border-radius: 14px; min-height: 108px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font: 700 30px/1 var(--sans); letter-spacing: .01em;
-    border: 1px solid transparent;
+    border-radius: 14px; min-height: 104px; cursor: pointer;
+    display: grid; align-content: center; justify-items: center; gap: 12px;
+    padding: 14px; border: 1px solid transparent;
   }
+  #tab-plan .wijkblok .code { font: 700 30px/1 var(--sans); letter-spacing: .01em; }
+  #tab-plan .wijkblok .meter {
+    width: 100%; height: 5px; border-radius: 3px;
+    background: rgba(255,255,255,.14); overflow: hidden; display: block;
+  }
+  #tab-plan .wijkblok .meter i { display: block; height: 100%; background: currentColor; border-radius: 3px; }
   #tab-plan .wijkblok:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   #tab-plan .wijkblok.groen { background: #143026; border-color: #2f9e6e; color: #cdf0e0; }
   #tab-plan .wijkblok.oranje { background: #33260f; border-color: #d9902f; color: #f6e2c2; }
   #tab-plan .wijkblok.rood { background: #33161a; border-color: #dc4a54; color: #f7d3d6; }
+  /* ---------- telefoon ---------- */
+  @media (max-width: 520px) {
+    body { padding: 0 12px; padding-block: 0 32px; font-size: 14.5px; }
+    header { padding-block: 20px 14px; }
+    .bediening { margin-block: 16px; padding: 14px; }
+    .paneel { padding: 14px; }
+    .knoppen { grid-template-columns: 1fr; }
+    .tabs button { margin-right: 10px; font-size: 13.5px; }
+    .kolommen { gap: 16px; }
+    .handy { position: static; }
+    .logregels { font-size: 10.5px; }
+    #tab-plan .scherm { padding: 12px; }
+    #tab-plan .wijkblok { min-height: 92px; }
+    #tab-plan .wijkblok .code { font-size: 26px; }
+  }
+  /* niets mag breder zijn dan het scherm */
+  .wrap, .paneel, .scherm, .kaart { max-width: 100%; }
+  .logregels { max-width: 100%; }
+
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -874,6 +898,29 @@
     });
   }
 
+  // Een kelner hoeft de hele zaak niet te zien. Inzoomen op zijn eigen tafels
+  // maakt de kaart leesbaar op een telefoon.
+  function stelBeeldIn() {
+    var m = MENSEN[huidigePersoon];
+    var xs = [], ys = [];
+    T.forEach(function (t) {
+      var w = wijkVan(t[0]);
+      if (!w || m.wijken.indexOf(w.code) === -1) return;
+      var breed = t[1] === 'r' ? 21 : (t[1] === 'l' ? (t[4] || 60) / 2 : 13);
+      var hoog = t[1] === 'r' ? 21 : (t[1] === 'l' ? (t[5] || 30) / 2 : 13);
+      xs.push(t[2] - breed, t[2] + breed);
+      ys.push(t[3] - hoog, t[3] + hoog);
+    });
+    if (!xs.length) return;
+    var pad = 34;
+    var x0 = Math.min.apply(null, xs) - pad, x1 = Math.max.apply(null, xs) + pad;
+    var y0 = Math.min.apply(null, ys) - pad, y1 = Math.max.apply(null, ys) + pad;
+    // niet smaller dan 3:2 maken, anders worden de tafels absurd groot
+    var b = x1 - x0, h = y1 - y0;
+    if (b / h < 1.5) { var extra = (h * 1.5 - b) / 2; x0 -= extra; b = h * 1.5; }
+    document.getElementById('plan').setAttribute('viewBox', x0 + ' ' + y0 + ' ' + b + ' ' + h);
+  }
+
   function verfPlan() {
     var n = { rood: 0, oranje: 0, groen: 0, leeg: 0 };
     Array.prototype.forEach.call(plan.querySelectorAll('.tafel'), function (g) {
@@ -892,19 +939,26 @@
     document.getElementById('tGroen').textContent = n.groen;
     document.getElementById('tLeeg').textContent = n.leeg;
     tekenWijkblokken();
+    stelBeeldIn();
   }
 
   // --- het LG-beeld: vier wijken, geen tafels ------------------------------
+  // Hoe erg het is, als verhouding en niet als aantal: twee rode tafels in de
+  // Kas met acht tafels betekent iets anders dan twee in RN met dertig.
   function standVanWijk(code) {
-    var rood = 0, oranje = 0;
+    var rood = 0, oranje = 0, bezet = 0;
     T.forEach(function (t) {
       var w = wijkVan(t[0]);
       if (!w || w.code !== code) return;
-      if (staat[t[0]].kleur === 'rood') rood++;
-      else if (staat[t[0]].kleur === 'oranje') oranje++;
+      var k = staat[t[0]].kleur;
+      if (k === 'leeg') return;
+      bezet++;
+      if (k === 'rood') rood++;
+      else if (k === 'oranje') oranje++;
     });
-    var stand = rood >= 2 ? 'rood' : (rood === 1 || oranje >= 3 ? 'oranje' : 'groen');
-    return { stand: stand, rood: rood, oranje: oranje };
+    var ernst = bezet ? Math.min(1, (rood * 2 + oranje) / (bezet * 1.4)) : 0;
+    var stand = ernst >= 0.45 ? 'rood' : (ernst >= 0.18 ? 'oranje' : 'groen');
+    return { stand: stand, ernst: ernst, rood: rood, oranje: oranje, bezet: bezet };
   }
 
   function wieLoopt(code) {
@@ -927,7 +981,8 @@
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'wijkblok ' + st.stand;
-      b.textContent = w.code;
+      b.innerHTML = '<span class="code">' + w.code + '</span>' +
+        '<span class="meter"><i style="width:' + Math.round(st.ernst * 100) + '%"></i></span>';
       b.setAttribute('aria-label', w.naam + ' — ' + st.stand);
       b.addEventListener('click', function () { gekozenWijk = w.code; toonPaneel(); });
       el.appendChild(b);
@@ -1028,16 +1083,47 @@
   // --- de avond loopt door -------------------------------------------------
   function willekeurig(a) { return a[Math.floor(Math.random() * a.length)]; }
 
+  // De demo begint met twee rustige wijken, een die aandacht vraagt en een die
+  // knelt. Vast ingesteld en niet aan het toeval overgelaten: anders zie je het
+  // verschil tussen de kleuren soms niet.
+  var BEGINSTAND = {
+    G:  { leeg: 3, rood: 0, oranje: 1 },
+    RN: { leeg: 2, rood: 0, oranje: 1 },
+    RZ: { leeg: 3, rood: 1, oranje: 2 },
+    K:  { leeg: 3, rood: 4, oranje: 2 }
+  };
+
+  function situatieMetKleur(kleur) {
+    var passend = SITUATIES.filter(function (x) { return x.kleur === kleur; });
+    return willekeurig(passend.length ? passend : SITUATIES);
+  }
+
   function start() {
-    T.forEach(function (t) {
-      var nr = t[0];
-      var r = Math.random();
-      if (r < 0.32) staat[nr] = { kleur: 'leeg', sit: null };
-      else if (r < 0.82) staat[nr] = { kleur: 'groen', sit: null };
-      else {
-        var sit = willekeurig(SITUATIES);
-        staat[nr] = { kleur: sit.kleur, sit: sit };
+    WIJKEN.forEach(function (w) {
+      var nrs = T.filter(function (t) {
+        var x = wijkVan(t[0]);
+        return x && x.code === w.code;
+      }).map(function (t) { return t[0]; });
+
+      // door elkaar husselen, zodat het niet steeds dezelfde tafels zijn
+      for (var i = nrs.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var h = nrs[i]; nrs[i] = nrs[j]; nrs[j] = h;
       }
+
+      var doel = BEGINSTAND[w.code] || { leeg: 2, rood: 1, oranje: 1 };
+      nrs.forEach(function (nr, i) {
+        if (i < doel.leeg) { staat[nr] = { kleur: 'leeg', sit: null }; return; }
+        if (i < doel.leeg + doel.rood) {
+          var sr = situatieMetKleur('rood');
+          staat[nr] = { kleur: 'rood', sit: sr }; return;
+        }
+        if (i < doel.leeg + doel.rood + doel.oranje) {
+          var so = situatieMetKleur('oranje');
+          staat[nr] = { kleur: 'oranje', sit: so }; return;
+        }
+        staat[nr] = { kleur: 'groen', sit: null };
+      });
     });
   }
 
