@@ -303,6 +303,21 @@
   #tab-plan .wijkblok.oranje { background: #33260f; border-color: #d9902f; color: #f6e2c2; }
   #tab-plan .wijkblok.rood { background: #33161a; border-color: #dc4a54; color: #f7d3d6; }
 
+  #tab-plan .kaarten { display: grid; gap: 8px; }
+  #tab-plan .kaartje {
+    background: #131c26; border: 1px solid #24323f; border-left-width: 3px;
+    border-radius: 10px; padding: 11px 13px; display: grid; gap: 9px;
+    text-align: left; width: 100%; cursor: pointer; color: inherit;
+  }
+  #tab-plan .kaartje.rood { border-left-color: #dc4a54; }
+  #tab-plan .kaartje.oranje { border-left-color: #d9902f; }
+  #tab-plan .kaartje .regel { display: flex; align-items: baseline; gap: 8px; }
+  #tab-plan .kaartje .tnr { font: 600 15px/1.2 var(--sans); color: #e6eef7; }
+  #tab-plan .kaartje .kort { font-size: 13.5px; color: #8497aa; }
+  #tab-plan .kaartje:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  #tab-plan .restje { font-size: 12.5px; color: #8497aa; padding: 2px 4px; }
+  #tab-plan .rustig { font-size: 13px; color: #8497aa; padding: 10px 4px; }
+
   #tab-plan .detail {
     background: #131c26; border: 1px solid #24323f; border-radius: 12px;
     padding: 14px 16px; min-height: 104px;
@@ -439,9 +454,8 @@
           </div>
           <div class="wijkblokken" id="wijkblokken" hidden></div>
 
-          <div class="detail" id="paneelPlan" aria-live="polite">
-            <p class="leeg-tekst">Tik op een tafel.</p>
-          </div>
+          <div class="kaarten" id="kaarten" aria-live="polite"></div>
+          <div class="detail" id="paneelPlan" hidden></div>
         </div>
       </div>
 
@@ -877,15 +891,15 @@
   // `bestellen: true` betekent dat het antwoord op deze melding gewoon bestellen
   // is. Dan hoeft er geen kaart tussen: tikken op de tafel opent de POS.
   var SITUATIES = [
-    { nr:1,  kleur:'rood',   wat:'Nog niets besteld sinds het seaten.',            bestellen:true },
-    { nr:9,  kleur:'rood',   wat:'De runner geeft door dat ze willen bestellen.',  bestellen:true },
-    { nr:2,  kleur:'oranje', wat:'Al een tijd geen actie op deze tafel.',          bestellen:true },
-    { nr:5,  kleur:'oranje', wat:'Gulle tafel — je mag een koffie aanbieden.',     bestellen:true },
-    { nr:10, kleur:'rood',   wat:'De runner geeft door dat ze willen afrekenen.',  doen:'Reken af of print de bon.', knoppen:[['PRINT',1],['NO',0]] },
-    { nr:11, kleur:'rood',   wat:'Runner meldt: deze bestelling klopt niet.',      doen:'Zet de tafeladministratie recht.', knoppen:[['FIXED',1],['CALL LG',0]] },
-    { nr:3,  kleur:'rood',   wat:'Tafel is geopend zonder dat hij geseat is.',     doen:'Waar komen deze gasten vandaan?', knoppen:[['NEW',1],['PULL',0]] },
-    { nr:6,  kleur:'oranje', wat:'Het voorgerecht is een tijd geleden weg.',       doen:'Kan het hoofdgerecht door?', knoppen:[['GO',1],['NO',0]] },
-    { nr:8,  kleur:'oranje', wat:'Het hoofdgerecht is gefired.',                   doen:'Kan het dessert door?', knoppen:[['GO',1],['NO',0]] }
+    { nr:1,  kleur:'rood',   kort:'eerste bestelling', wat:'Nog niets besteld sinds het seaten.',            bestellen:true },
+    { nr:9,  kleur:'rood',   kort:'wil bestellen',      wat:'De runner geeft door dat ze willen bestellen.',  bestellen:true },
+    { nr:2,  kleur:'oranje', kort:'al een tijd niets',  wat:'Al een tijd geen actie op deze tafel.',          bestellen:true },
+    { nr:5,  kleur:'oranje', kort:'koffie aanbieden',   wat:'Gulle tafel — je mag een koffie aanbieden.',     bestellen:true },
+    { nr:10, kleur:'rood',   kort:'wil afrekenen',      wat:'De runner geeft door dat ze willen afrekenen.',  doen:'Reken af of print de bon.', knoppen:[['PRINT',1],['NO',0]] },
+    { nr:11, kleur:'rood',   kort:'bestelling klopt niet', wat:'Runner meldt: deze bestelling klopt niet.',   doen:'Zet de tafeladministratie recht.', knoppen:[['FIXED',1],['CALL LG',0]] },
+    { nr:3,  kleur:'rood',   kort:'niet geseat',        wat:'Tafel is geopend zonder dat hij geseat is.',     doen:'Waar komen deze gasten vandaan?', knoppen:[['NEW',1],['PULL',0]] },
+    { nr:6,  kleur:'oranje', kort:'hoofdgerecht?',      wat:'Het voorgerecht is een tijd geleden weg.',       doen:'Kan het hoofdgerecht door?', knoppen:[['GO',1],['NO',0]] },
+    { nr:8,  kleur:'oranje', kort:'dessert?',           wat:'Het hoofdgerecht is gefired.',                   doen:'Kan het dessert door?', knoppen:[['GO',1],['NO',0]] }
   ];
 
   var staat = {};
@@ -999,6 +1013,7 @@
     var mm = MENSEN[huidigePersoon];
     document.getElementById('kopNaam').textContent = mm.naam;
     document.getElementById('kopWijk').textContent = mm.rol === 'LG' ? 'alle wijken' : mm.wijken.join(' + ');
+    tekenKaarten();
     document.getElementById('wie').textContent = mm.rol === 'LG'
       ? 'De leidinggevende ziet geen tafels maar vier wijken.'
       : mm.naam + ' loopt ' + mm.wijken.join(' en ') + '.';
@@ -1051,6 +1066,65 @@
     });
   }
 
+  // --- de kaartjes onder de kaart ------------------------------------------
+  // De kaart zegt waar het is, de kaartjes zeggen wat het is. Maximaal drie,
+  // net als op de handy (SPEC §2.3); de rest wordt geteld.
+  function tekenKaarten() {
+    var el = document.getElementById('kaarten');
+    var m = MENSEN[huidigePersoon];
+    if (m.rol === 'LG') { el.innerHTML = ''; return; }
+
+    var open = T.map(function (t) { return t[0]; })
+      .filter(function (nr) { return inWijk(nr) && staat[nr].sit; })
+      .sort(function (a, b) {
+        return prioVan(staat[a].sit.nr) - prioVan(staat[b].sit.nr);
+      });
+
+    if (!open.length) {
+      el.innerHTML = '<p class="rustig">Niets open. Loop je rondje.</p>';
+      return;
+    }
+
+    el.innerHTML = '';
+    open.slice(0, 3).forEach(function (nr) {
+      var sit = staat[nr].sit;
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'kaartje ' + sit.kleur;
+      var knoppen = sit.knoppen
+        ? '<div class="knoppen">' + sit.knoppen.map(function (k) {
+            return '<button type="button" data-nr="' + nr + '"' +
+              (k[1] ? ' class="primair"' : '') + '>' + k[0] + '</button>';
+          }).join('') + '</div>'
+        : '';
+      b.innerHTML = '<span class="regel"><span class="tnr">Tafel ' + nr + '</span>' +
+        '<span class="kort">' + sit.kort + '</span></span>' + knoppen;
+      b.addEventListener('click', function (e) {
+        if (e.target.tagName === 'BUTTON' && e.target !== b) return;
+        kies(nr);
+      });
+      el.appendChild(b);
+    });
+
+    if (open.length > 3) {
+      var r = document.createElement('p');
+      r.className = 'restje';
+      r.textContent = 'nog ' + (open.length - 3) + ' op de kaart';
+      el.appendChild(r);
+    }
+
+    Array.prototype.forEach.call(el.querySelectorAll('.knoppen button'), function (kb) {
+      kb.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var nr = kb.dataset.nr;
+        staat[nr].sit = null;
+        staat[nr].kleur = 'groen';
+        gekozen = null;
+        verfPlan(); tekenKaarten(); toonPaneel();
+      });
+    });
+  }
+
   // --- paneel --------------------------------------------------------------
   function kies(nr) {
     gekozen = nr;
@@ -1060,9 +1134,10 @@
   function toonPaneel() {
     var el = document.getElementById('paneelPlan');
     var isLG = MENSEN[huidigePersoon].rol === 'LG';
+    el.hidden = !isLG && !gekozen;
 
     if (isLG) {
-      if (!gekozenWijk) { el.innerHTML = '<p class="leeg-tekst">Tik op een wijk.</p>'; return; }
+      if (!gekozenWijk) { el.innerHTML = '<p class="leeg-tekst">Tik op een wijk.</p>'; el.hidden = false; return; }
       var w = null;
       for (var i = 0; i < WIJKEN.length; i++) if (WIJKEN[i].code === gekozenWijk) w = WIJKEN[i];
       var st = standVanWijk(gekozenWijk);
@@ -1078,7 +1153,7 @@
       return;
     }
 
-    if (!gekozen) { el.innerHTML = '<p class="leeg-tekst">Tik op een tafel.</p>'; return; }
+    if (!gekozen) { el.innerHTML = ''; return; }
 
     var st = staat[gekozen];
     var w = wijkVan(gekozen);
@@ -1109,6 +1184,7 @@
       b.addEventListener('click', function () {
         staat[gekozen].sit = null;
         staat[gekozen].kleur = 'groen';
+        gekozen = null;
         verfPlan(); toonPaneel();
       });
     });
